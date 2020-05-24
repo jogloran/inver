@@ -139,22 +139,17 @@ byte deref_##mode() { \
   byte deref_imm() {
     return read(pc++);
   }
-  
+
   word addr_indirect() {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
-    
+
     // The 6502 jmp indirect bug:
     // if addr + 1 crosses a page boundary,
     // then fetch (addr + 1) - 0x100 as the high byte instead
     word hi = (addr & 0xff) == 0xff ? (addr & 0xff00) : addr + 1;
     word ptr = read(addr) | (read(hi) << 8);
     return ptr;
-  }
-  
-  byte addr_rel() {
-    sbyte offset = static_cast<sbyte>(read(pc++));
-    return pc + offset;
   }
   
   void connect(Bus* other) {
