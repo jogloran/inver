@@ -187,36 +187,36 @@ PPU::push(Event event) {
 void
 PPU::events_for(int s, int c) {
   if ((s == 241 || s == -1) && c == 1) {
-    push(s == -1 ? &PPU::clr_vblank : &PPU::set_vblank);
+    if (s == -1) clr_vblank(); else set_vblank();
   } else if (s == 0 && c == 0) {
-    push(&PPU::skip_cycle);
+    skip_cycle();
   } else if (s <= 239 || s == -1) {
     if ((c >= 2 && c <= 257) || (c >= 321 && c <= 337)) {
-      push(&PPU::shift);
+      shift();
       switch ((c - 1) % 8) {
         case 0:
-          push(&PPU::nt_read);
+          nt_read();
           break;
         case 2:
-          push(&PPU::at_read);
+          at_read();
           break;
         case 4:
-          push(&PPU::pt_read_lsb);
+          pt_read_lsb();
           break;
         case 6:
-          push(&PPU::pt_read_msb);
+          pt_read_msb();
           break;
         case 7:
-          push(&PPU::scx);
+          scx();
           break;
       }
-      if (c == 256) push(&PPU::scy);
-      else if (c == 257) push(&PPU::cpx);
-      else if (c == 338 || c == 340) push(&PPU::extra_nt_read);
+      if (c == 256) scy();
+      else if (c == 257) cpx();
+      else if (c == 338 || c == 340) extra_nt_read();
     } else if (s == -1 && c >= 280 && c <= 304) {
-      push(&PPU::cpy);
+      cpy();
     } else if (c == 304) {
-      push(&PPU::calculate_sprites);
+      calculate_sprites();
     }
   }
 }
@@ -259,11 +259,6 @@ void PPU::dump_at() {
 void
 PPU::tick() {
   events_for(scanline, ncycles);
-  while (events.size()) {
-//    procs[static_cast<size_t>(events.front())](*this);
-    events.front()(*this);
-    events.pop_front();
-  }
 
   byte output = 0;
   byte output_palette = 0;
