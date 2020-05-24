@@ -120,13 +120,16 @@
   return cpu.observe_crossed_page(); \
 }
 
-// set N, Z, C
-#define CMP(mode) [](CPU6502& cpu) {\
+#define CMP_GEN(target, mode, addt_cycles) [](CPU6502& cpu) {\
   byte val = cpu.deref_##mode(); \
-  byte operand = cpu.check_zn_flags(cpu.a - val); \
-  cpu.p.C = cpu.a >= val; \
-  return cpu.observe_crossed_page(); \
+  byte operand = cpu.check_zn_flags(target - val); \
+  cpu.p.C = target >= val; \
+  return addt_cycles; \
 }
+
+// set N, Z, C
+#define CMP(mode) CMP_GEN(cpu.a, mode, cpu.observe_crossed_page())
+#define CP(reg, mode) CMP_GEN(cpu.reg, mode, 0)
 
 #define INC_GEN(mode, increment) [](CPU6502& cpu) {\
   word addr = cpu.addr_##mode(); \
@@ -206,14 +209,6 @@
 
 #define SE(reg) [](CPU6502& cpu) {\
   cpu.p.reg = 1; \
-  return 0; \
-}
-
-// set N, Z, C
-#define CP(reg, mode) [](CPU6502& cpu) {\
-  byte val = cpu.deref_##mode(); \
-  byte datum = cpu.check_zn_flags(cpu.reg - val); \
-  cpu.p.C = datum >= 0; \
   return 0; \
 }
 
