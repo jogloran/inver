@@ -122,7 +122,7 @@
 
 #define CMP_GEN(target, mode, addt_cycles) [](CPU6502& cpu) {\
   byte val = cpu.deref_##mode(); \
-  byte operand = cpu.check_zn_flags(target - val); \
+  cpu.check_zn_flags(target - val); \
   cpu.p.C = target >= val; \
   return addt_cycles; \
 }

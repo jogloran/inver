@@ -271,6 +271,7 @@ PPU::tick() {
     // fine_x = 0 => take bit 7 of shifters
     // fine_x = 1 => take bit 6 ...
     //   ...  = 7 => take bit 0 ...
+    // select one of the top 8 bits
     word mask = 0x8000 >> fine_x;
     output = !!(pt_shifter[0] & mask) | (!!(pt_shifter[1] & mask) << 1);
     // apply palette:
