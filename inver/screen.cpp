@@ -4,6 +4,7 @@
 #include <iostream>
 
 DECLARE_bool(show_raster);
+DECLARE_bool(fake_sprites);
 
 struct rgb {
   byte r;
@@ -90,6 +91,19 @@ Screen::blit() {
     buf[i++] = (draw_raster) ? 255 : ntsc_palette[b].g;
     buf[i++] = ntsc_palette[b].r;
     buf[i++] = 255;
+  }
+
+  if (FLAGS_fake_sprites) {
+    for (const PPU::OAM& oam : ppu->oam) {
+      for (int j = oam.x; j < oam.x + 8; ++j) {
+        buf[4 * (oam.y * BUF_WIDTH + j) + 2] = 255;
+        buf[4 * ((oam.y + 7) * BUF_WIDTH + j) + 2] = 255;
+      }
+      for (int k = oam.y; k < oam.y + 8; ++k) {
+        buf[4 * (k * BUF_WIDTH + oam.x) + 2] = 255;
+        buf[4 * (k * BUF_WIDTH + oam.x + 7) + 2] = 255;
+      }
+    }
   }
 
   SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);

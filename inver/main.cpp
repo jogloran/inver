@@ -18,6 +18,7 @@ DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(xx, false, "Debug");
 DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops");
 DEFINE_bool(show_raster, false, "Show raster in rendered output");
+DEFINE_bool(fake_sprites, false, "Show fake sprites");
 
 struct Header {
   byte header[4];

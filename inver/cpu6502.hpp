@@ -65,7 +65,7 @@ public:
     byte reg;
   } p;
   long ncycles;
-  byte cycles_left;
+  word cycles_left;
   bool crossed_page;
   bool should_dump;
   
@@ -169,4 +169,6 @@ byte deref_##mode() { \
   inline void pop_flags() {
     p.reg = (pop() & 0b11001111) | (p.reg & 0b00110000);
   }
+
+  void dmi();
 };

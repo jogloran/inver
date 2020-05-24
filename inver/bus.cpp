@@ -48,6 +48,10 @@ Bus::write(word addr, byte value) {
     ppu->select(addr & 0x7, value);
   } else if (addr <= 0x4017) {
     switch (addr) {
+      case 0x4014: {
+        dmi(value);
+        break;
+      }
       case 0x4016: {
         bool controller_polling_req = (value & 0x7) == 0x1;
 //        ppu->log("controller poll req: %d\n", controller_polling_req);
@@ -91,4 +95,19 @@ Bus::read(word addr) {
   }
   
   throw std::range_error("out of range read");
+}
+
+void Bus::dmi(byte page) {
+  ppu->log("dmi %02x\n", page);
+  word addr = page << 8;
+  byte* dst = (byte*)ppu->oam.data();
+  for (word src = addr; src < addr + 0x100; ++src) {
+    *dst++ = read(src);
+  }
+  int i = 0;
+  for (const PPU::OAM& oam : ppu->oam) {
+    if (oam.x == 0) continue;
+    ppu->log("\t(% 2d) %02x %02x %02x %02x\n", i++, oam.attr, oam.tile_no, oam.x, oam.y);
+  }
+  cpu->cycles_left = 514;
 }

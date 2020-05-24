@@ -44,5 +44,7 @@ public:
   
   byte controller_state;
   SDLInput controller1;
+
+  void dmi(byte value);
 };
 
