@@ -140,7 +140,7 @@ public:
     }
 
     static char buf[1024];
-    std::sprintf(buf, "[y=% 4d, x=% 4d] %4.4s | ", scanline, ncycles, cycle_str);
+    std::sprintf(buf, "[% 4d, % 4d] %4.4s | ", scanline, ncycles, cycle_str);
     std::strcat(buf, orig_fmt);
     va_start(args, orig_fmt);
     std::vprintf(buf, args);

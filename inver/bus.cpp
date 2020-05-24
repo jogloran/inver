@@ -1,6 +1,16 @@
 #include "bus.hpp"
 
+#include "cpu6502.hpp"
+
 std::chrono::high_resolution_clock::time_point then;
+
+Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
+                                                                   controller_polling(false) {
+  cpu->connect(this);
+  ppu->connect(this);
+
+  std::fill(ram.begin(), ram.end(), 0);
+}
 
 void
 Bus::tick() {
@@ -14,12 +24,12 @@ Bus::tick() {
     cpu->nmi();
     ppu->nmi_req = false;
   }
-  
+
   if (ncycles % 29781 == 0) {
 //    ppu->tm.show();
     ppu->screen.blit();
   }
-  
+
   ++ncycles;
 
 
@@ -61,7 +71,8 @@ Bus::write(word addr, byte value) {
           controller_polling = true;
         }
         break;
-      } case 0x4017:
+      }
+      case 0x4017:
         break;
     }
   } else if (addr >= 0x4020) {
@@ -84,7 +95,8 @@ Bus::read(word addr) {
 //        ppu->log("controller read bit: %d\n", lsb);
         controller_state >>= 1;
         return lsb;
-      } case 0x4017:
+      }
+      case 0x4017:
         return 0xff;
     }
     return 0;
@@ -93,14 +105,14 @@ Bus::read(word addr) {
   } else if (addr >= 0x4020) {
     return cart->read(addr);
   }
-  
+
   throw std::range_error("out of range read");
 }
 
 void Bus::dmi(byte page) {
   ppu->log("dmi %02x\n", page);
   word addr = page << 8;
-  byte* dst = (byte*)ppu->oam.data();
+  byte *dst = (byte *) ppu->oam.data();
   for (word src = addr; src < addr + 0x100; ++src) {
     *dst++ = read(src);
   }

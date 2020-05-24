@@ -4,20 +4,15 @@
 #include <array>
 
 #include "types.h"
-#include "cpu6502.hpp"
 #include "ppu.hpp"
 #include "cart.hpp"
 #include "sdl_input.hpp"
 
+class CPU6502;
+
 class Bus {
 public:
-  Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu): cpu(cpu), ppu(ppu), ncycles(0),
-    controller_polling(false) {
-    cpu->connect(this);
-    ppu->connect(this);
-    
-    std::fill(ram.begin(), ram.end(), 0);
-  }
+  Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu);
   
   void attach_cart(std::shared_ptr<Cartridge> c) {
     cart = c;

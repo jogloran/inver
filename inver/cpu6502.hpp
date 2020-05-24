@@ -3,64 +3,72 @@
 #include <memory>
 
 #include "types.h"
-
-class Bus;
+#include "bus.hpp"
 
 class CPU6502 {
 public:
-  CPU6502(): a(0), x(0), y(0), sp(0xfd), pc(0), p(),
-    ncycles(0), cycles_left(0),
-    crossed_page(false), should_dump(true) {
+  CPU6502() : a(0), x(0), y(0), sp(0xfd), pc(0), p(),
+              ncycles(0), cycles_left(0),
+              crossed_page(false), should_dump(true) {
     p.reg = 0b00110100;
   }
-  
-  byte read(word address);
-  void write(word address, byte value);
+
+  inline byte read(word address) { return bus->read(address); }
+
+  inline void write(word address, byte value) { bus->write(address, value); }
 
   [[maybe_unused]] void set_pc(word address);
+
   void tick();
+
   void reset();
-  
+
   void push_word(word address);
+
   void push(byte data);
+
   void rts();
+
   void nmi();
+
   byte pop();
+
   word pop_word();
-  
+
   word read_word();
+
   void set_should_dump(bool dump) {
     should_dump = dump;
   }
-  
+
   std::ostream& dump_stack(std::ostream&);
-  
+
   cycle_count_t branch_with_offset();
-  
+
   cycle_count_t observe_crossed_page() {
     auto result = crossed_page;
     crossed_page = false;
-    return !!result;
+    return cycle_count_t(result);
   }
-  
+
   void reset_crossed_page() {
     crossed_page = false;
   }
-  
+
 public:
   byte a, x, y;
   byte sp;
   word pc;
   union flags_t {
     struct {
-        byte C: 1;
-        byte Z: 1;
-        byte I: 1;
-        byte D: 1;
-        byte B: 1;
-        byte U: 1;
-        byte V: 1;
-        byte N: 1;
+      byte C: 1;
+      byte Z: 1;
+      byte I: 1;
+      byte D: 1;
+      byte B: 1;
+      byte U: 1;
+      byte V: 1;
+      byte N: 1;
     };
     byte reg;
   } p;
@@ -68,39 +76,39 @@ public:
   word cycles_left;
   bool crossed_page;
   bool should_dump;
-  
-  Bus* bus;
-  
+
+  Bus *bus;
+
   constexpr static word SP_BASE = 0x100;
-  
+
   inline bool crosses_page(word addr1, word addr2) {
     return (addr1 & 0xff00) != (addr2 & 0xff00);
   }
-  
+
 #define DEFINE_ADDR_MODE(mode, body) \
-word addr_##mode() body \
-byte deref_##mode() { \
-  return read(addr_##mode()); \
-}
-  
+  word addr_##mode() body \
+  byte deref_##mode() { \
+    return read(addr_##mode()); \
+  }
+
   DEFINE_ADDR_MODE(abs, {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
     return addr;
   })
-  
+
   DEFINE_ADDR_MODE(zpg, {
     return read(pc++);
   })
-  
+
   DEFINE_ADDR_MODE(zpg_plus_x, {
     return (read(pc++) + x) % 256;
   })
-  
+
   DEFINE_ADDR_MODE(zpg_plus_y, {
     return (read(pc++) + y) % 256;
   })
-  
+
   DEFINE_ADDR_MODE(abs_plus_x, {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
@@ -109,7 +117,7 @@ byte deref_##mode() { \
     }
     return addr + x;
   })
-  
+
   DEFINE_ADDR_MODE(abs_plus_y, {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
@@ -118,14 +126,14 @@ byte deref_##mode() { \
     }
     return addr + y;
   })
-  
+
   DEFINE_ADDR_MODE(x_indirect, {
     byte zp_offset = read(pc++);
     word ptr = read((zp_offset + x) % 256);
     ptr |= read((zp_offset + x + 1) % 256) << 8;
     return ptr;
   })
-  
+
   DEFINE_ADDR_MODE(indirect_y, {
     byte zp_offset = read(pc++);
     word ptr = read(zp_offset);
@@ -135,7 +143,9 @@ byte deref_##mode() { \
     ptr |= read((zp_offset + 1) % 256) << 8;
     return ptr + y;
   })
+
 #undef DEFINE_ADDR_MODE
+
   byte deref_imm() {
     return read(pc++);
   }
@@ -151,18 +161,22 @@ byte deref_##mode() { \
     word ptr = read(addr) | (read(hi) << 8);
     return ptr;
   }
-  
-  void connect(Bus* other) {
+
+  void connect(Bus *other) {
     bus = other;
   }
-  
+
   inline byte check_zn_flags(byte operand) {
     p.Z = (operand == 0);
     p.N = (operand & 0x80) != 0;
     return operand;
   }
-  
+
   inline void pop_flags() {
     p.reg = (pop() & 0b11001111) | (p.reg & 0b00110000);
   }
+
+  void dump();
+
+  void dump_pc();
 };
