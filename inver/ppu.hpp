@@ -17,15 +17,16 @@ class Bus;
 
 class PPU {
 public:
-  enum class Event : size_t {
-    SkippedCycle,
-    NTRead, ATRead, PTReadLSB, PTReadMSB, ScrollX, ScrollY,
-    CopyX, CopyY,
-    SetVBlank,
-    ClearVBlank,
-    Shift, ExtraNTRead,
-    CalculateSprites,
-  };
+  using Event = std::function<void(PPU&)>;
+//  enum class Event : size_t {
+//    SkippedCycle,
+//    NTRead, ATRead, PTReadLSB, PTReadMSB, ScrollX, ScrollY,
+//    CopyX, CopyY,
+//    SetVBlank,
+//    ClearVBlank,
+//    Shift, ExtraNTRead,
+//    CalculateSprites,
+//  };
 
   PPU() : scanline(0), ncycles(0),
           fine_x(0), w(0),

@@ -1,21 +1,21 @@
 #include "ppu.hpp"
 
-std::array<std::function<void(PPU&)>, 14> PPU::procs {
-    &PPU::skip_cycle,
-    &PPU::nt_read,
-    &PPU::at_read,
-    &PPU::pt_read_lsb,
-    &PPU::pt_read_msb,
-    &PPU::scx,
-    &PPU::scy,
-    &PPU::cpx,
-    &PPU::cpy,
-    &PPU::set_vblank,
-    &PPU::clr_vblank,
-    &PPU::shift,
-    &PPU::extra_nt_read,
-    &PPU::calculate_sprites,
-};
+//std::array<Event, 14> PPU::procs {
+//    &PPU::skip_cycle,
+//    &PPU::nt_read,
+//    &PPU::at_read,
+//    &PPU::pt_read_lsb,
+//    &PPU::pt_read_msb,
+//    &PPU::scx,
+//    &PPU::scy,
+//    &PPU::cpx,
+//    &PPU::cpy,
+//    &PPU::set_vblank,
+//    &PPU::clr_vblank,
+//    &PPU::shift,
+//    &PPU::extra_nt_read,
+//    &PPU::calculate_sprites,
+//};
 
 void
 PPU::calculate_sprites() {
@@ -187,36 +187,36 @@ PPU::push(Event event) {
 void
 PPU::events_for(int s, int c) {
   if ((s == 241 || s == -1) && c == 1) {
-    push(s == -1 ? PPU::Event::ClearVBlank : PPU::Event::SetVBlank);
+    push(s == -1 ? &PPU::clr_vblank : &PPU::set_vblank);
   } else if (s == 0 && c == 0) {
-    push(PPU::Event::SkippedCycle);
+    push(&PPU::skip_cycle);
   } else if (s <= 239 || s == -1) {
     if ((c >= 2 && c <= 257) || (c >= 321 && c <= 337)) {
-      push(PPU::Event::Shift);
+      push(&PPU::shift);
       switch ((c - 1) % 8) {
         case 0:
-          push(PPU::Event::NTRead);
+          push(&PPU::nt_read);
           break;
         case 2:
-          push(PPU::Event::ATRead);
+          push(&PPU::at_read);
           break;
         case 4:
-          push(PPU::Event::PTReadLSB);
+          push(&PPU::pt_read_lsb);
           break;
         case 6:
-          push(PPU::Event::PTReadMSB);
+          push(&PPU::pt_read_msb);
           break;
         case 7:
-          push(PPU::Event::ScrollX);
+          push(&PPU::scx);
           break;
       }
-      if (c == 256) push(PPU::Event::ScrollY);
-      else if (c == 257) push(PPU::Event::CopyX);
-      else if (c == 338 || c == 340) push(PPU::Event::ExtraNTRead);
+      if (c == 256) push(&PPU::scy);
+      else if (c == 257) push(&PPU::cpx);
+      else if (c == 338 || c == 340) push(&PPU::extra_nt_read);
     } else if (s == -1 && c >= 280 && c <= 304) {
-      push(PPU::Event::CopyY);
+      push(&PPU::cpy);
     } else if (c == 304) {
-      push(PPU::Event::CalculateSprites);
+      push(&PPU::calculate_sprites);
     }
   }
 }
@@ -260,7 +260,8 @@ void
 PPU::tick() {
   events_for(scanline, ncycles);
   while (events.size()) {
-    procs[static_cast<size_t>(events.front())](*this);
+//    procs[static_cast<size_t>(events.front())](*this);
+    events.front()(*this);
     events.pop_front();
   }
 
