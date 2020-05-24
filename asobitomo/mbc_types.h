@@ -1,0 +1,77 @@
+#pragma once
+
+#include <map>
+#include <iostream>
+
+#include "types.h"
+#include <memory>
+
+class MBCBase;
+class MMU;
+
+enum class MBC : byte {
+  ROM = 0x00,
+  MBC1 = 0x01,
+  MBC1_RAM = 0x02,
+  MBC1_RAM_BATTERY = 0x03,
+  MBC2 = 0x05,
+  MBC2_BATTERY = 0x06,
+  ROM_RAM = 0x08,
+  ROM_RAM_BATTERY = 0x09,
+  MMM01 = 0x0B,
+  MMM01_RAM = 0x0C,
+  MMM01_RAM_BATTERY = 0x0D,
+  MBC3_TIMER_BATTERY = 0x0F,
+  MBC3_TIMER_RAM_BATTERY = 0x10,
+  MBC3 = 0x11,
+  MBC3_RAM = 0x12,
+  MBC3_RAM_BATTERY = 0x13,
+  MBC5 = 0x19,
+  MBC5_RAM = 0x1A,
+  MBC5_RAM_BATTERY = 0x1B,
+  MBC5_RUMBLE = 0x1C,
+  MBC5_RUMBLE_RAM = 0x1D,
+  MBC5_RUMBLE_RAM_BATTERY = 0x1E,
+  MBC6 = 0x20,
+  MBC7_SENSOR_RUMBLE_RAM_BATTERY = 0x22,
+  POCKET_CAMERA = 0xFC,
+  BANDAI_TAMA5 = 0xFD,
+  HuC3 = 0xFE,
+  HuC1_RAM_BATTERY = 0xFF
+};
+
+static std::map<MBC, std::string> mbc_string {
+  { MBC::ROM, "ROM" },
+  { MBC::MBC1, "MBC1" },
+  { MBC::MBC1_RAM, "MBC1_RAM" },
+  { MBC::MBC1_RAM_BATTERY, "MBC1_RAM_BATTERY" },
+  { MBC::MBC2, "MBC2" },
+  { MBC::MBC2_BATTERY, "MBC2_BATTERY" },
+  { MBC::ROM_RAM, "ROM_RAM" },
+  { MBC::ROM_RAM_BATTERY, "ROM_RAM_BATTERY" },
+  { MBC::MMM01, "MMM01" },
+  { MBC::MMM01_RAM, "MMM01_RAM" },
+  { MBC::MMM01_RAM_BATTERY, "MMM01_RAM_BATTERY" },
+  { MBC::MBC3_TIMER_BATTERY, "MBC3_TIMER_BATTERY" },
+  { MBC::MBC3_TIMER_RAM_BATTERY, "MBC3_TIMER_RAM_BATTERY" },
+  { MBC::MBC3, "MBC3" },
+  { MBC::MBC3_RAM, "MBC3_RAM" },
+  { MBC::MBC3_RAM_BATTERY, "MBC3_RAM_BATTERY" },
+  { MBC::MBC5, "MBC5" },
+  { MBC::MBC5_RAM, "MBC5_RAM" },
+  { MBC::MBC5_RAM_BATTERY, "MBC5_RAM_BATTERY" },
+  { MBC::MBC5_RUMBLE, "MBC5_RUMBLE" },
+  { MBC::MBC5_RUMBLE_RAM, "MBC5_RUMBLE_RAM" },
+  { MBC::MBC5_RUMBLE_RAM_BATTERY, "MBC5_RUMBLE_RAM_BATTERY" },
+  { MBC::MBC6, "MBC6" },
+  { MBC::MBC7_SENSOR_RUMBLE_RAM_BATTERY, "MBC7_SENSOR_RUMBLE_RAM_BATTERY" },
+  { MBC::POCKET_CAMERA, "POCKET_CAMERA" },
+  { MBC::BANDAI_TAMA5, "BANDAI_TAMA5" },
+  { MBC::HuC3, "HuC3" },
+  { MBC::HuC1_RAM_BATTERY, "HuC1_RAM_BATTERY" },
+};
+
+std::ostream& operator<<(std::ostream& out, MBC mbc);
+
+std::unique_ptr<MBCBase> mbc_for(MBC mbc, MMU& mmu);
+
