@@ -161,9 +161,10 @@ byte deref_##mode() { \
     bus = other;
   }
   
-  inline void check_zn_flags(byte operand) {
+  inline byte check_zn_flags(byte operand) {
     p.Z = (operand == 0);
     p.N = (operand & 0x80) != 0;
+    return operand;
   }
   
   inline void pop_flags() {

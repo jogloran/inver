@@ -4,8 +4,7 @@
 // set N, Z
 #define OP(op, mode) [](CPU6502& cpu) {\
   byte operand = cpu.deref_##mode(); \
-  cpu.a = cpu.a op operand; \
-  cpu.check_zn_flags(cpu.a); \
+  cpu.a = cpu.check_zn_flags(cpu.a op operand); \
   return cpu.observe_crossed_page(); \
 }
 
@@ -55,8 +54,7 @@
   int addend = static_cast<int>(operand) + cpu.p.C; \
   int result = cpu.a + addend; \
   cpu.p.C = result > 255; \
-  cpu.a = static_cast<byte>(result); \
-  cpu.check_zn_flags(cpu.a); \
+  cpu.a = cpu.check_zn_flags(static_cast<byte>(result)); \
   cpu.p.V = ((acc ^ cpu.a) & (operand ^ cpu.a) & 0x80) != 0; \
   return cpu.observe_crossed_page(); \
 }
@@ -67,9 +65,8 @@
 
 #define ASL_BODY(operand) \
   bool msb = (operand & 0x80) != 0; \
-  operand = (operand << 1) & 0xfe; \
-  cpu.p.C = msb; \
-  cpu.check_zn_flags(operand);
+  operand = cpu.check_zn_flags((operand << 1) & 0xfe); \
+  cpu.p.C = msb;
 
 // set N=0, Z, C
 #define LSR_BODY(operand) \
@@ -81,15 +78,13 @@
 
 #define ROL_BODY(operand) \
   bool msb = (operand & 0x80) != 0; \
-  operand = cpu.p.C | (operand << 1); \
-  cpu.p.C = msb; \
-  cpu.check_zn_flags(operand);
+  operand = cpu.check_zn_flags(cpu.p.C | (operand << 1)); \
+  cpu.p.C = msb;
 
 #define ROR_BODY(operand) \
   bool lsb = operand & 0b1; \
-  operand = (cpu.p.C << 7) | (operand >> 1); \
-  cpu.p.C = lsb; \
-  cpu.check_zn_flags(operand);
+  operand = cpu.check_zn_flags((cpu.p.C << 7) | (operand >> 1)); \
+  cpu.p.C = lsb;
 
 #define ROL_A GEN_A(ROL_BODY)
 #define ROL(mode) GEN(ROL_BODY, mode)
@@ -121,16 +116,14 @@
 // set N, Z
 #define LD(reg, mode) [](CPU6502& cpu) {\
   auto operand = cpu.deref_##mode(); \
-  cpu.reg = operand; \
-  cpu.check_zn_flags(operand); \
+  cpu.reg = cpu.check_zn_flags(operand); \
   return cpu.observe_crossed_page(); \
 }
 
 // set N, Z, C
 #define CMP(mode) [](CPU6502& cpu) {\
   byte val = cpu.deref_##mode(); \
-  byte operand = cpu.a - val; \
-  cpu.check_zn_flags(operand); \
+  byte operand = cpu.check_zn_flags(cpu.a - val); \
   cpu.p.C = cpu.a >= val; \
   return cpu.observe_crossed_page(); \
 }
@@ -138,9 +131,8 @@
 #define INC_GEN(mode, increment) [](CPU6502& cpu) {\
   word addr = cpu.addr_##mode(); \
   byte operand = cpu.read(addr); \
-  byte result = operand + increment; \
+  byte result = cpu.check_zn_flags(operand + increment); \
   cpu.write(addr, result); \
-  cpu.check_zn_flags(result); \
   return cpu.observe_crossed_page(); \
 }
 
@@ -177,15 +169,13 @@
 
 //set N, Z
 #define IN(reg) [](CPU6502& cpu) {\
-  ++cpu.reg; \
-  cpu.check_zn_flags(cpu.reg); \
+  cpu.check_zn_flags(++cpu.reg); \
   return 0; \
 }
 
 //set N, Z
 #define DE(reg) [](CPU6502& cpu) {\
-  --cpu.reg; \
-  cpu.check_zn_flags(cpu.reg); \
+  cpu.check_zn_flags(--cpu.reg); \
   return 0; \
 }
 
@@ -200,8 +190,7 @@
 
 // set N, Z
 #define PLA [](CPU6502& cpu) {\
-  cpu.a = cpu.pop(); \
-  cpu.check_zn_flags(cpu.a); \
+  cpu.a = cpu.check_zn_flags(cpu.pop()); \
   return 0; \
 }
 
@@ -223,9 +212,8 @@
 // set N, Z, C
 #define CP(reg, mode) [](CPU6502& cpu) {\
   byte val = cpu.deref_##mode(); \
-  byte datum = cpu.reg - val; \
-  cpu.check_zn_flags(datum); \
-  cpu.p.C = (cpu.reg >= val); \
+  byte datum = cpu.check_zn_flags(cpu.reg - val); \
+  cpu.p.C = datum >= 0; \
   return 0; \
 }
 
@@ -236,7 +224,6 @@
 
 // set N, Z
 #define T__(src, dst) [](CPU6502& cpu) {\
-  cpu.dst = cpu.src; \
-  cpu.check_zn_flags(cpu.dst); \
+  cpu.check_zn_flags(cpu.dst = cpu.src); \
   return 0; \
 }
