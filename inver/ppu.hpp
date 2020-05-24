@@ -24,6 +24,7 @@ public:
     SetVBlank,
     ClearVBlank,
     Shift, ExtraNTRead,
+    CalculateSprites,
   };
 
   PPU() : scanline(0), ncycles(0),
@@ -35,9 +36,10 @@ public:
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
     screen.ppu = this;
+    std::fill(shadow_oam.begin(), shadow_oam.end(), OAM{ 0xff, 0xff, 0xff, 0xff });
   }
 
-  static std::array<std::function<void(PPU&)>, 13> procs;
+  static std::array<std::function<void(PPU&)>, 14> procs;
 
   void events_for(int s, int c);
 
@@ -138,7 +140,7 @@ public:
     }
 
     static char buf[1024];
-    std::sprintf(buf, "[% 4d, % 4d] %4.4s | ", scanline, ncycles, cycle_str);
+    std::sprintf(buf, "[y=% 4d, x=% 4d] %4.4s | ", scanline, ncycles, cycle_str);
     std::strcat(buf, orig_fmt);
     va_start(args, orig_fmt);
     std::vprintf(buf, args);
@@ -358,6 +360,7 @@ public:
     byte x;
   };
   std::array<OAM, 64> oam;
+  std::array<OAM, 8> shadow_oam;
   TM tm;
   Screen screen;
   int scanline; // -1 to 260
@@ -400,4 +403,6 @@ public:
   void dump_at();
 
   void extra_nt_read();
+
+  void calculate_sprites();
 };

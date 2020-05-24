@@ -1,6 +1,6 @@
 #include "ppu.hpp"
 
-std::array<std::function<void(PPU&)>, 13> PPU::procs {
+std::array<std::function<void(PPU&)>, 14> PPU::procs {
     &PPU::skip_cycle,
     &PPU::nt_read,
     &PPU::at_read,
@@ -14,7 +14,23 @@ std::array<std::function<void(PPU&)>, 13> PPU::procs {
     &PPU::clr_vblank,
     &PPU::shift,
     &PPU::extra_nt_read,
+    &PPU::calculate_sprites,
 };
+
+void
+PPU::calculate_sprites() {
+  std::fill(shadow_oam.begin(), shadow_oam.end(), OAM {0xff, 0xff, 0xff, 0xff});
+
+  // Determine sprite visibility for the next scanline by filling the shadow_oam
+  byte next_scanline = scanline == -1 ? 0 : scanline + 1;
+  std::vector<OAM> candidates;
+  std::copy_if(oam.begin(), oam.end(), std::back_inserter(candidates),
+               [this, next_scanline](auto sprite) {
+                 return (sprite.y >= 8 && next_scanline >= sprite.y &&
+                         next_scanline < sprite.y + 8);
+               });
+  std::copy_n(candidates.begin(), std::min<size_t>(candidates.size(), 8), shadow_oam.begin());
+}
 
 void
 PPU::skip_cycle() {
@@ -197,6 +213,8 @@ PPU::events_for(int s, int c) {
       else if (c == 338 || c == 340) push(PPU::Event::ExtraNTRead);
     } else if (s == -1 && c >= 280 && c <= 304) {
       push(PPU::Event::CopyY);
+    } else if (c == 304) {
+      push(PPU::Event::CalculateSprites);
     }
   }
 }
@@ -264,11 +282,40 @@ PPU::tick() {
 
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
-    if (scanline == 8 && ncycles == 1 && output != 0) {
-      ;
+    if (scanline == 8 && ncycles == 1 && output != 0) { ;
     }
     screen.fb[scanline * 256 + (ncycles - 1)] =
         output == 0 ? bg : pal[4 * output_palette + output];
+
+
+    for (const OAM& visible : shadow_oam) {
+      if (visible.y >= 0xef) continue;
+
+      for (int i = visible.x; i < visible.x + 8; ++i) {
+        byte y_selector = visible.attr & 0x80 ? (7 - (scanline - visible.y)) : scanline - visible.y;
+        byte lsb = ppu_read(
+            (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+            y_selector);
+        byte msb = ppu_read(
+            (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+            y_selector + 8);
+//      log("visible.y %d scanline %d s-v.y-1 %d\n", visible.y, scanline, scanline - visible.y - 1);
+        log("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
+            (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+            y_selector);
+
+        // tile 0xa0 is at pattern table address 0x0a00 to 0xa0f
+        auto decoded = unpack_bits(lsb, msb);
+        auto sprite_palette = 4 + (visible.attr & 3);
+
+        byte selector = visible.attr & 0x40 ? (7 - (i - visible.x)) : i - visible.x;
+        auto sprite_byte = decoded[selector];
+        if (sprite_byte != 0) {
+          screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
+          log("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
+        }
+      }
+    }
   }
 
   next_cycle();

@@ -169,6 +169,4 @@ byte deref_##mode() { \
   inline void pop_flags() {
     p.reg = (pop() & 0b11001111) | (p.reg & 0b00110000);
   }
-
-  void dmi();
 };

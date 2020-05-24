@@ -66,7 +66,7 @@
 #define SBC(mode) ADC_GEN(mode, ~)
 
 #define ASL_BODY(operand) \
-  bool msb = operand & 0x80; \
+  bool msb = (operand & 0x80) != 0; \
   operand = (operand << 1) & 0xfe; \
   cpu.p.C = msb; \
   cpu.check_zn_flags(operand);
