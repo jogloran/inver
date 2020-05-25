@@ -34,7 +34,7 @@ PPU::calculate_sprites() {
   std::copy_n(candidates.begin(), std::min<size_t>(candidates.size(), 8), shadow_oam.begin());
 }
 
-void
+inline void
 PPU::skip_cycle() {
   if (odd_frame) {
     ++ncycles;
@@ -43,7 +43,7 @@ PPU::skip_cycle() {
   }
 }
 
-void
+inline void
 PPU::shift() {
   if (ppumask.f.show_background) {
     pt_shifter[0] <<= 1;
@@ -54,7 +54,7 @@ PPU::shift() {
   }
 }
 
-void
+inline void
 PPU::load_shift_reg() {
   pt_shifter[0] = (pt_shifter[0] & 0xff00) | bg_tile_lsb;
   pt_shifter[1] = (pt_shifter[1] & 0xff00) | bg_tile_msb;
@@ -63,19 +63,19 @@ PPU::load_shift_reg() {
   at_shifter[1] = (at_shifter[1] & 0xff00) | at_byte_msb;
 }
 
-void
+inline void
 PPU::nt_read() {
   load_shift_reg();
   nt_byte = ppu_read(0x2000 + (loopy_v.reg & 0xfff));
 //  log("Read nt byte %02x from %04x\n", nt_byte, 0x2000 + (loopy_v.reg & 0xfff));
 }
 
-void
+inline void
 PPU::extra_nt_read() {
   nt_byte = ppu_read(0x2000 + (loopy_v.reg & 0xfff));
 }
 
-void
+inline void
 PPU::at_read() {
   auto at_byte = ppu_read(0x23c0 + (ppuctrl.f.nametable_base << 8) +
                           ((loopy_v.f.coarse_y >> 2) << 3) +
@@ -101,19 +101,19 @@ PPU::at_read() {
   at_byte_lsb = (at_byte & 1) ? 0xff : 0;
 }
 
-void
+inline void
 PPU::pt_read_lsb() {
   bg_tile_lsb = ppu_read(
       (ppuctrl.f.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.f.fine_y);
 }
 
-void
+inline void
 PPU::pt_read_msb() {
   bg_tile_msb = ppu_read(
       (ppuctrl.f.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.f.fine_y + 8);
 }
 
-void
+inline void
 PPU::scx() {
   if (ppumask.f.show_background) {
     if (loopy_v.f.coarse_x == 31) {
@@ -125,7 +125,7 @@ PPU::scx() {
   }
 }
 
-void
+inline void
 PPU::scy() {
   if (ppumask.f.show_background) {
     if (loopy_v.f.fine_y == 7) {
@@ -142,7 +142,7 @@ PPU::scy() {
   }
 }
 
-void
+inline void
 PPU::cpx() {
   load_shift_reg();
   if (ppumask.f.show_background) {
@@ -151,7 +151,7 @@ PPU::cpx() {
   }
 }
 
-void
+inline void
 PPU::cpy() {
   if (ppumask.f.show_background) {
     loopy_v.f.fine_y = loopy_t.f.fine_y;
@@ -160,7 +160,7 @@ PPU::cpy() {
   }
 }
 
-void
+inline void
 PPU::set_vblank() {
   ppustatus.f.vblank_started = 1;
   if (ppuctrl.f.vblank_nmi) {
@@ -174,7 +174,7 @@ PPU::set_vblank() {
 //  last_frame = std::chrono::high_resolution_clock::now();
 }
 
-void
+inline void
 PPU::clr_vblank() {
   ppustatus.f.vblank_started = 0;
 }

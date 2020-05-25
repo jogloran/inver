@@ -110,7 +110,6 @@ Bus::read(word addr) {
 }
 
 void Bus::dmi(byte page) {
-  ppu->log("dmi %02x\n", page);
   word addr = page << 8;
   byte *dst = (byte *) ppu->oam.data();
   for (word src = addr; src < addr + 0x100; ++src) {
@@ -119,7 +118,6 @@ void Bus::dmi(byte page) {
   int i = 0;
   for (const PPU::OAM& oam : ppu->oam) {
     if (oam.x == 0) continue;
-    ppu->log("\t(% 2d) %02x %02x %02x %02x\n", i++, oam.attr, oam.tile_no, oam.x, oam.y);
   }
   cpu->cycles_left = 514;
 }

@@ -13,6 +13,12 @@
 
 DECLARE_bool(xx);
 
+#ifdef NDEBUG
+#define LOG(msg, ...)
+#else
+#define LOG(msg, ...)  log(msg, __VA_ARGS)
+#endif
+
 class Bus;
 
 class PPU {
@@ -77,7 +83,7 @@ public:
   void push(Event e);
 
   void log_loopy() {
-    log("\tcx: %02x fx: %02x cy: %02x fy: %02x\n", loopy_v.f.coarse_x, fine_x,
+    LOG("\tcx: %02x fx: %02x cy: %02x fy: %02x\n", loopy_v.f.coarse_x, fine_x,
         loopy_v.f.coarse_y, loopy_v.f.fine_y);
   }
 
@@ -180,7 +186,7 @@ public:
     if (ppu_addr <= 0x1fff) {
       cart->chr_write(ppu_addr, value);
     } else if (ppu_addr <= 0x3eff) {
-      log("nt write %02x -> %04x\n", value, ppu_addr);
+      LOG("nt write %02x -> %04x\n", value, ppu_addr);
       auto nt_index = (ppu_addr >> 10) & 3;
       auto nt_offset = ppu_addr & 0x3ff;
       nt[nt_index * 0x400 + nt_offset] = value;
@@ -249,7 +255,7 @@ public:
         if (!w) {
           loopy_t.f.coarse_x = value >> 3;
           fine_x = value & 7;
-          log("scroll cx %d fx %d cy %d fy %d\n", loopy_t.f.coarse_x, fine_x, loopy_t.f.coarse_y, loopy_t.f.fine_y);
+          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.f.coarse_x, fine_x, loopy_t.f.coarse_y, loopy_t.f.fine_y);
           w = 1;
         } else {
           loopy_t.f.fine_y = value & 7;
