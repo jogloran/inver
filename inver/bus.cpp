@@ -111,7 +111,7 @@ Bus::read(word addr) {
 
 void Bus::dmi(byte page) {
   word addr = page << 8;
-  byte *dst = (byte *) ppu->oam.data();
+  byte* dst = (byte*) ppu->oam.data();
   for (word src = addr; src < addr + 0x100; ++src) {
     *dst++ = read(src);
   }
@@ -120,4 +120,10 @@ void Bus::dmi(byte page) {
     if (oam.x == 0) continue;
   }
   cpu->cycles_left = 514;
+}
+
+void Bus::attach_cart(std::shared_ptr<Mapper> c) {
+  cart = c;
+  c->connect(this);
+  ppu->connect(c);
 }

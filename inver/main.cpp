@@ -8,6 +8,7 @@
 #include "ppu.hpp"
 #include "bus.hpp"
 #include "ops.hpp"
+#include "nes000.hpp"
 #include "util.h"
 
 #include <gflags/gflags.h>
@@ -33,16 +34,28 @@ struct Header {
   byte padding[5];
 } __attribute__((packed, aligned(1)));
 
+byte prg_rom_size(Header* h) {
+  return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
+}
+
+byte chr_rom_size(Header* h) {
+  return (((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb);
+}
+
 void inspect_header(Header* h) {
-  std::cout << "PRG-ROM size: " << (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb) * 16384 << std::endl
-  << "CHR-ROM size: " << ( ((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb) * 8192 << std::endl
-  << "Mapper: " << ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8)) << std::endl;
+  std::cout << "PRG-ROM size: "
+            << prg_rom_size(h) * 0x4000 << std::endl
+            << "CHR-ROM size: " << chr_rom_size(h) * 0x2000
+            << std::endl
+            << "Mapper: "
+            << ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8))
+            << std::endl;
 }
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  
+
   if (argc != 2) {
     std::cerr << "Expecting a ROM filename." << std::endl;
     exit(1);
@@ -50,38 +63,35 @@ int main(int argc, char** argv) {
 
   auto cpu = std::make_shared<CPU6502>();
   auto ppu = std::make_shared<PPU>();
-  auto cart = std::make_shared<Cartridge>();
+  auto cart = std::make_shared<NROM>();
   Bus bus(cpu, ppu);
-  
+
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
-  
+
   std::ifstream f(argv[1], std::ios::in);
   if (f) {
-    std::cerr << "reading" << std::endl;
+    f.seekg(0x10, std::ios::cur);
+    size_t len = f.tellg();
+    f.seekg(0, std::ios::beg);
+
     byte header_bytes[16];
-    f.read((char*)header_bytes, 16);
+    f.read((char*) header_bytes, 16);
     Header* h = reinterpret_cast<Header*>(header_bytes);
-    
+
     inspect_header(h);
-    
-    std::cout << "header: " << (char)h->header[0] << (char)h->header[1] << (char)h->header[2] << std::endl;
-    
-    std::array<byte, 0x4000> cart_data;
-    f.seekg(0x10);
-    f.read((char*)cart_data.data(), 0x4000);
-    
-    std::array<byte, 0x2000> chr_data;
-    f.seekg(0x4010);
-    f.read((char*)chr_data.data(), 0x2000);
-    
-    cart->flash(cart_data.begin(), 0x4000);
-    cart->flash_chr(chr_data.begin(), 0x2000);
+    std::vector<char> data;
+    data.reserve(len);
+    std::copy(std::istreambuf_iterator<char>(f),
+              std::istreambuf_iterator<char>(),
+              std::back_inserter(data));
+
+    cart->map(data, prg_rom_size(h), chr_rom_size(h));
   }
-  
+
   bus.attach_cart(cart);
-  
+
   cpu->reset();
   word last_pc = 0;
   while (true) {
@@ -91,16 +101,17 @@ int main(int argc, char** argv) {
       if (history.size() >= 128) {
         history.pop_front();
       }
-      
+
       auto period = history_repeating(history);
       if (period) {
         repeating++;
         cpu->set_should_dump(repeating == 1);
       } else {
         if (FLAGS_dis && repeating > 0) {
-          std::cout << "\t... [last " << std::dec << last_period << " ops repeated " << std::dec << repeating << " times]" << std::endl << std::endl;
+          std::cout << "\t... [last " << std::dec << last_period << " ops repeated " << std::dec
+                    << repeating << " times]" << std::endl << std::endl;
         }
-        
+
         repeating = 0;
         cpu->set_should_dump(true);
       }
@@ -108,7 +119,7 @@ int main(int argc, char** argv) {
     }
     bus.tick();
   }
-  
+
   return 0;
 }
 

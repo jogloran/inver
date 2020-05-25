@@ -6,17 +6,17 @@
 #include <gflags/gflags.h>
 
 #include "types.h"
-#include "cart.hpp"
 #include "tm.hpp"
 #include "screen.hpp"
 #include "utils.hpp"
+#include "mapper.h"
 
 DECLARE_bool(xx);
 
 #ifdef NDEBUG
 #define LOG(msg, ...)
 #else
-#define LOG(msg, ...)  log(msg, __VA_ARGS)
+#define LOG(msg, ...)  log(msg, __VA_ARGS__)
 #endif
 
 class Bus;
@@ -293,7 +293,7 @@ public:
     bus = b;
   }
 
-  void connect(std::shared_ptr<Cartridge> c) {
+  void connect(std::shared_ptr<Mapper> c) {
     cart = c;
   }
 
@@ -317,7 +317,7 @@ public:
   }
 
   Bus *bus;
-  std::shared_ptr<Cartridge> cart;
+  std::shared_ptr<Mapper> cart;
 
   std::array<byte, 0x2000> pt;
   std::array<byte, 0x1000> nt;
