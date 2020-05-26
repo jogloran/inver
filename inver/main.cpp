@@ -9,6 +9,7 @@
 #include "bus.hpp"
 #include "ops.hpp"
 #include "nes000.hpp"
+#include "nes004.h"
 #include "util.h"
 #include "header.hpp"
 
@@ -22,7 +23,6 @@ DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops")
 DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
-
 
 byte prg_rom_size(NESHeader* h) {
   return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
   auto cpu = std::make_shared<CPU6502>();
   auto ppu = std::make_shared<PPU>();
-  auto cart = std::make_shared<NROM>();
+  auto mapper = std::make_shared<MMC3>();
   Bus bus(cpu, ppu);
 
   std::deque<word> history;
@@ -77,10 +77,10 @@ int main(int argc, char** argv) {
               std::istreambuf_iterator<char>(),
               std::back_inserter(data));
 
-    cart->map(data, prg_rom_size(h), chr_rom_size(h), h);
+    mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
   }
 
-  bus.attach_cart(cart);
+  bus.attach_cart(mapper);
 
   cpu->reset();
   word last_pc = 0;

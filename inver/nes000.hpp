@@ -20,10 +20,6 @@ public:
     std::fill(rom.begin(), rom.end(), 0);
   }
 
-  void connect(Bus* b) override {
-    bus = b;
-  }
-
   byte read(word addr) override {
     // PRG-ROM
     if (addr >= 0x8000 && (addr <= 0xbfff || rom.size() > 16384)) {
@@ -73,14 +69,6 @@ public:
 
   void flash_chr(byte* ptr, size_t len) {
     std::copy(ptr, ptr + len, std::back_inserter(chr));
-  }
-
-  byte ppu_read(word addr) override {
-    return ppu->ppu_read(addr);
-  }
-
-  void ppu_write(word addr, byte value) override {
-
   }
 
   Bus* bus;

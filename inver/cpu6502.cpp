@@ -135,11 +135,11 @@ void CPU6502::dump() {
             << " a: " << hex_byte << static_cast<int>(a)
             << " x: " << hex_byte << static_cast<int>(x)
             << " y: " << hex_byte << static_cast<int>(y);
-  std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341
-            << " (0)+y: " << hex_word << (bus->read(0) | (bus->read(1) << 8)) + y << " = "
-            << hex_byte << static_cast<int>(bus->read((bus->read(0) | (bus->read(1) << 8)) + y)) << ' '
-            << "(0),(1): " << hex_byte << static_cast<int>(bus->read(0x0))
-            << hex_byte << static_cast<int>(bus->read(0x1)) << ' ';
+  std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341;
+//            << " (0)+y: " << hex_word << (bus->read(0) | (bus->read(1) << 8)) + y << " = "
+//            << hex_byte << static_cast<int>(bus->read((bus->read(0) | (bus->read(1) << 8)) + y)) << ' '
+//            << "(0),(1): " << hex_byte << static_cast<int>(bus->read(0x0))
+//            << hex_byte << static_cast<int>(bus->read(0x1)) << ' ';
 
   if (FLAGS_dump_stack) {
     std::cout << " stk: ";

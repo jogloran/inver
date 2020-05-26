@@ -16,7 +16,6 @@ public:
   virtual Mirroring get_mirroring() = 0;
 
   virtual void map(const std::vector<char>&, byte prg_banks, byte chr_banks, NESHeader* header) = 0;
-  virtual void connect(Bus* bus) = 0;
 
   virtual byte read(word addr) = 0;
   virtual void write(word addr, byte value) = 0;
@@ -24,6 +23,10 @@ public:
   virtual byte chr_read(word addr) = 0;
   virtual void chr_write(word addr, byte value) = 0;
 
-  virtual byte ppu_read(word addr) = 0;
-  virtual void ppu_write(word addr, byte value) = 0;
+  virtual void connect(Bus* b) {
+    bus = b;
+  }
+
+private:
+  Bus* bus;
 };
