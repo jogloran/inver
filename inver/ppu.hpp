@@ -16,7 +16,7 @@ DECLARE_bool(xx);
 #ifdef NDEBUG
 #define LOG(msg, ...)
 #else
-#define LOG(msg, ...)  log(msg, __VA_ARGS__)
+#define LOG(msg, ...) // log(msg, __VA_ARGS__)
 #endif
 
 class Bus;
@@ -24,15 +24,6 @@ class Bus;
 class PPU {
 public:
   using Event = std::function<void(PPU&)>;
-//  enum class Event : size_t {
-//    SkippedCycle,
-//    NTRead, ATRead, PTReadLSB, PTReadMSB, ScrollX, ScrollY,
-//    CopyX, CopyY,
-//    SetVBlank,
-//    ClearVBlank,
-//    Shift, ExtraNTRead,
-//    CalculateSprites,
-//  };
 
   PPU() : scanline(0), ncycles(0),
           fine_x(0), w(0),
@@ -43,10 +34,17 @@ public:
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
     screen.ppu = this;
-    std::fill(shadow_oam.begin(), shadow_oam.end(), OAM{ 0xff, 0xff, 0xff, 0xff });
+    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite{ {0xff, 0xff, 0xff, 0xff}, 64 });
+    std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
   }
 
-  static std::array<std::function<void(PPU&)>, 14> procs;
+  void reset() {
+    scanline = ncycles = fine_x = w = ppudata_byte = 0;
+    nt_byte = at_byte_lsb = at_byte_msb = 0;
+    pt_byte = bg_tile_msb = bg_tile_lsb = 0;
+    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite{ {0xff, 0xff, 0xff, 0xff}, 64 });
+    std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
+  }
 
   void events_for(int s, int c);
 
@@ -169,12 +167,33 @@ public:
     if (ppu_addr <= 0x1fff) {
       return cart->chr_read(ppu_addr);
     } else if (ppu_addr <= 0x3eff) {
-      auto nt_index = (ppu_addr >> 10) & 3;
+      // Mirroring:
+      Mapper::Mirroring mirroring = cart->get_mirroring();
+      auto nt_index = (ppu_addr >> 10) & 1;
+      switch (mirroring) {
+        case Mapper::Mirroring::V:
+          ppu_addr &= ~(1 << 11);
+          nt_index = (ppu_addr >> 10) & 1;
+          break;
+        case Mapper::Mirroring::H:
+          ppu_addr &= ~(1 << 10);
+          nt_index = (ppu_addr >> 11) & 1;
+          break;
+      }
+      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
+      // nametable actually only has 2048 = 0x800 elements
+
+//      auto nt_index = (ppu_addr >> 10) & 3;
       auto nt_offset = ppu_addr & 0x3ff;
       return nt[nt_index * 0x400 + nt_offset];
     } else if (ppu_addr <= 0x3fff) {
+      // Reading from palette index 0 of sprite palettes 0...3 should read from
+      // index 0 of background palettes 0...3 instead
+      if (ppu_addr == 0x3f10 || ppu_addr == 0x3f14 || ppu_addr == 0x3f18 || ppu_addr == 0x3f1c) {
+        ppu_addr &= ~0x10;
+      }
       ppu_addr &= 0xff1f;
-      return pal[ppu_addr - 0x3f00];
+      return pal[ppu_addr - 0x3f00] & (ppumask.f.greyscale ? 0x30 : 0xff);
     }
 
     return 0;
@@ -186,11 +205,31 @@ public:
     if (ppu_addr <= 0x1fff) {
       cart->chr_write(ppu_addr, value);
     } else if (ppu_addr <= 0x3eff) {
-      LOG("nt write %02x -> %04x\n", value, ppu_addr);
-      auto nt_index = (ppu_addr >> 10) & 3;
+      // Mirroring:
+      Mapper::Mirroring mirroring = cart->get_mirroring();
+      auto nt_index = (ppu_addr >> 10) & 1;
+      switch (mirroring) {
+        case Mapper::Mirroring::V:
+          ppu_addr &= ~(1 << 11);
+          nt_index = (ppu_addr >> 10) & 1;
+          break;
+        case Mapper::Mirroring::H:
+          ppu_addr &= ~(1 << 10);
+          nt_index = (ppu_addr >> 11) & 1;
+          break;
+      }
+      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
+      // nametable actually only has 2048 = 0x800 elements
+
+//      auto nt_index = (ppu_addr >> 10) & 3;
       auto nt_offset = ppu_addr & 0x3ff;
       nt[nt_index * 0x400 + nt_offset] = value;
     } else if (ppu_addr <= 0x3fff) {
+      // Writing to palette index 0 of sprite palettes 0...3 should write to
+      // index 0 of background palettes 0...3 instead
+      if (ppu_addr == 0x3f10 || ppu_addr == 0x3f14 || ppu_addr == 0x3f18 || ppu_addr == 0x3f1c) {
+        ppu_addr &= ~0x10;
+      }
       // 3f01 == 3f21
       // 00111111 0000 0001
       // 00111111 0010 0001
@@ -260,6 +299,7 @@ public:
         } else {
           loopy_t.f.fine_y = value & 7;
           loopy_t.f.coarse_y = value >> 3;
+          LOG("scroll2 cy %d fy %d\n",loopy_t.f.coarse_y, loopy_t.f.fine_y);
           w = 0;
         }
         break;
@@ -270,13 +310,9 @@ public:
           loopy_t.reg = (loopy_t.reg & ~0x3f00) | ((value & 0x3f) << 8);
           w = 1;
         } else {
-          log_select(ppu_cmd, "loopy_v before %04x\n", loopy_v.reg);
           loopy_t.reg = (loopy_t.reg & ~0xff) | value;
           loopy_v = loopy_t;
           w = 0;
-
-          log_select(ppu_cmd, "loopy_v after %04x\n", loopy_v.reg);
-          log_select(ppu_cmd, "ppu data write dest %04x\n", loopy_v.reg);
         }
 
         break;
@@ -291,6 +327,7 @@ public:
 
   void connect(Bus *b) {
     bus = b;
+    screen.bus = b;
   }
 
   void connect(std::shared_ptr<Mapper> c) {
@@ -319,8 +356,7 @@ public:
   Bus *bus;
   std::shared_ptr<Mapper> cart;
 
-  std::array<byte, 0x2000> pt;
-  std::array<byte, 0x1000> nt;
+  std::array<byte, 0x800> nt;
   std::array<byte, 0x20> pal;
 
   union ppuctrl {
@@ -366,8 +402,13 @@ public:
     byte attr;
     byte x;
   };
+  struct Sprite {
+    PPU::OAM oam;
+    byte sprite_index;
+  };
   std::array<OAM, 64> oam;
-  std::array<OAM, 8> shadow_oam;
+  std::array<Sprite, 8> shadow_oam;
+  std::array<byte, 8> shadow_oam_indices;
   TM tm;
   Screen screen;
   int scanline; // -1 to 260
@@ -408,6 +449,8 @@ public:
   std::chrono::high_resolution_clock::time_point last_frame;
 
   void dump_at();
+
+  void dump_oam();
 
   void extra_nt_read();
 

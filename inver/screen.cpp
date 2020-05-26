@@ -1,5 +1,6 @@
 #include "screen.hpp"
 #include "ppu.hpp"
+#include "bus.hpp"
 
 #include <iostream>
 
@@ -107,14 +108,19 @@ Screen::blit() {
   }
 
   SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
+//  byte* ptr;
+//  int pitch;
+//  SDL_LockTexture(texture_, NULL, (void**)&ptr, &pitch);
+//  std::copy(buf.data(), buf.data() + buf.size(), ptr);
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
   SDL_RenderPresent(renderer_);
+//  SDL_UnlockTexture(texture_);
 
 //  SDL_PumpEvents();
 
   int nkeys;
-  const uint8_t *keystates = SDL_GetKeyboardState(&nkeys);
+  const uint8_t* keystates = SDL_GetKeyboardState(&nkeys);
   if (keystates[SDL_SCANCODE_D]) {
     ppu->dump_nt();
   } else if (keystates[SDL_SCANCODE_P]) {
@@ -123,6 +129,10 @@ Screen::blit() {
     ppu->dump_at();
   } else if (keystates[SDL_SCANCODE_O]) {
     dump_fb(fb);
+  } else if (keystates[SDL_SCANCODE_S]) {
+    ppu->dump_oam();
+  } else if (keystates[SDL_SCANCODE_R]) {
+    bus->reset();
   }
 
   SDL_Event event;

@@ -37,5 +37,8 @@ public:
   SDLInput controller1;
 
   void dmi(byte value);
+
+  void reset();
+
 };
 

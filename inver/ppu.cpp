@@ -1,37 +1,28 @@
 #include "ppu.hpp"
 
-//std::array<Event, 14> PPU::procs {
-//    &PPU::skip_cycle,
-//    &PPU::nt_read,
-//    &PPU::at_read,
-//    &PPU::pt_read_lsb,
-//    &PPU::pt_read_msb,
-//    &PPU::scx,
-//    &PPU::scy,
-//    &PPU::cpx,
-//    &PPU::cpy,
-//    &PPU::set_vblank,
-//    &PPU::clr_vblank,
-//    &PPU::shift,
-//    &PPU::extra_nt_read,
-//    &PPU::calculate_sprites,
-//};
-
 void
 PPU::calculate_sprites() {
   if (!ppumask.f.show_sprites) return;
 
-  std::fill(shadow_oam.begin(), shadow_oam.end(), OAM {0xff, 0xff, 0xff, 0xff});
+  std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 0});
 
   // Determine sprite visibility for the next scanline by filling the shadow_oam
   byte next_scanline = scanline == -1 ? 0 : scanline + 1;
-  std::vector<OAM> candidates;
-  std::copy_if(oam.begin(), oam.end(), std::back_inserter(candidates),
-               [this, next_scanline](auto sprite) {
-                 return (sprite.y >= 8 && next_scanline >= sprite.y &&
-                         next_scanline < sprite.y + 8);
-               });
+  std::vector<Sprite> candidates;
+
+  auto cur {oam.begin()};
+  for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
+    const auto& sprite = oam[sprite_index];
+    if ((sprite.y >= 8 && next_scanline >= sprite.y &&
+         next_scanline < sprite.y + 8)) {
+      candidates.push_back({sprite, sprite_index});
+    }
+  }
+
   std::copy_n(candidates.begin(), std::min<size_t>(candidates.size(), 8), shadow_oam.begin());
+  if (candidates.size() > 8) {
+    ppustatus.f.sprite_overflow = 1;
+  }
 }
 
 inline void
@@ -41,6 +32,7 @@ PPU::skip_cycle() {
   } else {
     odd_frame = !odd_frame;
   }
+  ppustatus.f.sprite0_hit = 0;
 }
 
 inline void
@@ -77,7 +69,9 @@ PPU::extra_nt_read() {
 
 inline void
 PPU::at_read() {
-  auto at_byte = ppu_read(0x23c0 + (ppuctrl.f.nametable_base << 8) +
+  auto at_byte = ppu_read(0x23c0 +
+                          (loopy_v.f.nt_y << 11) +
+                          (loopy_v.f.nt_x << 10) +
                           ((loopy_v.f.coarse_y >> 2) << 3) +
                           ((loopy_v.f.coarse_x >> 2)));
   // at_byte contains attribute information for a 16x16 region (2x2 tiles)
@@ -215,7 +209,8 @@ PPU::events_for(int s, int c) {
       else if (c == 338 || c == 340) extra_nt_read();
     } else if (s == -1 && c >= 280 && c <= 304) {
       cpy();
-    } else if (c == 304) {
+    }
+    if (s >= 0 && c == 304) {
       calculate_sprites();
     }
   }
@@ -234,18 +229,30 @@ PPU::next_cycle() {
   }
 }
 
+void PPU::dump_oam() {
+  for (OAM& sprite : oam) {
+    if (sprite.y >= 0xef) {
+      continue;
+    }
+    std::printf("(%02x) x=%02x y=%02x\n", sprite.tile_no, sprite.x, sprite.y);
+  }
+  std::printf("\n");
+}
+
 void PPU::dump_at() {
   std::printf("Attribute table bytes:\n");
-  for (word i = 0x23c0; i <= 0x23ff; ++i) {
-    std::printf("%02x ", ppu_read(i));
-    if (i % 8 == 7) {
-      std::printf("\n");
+  for (int row = 0; row < 8; ++row) {
+    for (int col = 0; col < 16; ++col) {
+      std::printf("%02x ", ppu_read((col < 8 ? 0x23c0 : 0x27c0) + row * 8 + (col % 8)));
     }
+    std::printf("\n");
   }
-  std::printf("\n\n");
+  std::printf("\n");
   for (int row = 0; row < 16; ++row) {
-    for (int col = 0; col < 8; ++col) {
-      byte pal_byte = ppu_read(0x23c0 + (row / 2) * 8 + col);
+    for (int col = 0; col < 16; ++col) {
+      // TODO: this only works for vertical mirroring
+      word base = col < 8 ? 0x23c0 : 0x27c0;
+      byte pal_byte = ppu_read(base + (row / 2) * 8 + (col % 8));
       if (row % 2 == 0)
         std::printf("%01x %01x ", (pal_byte >> 0) & 0x3, (pal_byte >> 2) & 0x3);
       else
@@ -281,13 +288,12 @@ PPU::tick() {
 
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
-    if (scanline == 8 && ncycles == 1 && output != 0) { ;
-    }
     screen.fb[scanline * 256 + (ncycles - 1)] =
         output == 0 ? bg : pal[4 * output_palette + output];
 
-    if (ppumask.f.show_sprites) {
-      for (const OAM& visible : shadow_oam) {
+    if (ppumask.f.show_sprites && ncycles == 256) {
+      for (const Sprite& sprite : shadow_oam) {
+        auto visible = sprite.oam;
         if (visible.y >= 0xef) continue;
 
         for (int i = visible.x; i < visible.x + 8; ++i) {
@@ -300,7 +306,7 @@ PPU::tick() {
               (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
               y_selector + 8);
 //      log("visible.y %d scanline %d s-v.y-1 %d\n", visible.y, scanline, scanline - visible.y - 1);
-          log("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
+          LOG("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
               (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
               y_selector);
 
@@ -310,9 +316,18 @@ PPU::tick() {
 
           byte selector = visible.attr & 0x40 ? (7 - (i - visible.x)) : i - visible.x;
           auto sprite_byte = decoded[selector];
-          if (sprite_byte != 0) {
+          // TODO: the below causes problems
+//          if (output != 0 && sprite_byte != 0) {
+          if (ppumask.f.show_background && sprite_byte != 0) {
             screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
-            log("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
+            LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
+
+            if (sprite.sprite_index == 0) {
+              if (!ppustatus.f.sprite0_hit) {
+                log("HIT %d\n", 1);
+              }
+              ppustatus.f.sprite0_hit = 1;
+            }
           }
         }
       }

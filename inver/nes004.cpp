@@ -4,7 +4,7 @@
 
 #include "nes004.h"
 
-void MMC3::map(const std::vector<char>& vector, byte prg_banks, byte chr_banks) {
+void MMC3::map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, NESHeader* header) {
 
 }
 
@@ -34,4 +34,8 @@ byte MMC3::ppu_read(word addr) {
 
 void MMC3::ppu_write(word addr, byte value) {
 
+}
+
+Mapper::Mirroring MMC3::get_mirroring() {
+  return Mirroring::Unknown;
 }

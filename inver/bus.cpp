@@ -25,7 +25,7 @@ Bus::tick() {
     ppu->nmi_req = false;
   }
 
-  if (ncycles % 29781 == 0) {
+  if (ncycles % (29781*3) == 0) {
 //    ppu->tm.show();
     ppu->screen.blit();
   }
@@ -97,7 +97,7 @@ Bus::read(word addr) {
         return lsb;
       }
       case 0x4017:
-        return 0xff;
+        return 0x0;
     }
     return 0;
   } else if (addr <= 0x401f) { // test mode stuff
@@ -115,10 +115,6 @@ void Bus::dmi(byte page) {
   for (word src = addr; src < addr + 0x100; ++src) {
     *dst++ = read(src);
   }
-  int i = 0;
-  for (const PPU::OAM& oam : ppu->oam) {
-    if (oam.x == 0) continue;
-  }
   cpu->cycles_left = 514;
 }
 
@@ -126,4 +122,9 @@ void Bus::attach_cart(std::shared_ptr<Mapper> c) {
   cart = c;
   c->connect(this);
   ppu->connect(c);
+}
+
+void Bus::reset() {
+  cpu->reset();
+  ppu->reset();
 }

@@ -202,13 +202,8 @@
   return 0; \
 }
 
-#define CL(reg) [](CPU6502& cpu) {\
-  cpu.p.reg = 0; \
-  return 0; \
-}
-
-#define SE(reg) [](CPU6502& cpu) {\
-  cpu.p.reg = 1; \
+#define SE(reg, v) [](CPU6502& cpu) {\
+  cpu.p.reg = v; \
   return 0; \
 }
 

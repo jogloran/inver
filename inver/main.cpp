@@ -10,6 +10,7 @@
 #include "ops.hpp"
 #include "nes000.hpp"
 #include "util.h"
+#include "header.hpp"
 
 #include <gflags/gflags.h>
 
@@ -22,27 +23,16 @@ DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
 
-struct Header {
-  byte header[4];
-  byte prg_rom_size_lsb;
-  byte chr_rom_size_lsb;
-  byte flags6;
-  byte system_flags;
-  byte mapper_flags;
-  byte prg_rom_size_msb;
-  byte prg_ram_size;
-  byte padding[5];
-} __attribute__((packed, aligned(1)));
 
-byte prg_rom_size(Header* h) {
+byte prg_rom_size(NESHeader* h) {
   return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
 }
 
-byte chr_rom_size(Header* h) {
+byte chr_rom_size(NESHeader* h) {
   return (((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb);
 }
 
-void inspect_header(Header* h) {
+void inspect_header(NESHeader* h) {
   std::cout << "PRG-ROM size: "
             << prg_rom_size(h) * 0x4000 << std::endl
             << "CHR-ROM size: " << chr_rom_size(h) * 0x2000
@@ -78,7 +68,7 @@ int main(int argc, char** argv) {
 
     byte header_bytes[16];
     f.read((char*) header_bytes, 16);
-    Header* h = reinterpret_cast<Header*>(header_bytes);
+    NESHeader* h = reinterpret_cast<NESHeader*>(header_bytes);
 
     inspect_header(h);
     std::vector<char> data;
@@ -87,7 +77,7 @@ int main(int argc, char** argv) {
               std::istreambuf_iterator<char>(),
               std::back_inserter(data));
 
-    cart->map(data, prg_rom_size(h), chr_rom_size(h));
+    cart->map(data, prg_rom_size(h), chr_rom_size(h), h);
   }
 
   bus.attach_cart(cart);

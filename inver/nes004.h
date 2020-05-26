@@ -2,11 +2,12 @@
 
 #include <array>
 
+#include "header.hpp"
 #include "mapper.h"
 
 class MMC3 : public Mapper {
 public:
-  void map(const std::vector<char>& vector, byte prg_banks, byte chr_banks) override;
+  void map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, NESHeader* header) override;
 
   void connect(Bus* bus) override;
 
@@ -21,6 +22,8 @@ public:
   byte ppu_read(word addr) override;
 
   void ppu_write(word addr, byte value) override;
+
+  Mirroring get_mirroring() override;
 
 private:
   std::array<byte, 0x2000> rom1;

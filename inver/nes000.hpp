@@ -10,12 +10,13 @@
 #include "bus.hpp"
 #include "mapper.h"
 #include "ppu.hpp"
+#include "header.hpp"
 
 class Bus;
 
 class NROM : public Mapper {
 public:
-  NROM() {
+  NROM(): mirroring(Mapper::Mirroring::Unknown) {
     std::fill(rom.begin(), rom.end(), 0);
   }
 
@@ -25,7 +26,7 @@ public:
 
   byte read(word addr) override {
     // PRG-ROM
-    if (addr >= 0x8000 && (addr <= 0xbfff || rom.size() >= 16384)) {
+    if (addr >= 0x8000 && (addr <= 0xbfff || rom.size() > 16384)) {
       return rom[addr - 0x8000];
     } else if (addr >= 0xc000 && addr <= 0xffff) {
       return rom[addr - 0xc000];
@@ -44,12 +45,18 @@ public:
     }
   }
 
-  void map(const std::vector<char>& data, byte prg_banks, byte chr_banks) override {
+  Mirroring get_mirroring() override {
+    return mirroring;
+  }
+
+  void map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
     rom.reserve(0x4000 * prg_banks);
     chr.reserve(0x2000 * chr_banks);
 
     flash    ((byte*)data.data()                     , 0x4000 * prg_banks);
     flash_chr((byte*)data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
+
+    mirroring = header->flags6 & 1 ? Mirroring::V : Mirroring::H;
   }
 
   byte chr_read(word addr) override {
@@ -80,4 +87,5 @@ public:
   PPU* ppu;
   std::vector<byte> rom;
   std::vector<byte> chr;
+  Mirroring mirroring;
 };
