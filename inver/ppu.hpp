@@ -78,11 +78,9 @@ public:
 
   void shift();
 
-  void push(Event e);
-
   void log_loopy() {
-    LOG("\tcx: %02x fx: %02x cy: %02x fy: %02x\n", loopy_v.f.coarse_x, fine_x,
-        loopy_v.f.coarse_y, loopy_v.f.fine_y);
+    LOG("\tcx: %02x fx: %02x cy: %02x fy: %02x\n", loopy_v.coarse_x, fine_x,
+        loopy_v.coarse_y, loopy_v.fine_y);
   }
 
   void log_select(word ppu_cmd, const char* fmt, ...) {
@@ -193,7 +191,7 @@ public:
         ppu_addr &= ~0x10;
       }
       ppu_addr &= 0xff1f;
-      return pal[ppu_addr - 0x3f00] & (ppumask.f.greyscale ? 0x30 : 0xff);
+      return pal[ppu_addr - 0x3f00] & (ppumask.greyscale ? 0x30 : 0xff);
     }
 
     return 0;
@@ -248,7 +246,7 @@ public:
         byte val = (ppustatus.reg & 0xe0);
         w = 0;
 
-        ppustatus.f.vblank_started = 0;
+        ppustatus.vblank_started = 0;
         return val;
       }
       case 0x3: // oamaddr
@@ -265,7 +263,7 @@ public:
         ppudata_byte = ppu_read(loopy_v.reg);
         if (loopy_v.reg >= 0x3f00) result = ppudata_byte;
 
-        loopy_v.reg += (ppuctrl.f.vram_increment ? 32 : 1);
+        loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
 
         return result;
       }
@@ -278,8 +276,8 @@ public:
     switch (ppu_cmd) {
       case 0x0: // ppuctrl
         ppuctrl.reg = value;
-        loopy_t.f.nt_x = ppuctrl.f.nametable_base & 0x1;
-        loopy_t.f.nt_y = ppuctrl.f.nametable_base & 0x2;
+        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
+        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
         break;
       case 0x1: // ppumask
         ppumask.reg = value;
@@ -292,14 +290,14 @@ public:
         break;
       case 0x5: // ppuscroll
         if (!w) {
-          loopy_t.f.coarse_x = value >> 3;
+          loopy_t.coarse_x = value >> 3;
           fine_x = value & 7;
-          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.f.coarse_x, fine_x, loopy_t.f.coarse_y, loopy_t.f.fine_y);
+          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y, loopy_t.fine_y);
           w = 1;
         } else {
-          loopy_t.f.fine_y = value & 7;
-          loopy_t.f.coarse_y = value >> 3;
-          LOG("scroll2 cy %d fy %d\n",loopy_t.f.coarse_y, loopy_t.f.fine_y);
+          loopy_t.fine_y = value & 7;
+          loopy_t.coarse_y = value >> 3;
+          LOG("scroll2 cy %d fy %d\n",loopy_t.coarse_y, loopy_t.fine_y);
           w = 0;
         }
         break;
@@ -319,7 +317,7 @@ public:
       case 0x7: // ppudata
         log_select(ppu_cmd, "ppu data write %02x -> %04x\n", value, loopy_v.reg);
         ppu_write(loopy_v.reg, value);
-        loopy_v.reg += (ppuctrl.f.vram_increment ? 32 : 1);
+        loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
         break;
       default:;
     }
@@ -368,7 +366,7 @@ public:
       byte sprite_size: 1;
       byte ppu_master_slave: 1;
       byte vblank_nmi: 1;
-    } f;
+    };
     byte reg;
   } ppuctrl;
 
@@ -382,7 +380,7 @@ public:
       byte emph_r: 1;
       byte emph_g: 1;
       byte emph_b: 1;
-    } f;
+    };
     byte reg;
   } ppumask;
 
@@ -392,7 +390,7 @@ public:
       byte sprite_overflow: 1;
       byte sprite0_hit: 1;
       byte vblank_started: 1;
-    } f;
+    };
     byte reg;
   } ppustatus;
 
@@ -422,7 +420,7 @@ public:
       byte nt_y: 1;
       word fine_y: 3;
       byte unused: 1;
-    } f;
+    };
     word reg;
   } loopy_v, loopy_t;
   byte fine_x;
@@ -443,8 +441,6 @@ public:
 
   bool nmi_req;
   bool odd_frame;
-
-  std::deque<Event> events;
 
   std::chrono::high_resolution_clock::time_point last_frame;
 

@@ -2,7 +2,7 @@
 
 void
 PPU::calculate_sprites() {
-  if (!ppumask.f.show_sprites) return;
+  if (!ppumask.show_sprites) return;
 
   std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 0});
 
@@ -21,7 +21,7 @@ PPU::calculate_sprites() {
 
   std::copy_n(candidates.begin(), std::min<size_t>(candidates.size(), 8), shadow_oam.begin());
   if (candidates.size() > 8) {
-    ppustatus.f.sprite_overflow = 1;
+    ppustatus.sprite_overflow = 1;
   }
 }
 
@@ -32,12 +32,12 @@ PPU::skip_cycle() {
   } else {
     odd_frame = !odd_frame;
   }
-  ppustatus.f.sprite0_hit = 0;
+  ppustatus.sprite0_hit = 0;
 }
 
 inline void
 PPU::shift() {
-  if (ppumask.f.show_background) {
+  if (ppumask.show_background) {
     pt_shifter[0] <<= 1;
     pt_shifter[1] <<= 1;
 
@@ -70,10 +70,10 @@ PPU::extra_nt_read() {
 inline void
 PPU::at_read() {
   auto at_byte = ppu_read(0x23c0 +
-                          (loopy_v.f.nt_y << 11) +
-                          (loopy_v.f.nt_x << 10) +
-                          ((loopy_v.f.coarse_y >> 2) << 3) +
-                          ((loopy_v.f.coarse_x >> 2)));
+                          (loopy_v.nt_y << 11) +
+                          (loopy_v.nt_x << 10) +
+                          ((loopy_v.coarse_y >> 2) << 3) +
+                          ((loopy_v.coarse_x >> 2)));
   // at_byte contains attribute information for a 16x16 region (2x2 tiles)
 
   // coarse_x and coarse_y are the same within an 8x8 pixel region, but we need to know
@@ -84,10 +84,10 @@ PPU::at_read() {
   // BR: cx & 2 == 1, cy & 2 == 1 (fetch bits 7,6)
   // We need to use the same at_byte for two tiles (i.e. every two values of cx, cy,
   // we will select one of four quadrants)
-  if (loopy_v.f.coarse_y & 2) {
+  if (loopy_v.coarse_y & 2) {
     at_byte >>= 4;
   }
-  if (loopy_v.f.coarse_x & 2) {
+  if (loopy_v.coarse_x & 2) {
     at_byte >>= 2;
   }
   at_byte &= 0x3;
@@ -98,40 +98,40 @@ PPU::at_read() {
 inline void
 PPU::pt_read_lsb() {
   bg_tile_lsb = ppu_read(
-      (ppuctrl.f.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.f.fine_y);
+      (ppuctrl.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.fine_y);
 }
 
 inline void
 PPU::pt_read_msb() {
   bg_tile_msb = ppu_read(
-      (ppuctrl.f.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.f.fine_y + 8);
+      (ppuctrl.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.fine_y + 8);
 }
 
 inline void
 PPU::scx() {
-  if (ppumask.f.show_background) {
-    if (loopy_v.f.coarse_x == 31) {
-      loopy_v.f.coarse_x = 0;
-      loopy_v.f.nt_x = ~loopy_v.f.nt_x;
+  if (ppumask.show_background) {
+    if (loopy_v.coarse_x == 31) {
+      loopy_v.coarse_x = 0;
+      loopy_v.nt_x = ~loopy_v.nt_x;
     } else {
-      ++loopy_v.f.coarse_x;
+      ++loopy_v.coarse_x;
     }
   }
 }
 
 inline void
 PPU::scy() {
-  if (ppumask.f.show_background) {
-    if (loopy_v.f.fine_y == 7) {
-      loopy_v.f.fine_y = 0;
-      if (loopy_v.f.coarse_y == 29) {
-        loopy_v.f.coarse_y = 0;
-        loopy_v.f.nt_y = ~loopy_v.f.nt_y;
+  if (ppumask.show_background) {
+    if (loopy_v.fine_y == 7) {
+      loopy_v.fine_y = 0;
+      if (loopy_v.coarse_y == 29) {
+        loopy_v.coarse_y = 0;
+        loopy_v.nt_y = ~loopy_v.nt_y;
       } else {
-        ++loopy_v.f.coarse_y;
+        ++loopy_v.coarse_y;
       }
     } else {
-      ++loopy_v.f.fine_y;
+      ++loopy_v.fine_y;
     }
   }
 }
@@ -139,25 +139,25 @@ PPU::scy() {
 inline void
 PPU::cpx() {
   load_shift_reg();
-  if (ppumask.f.show_background) {
-    loopy_v.f.coarse_x = loopy_t.f.coarse_x;
-    loopy_v.f.nt_x = loopy_t.f.nt_x;
+  if (ppumask.show_background) {
+    loopy_v.coarse_x = loopy_t.coarse_x;
+    loopy_v.nt_x = loopy_t.nt_x;
   }
 }
 
 inline void
 PPU::cpy() {
-  if (ppumask.f.show_background) {
-    loopy_v.f.fine_y = loopy_t.f.fine_y;
-    loopy_v.f.coarse_y = loopy_t.f.coarse_y;
-    loopy_v.f.nt_y = loopy_t.f.nt_y;
+  if (ppumask.show_background) {
+    loopy_v.fine_y = loopy_t.fine_y;
+    loopy_v.coarse_y = loopy_t.coarse_y;
+    loopy_v.nt_y = loopy_t.nt_y;
   }
 }
 
 inline void
 PPU::set_vblank() {
-  ppustatus.f.vblank_started = 1;
-  if (ppuctrl.f.vblank_nmi) {
+  ppustatus.vblank_started = 1;
+  if (ppuctrl.vblank_nmi) {
     nmi_req = true;
   }
 
@@ -170,12 +170,7 @@ PPU::set_vblank() {
 
 inline void
 PPU::clr_vblank() {
-  ppustatus.f.vblank_started = 0;
-}
-
-void
-PPU::push(Event event) {
-  events.push_back(event);
+  ppustatus.vblank_started = 0;
 }
 
 void
@@ -269,7 +264,7 @@ PPU::tick() {
 
   byte output = 0;
   byte output_palette = 0;
-  if (ppumask.f.show_background) {
+  if (ppumask.show_background) {
     // apply fine_x:
     // fine_x = 0 => take bit 7 of shifters
     // fine_x = 1 => take bit 6 ...
@@ -291,7 +286,7 @@ PPU::tick() {
     screen.fb[scanline * 256 + (ncycles - 1)] =
         output == 0 ? bg : pal[4 * output_palette + output];
 
-    if (ppumask.f.show_sprites && ncycles == 256) {
+    if (ppumask.show_sprites && ncycles == 256) {
       for (const Sprite& sprite : shadow_oam) {
         auto visible = sprite.oam;
         if (visible.y >= 0xef) continue;
@@ -300,14 +295,14 @@ PPU::tick() {
           byte y_selector =
               visible.attr & 0x80 ? (7 - (scanline - visible.y)) : scanline - visible.y;
           byte lsb = ppu_read(
-              (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
               y_selector);
           byte msb = ppu_read(
-              (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
               y_selector + 8);
 //      log("visible.y %d scanline %d s-v.y-1 %d\n", visible.y, scanline, scanline - visible.y - 1);
           LOG("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
-              (ppuctrl.f.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
               y_selector);
 
           // tile 0xa0 is at pattern table address 0x0a00 to 0xa0f
@@ -318,15 +313,15 @@ PPU::tick() {
           auto sprite_byte = decoded[selector];
           // TODO: the below causes problems
 //          if (output != 0 && sprite_byte != 0) {
-          if (ppumask.f.show_background && sprite_byte != 0) {
+          if (ppumask.show_background && sprite_byte != 0) {
             screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
             LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
 
             if (sprite.sprite_index == 0) {
-              if (!ppustatus.f.sprite0_hit) {
+              if (!ppustatus.sprite0_hit) {
                 log("HIT %d\n", 1);
               }
-              ppustatus.f.sprite0_hit = 1;
+              ppustatus.sprite0_hit = 1;
             }
           }
         }
