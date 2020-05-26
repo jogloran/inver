@@ -156,3 +156,7 @@ void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
     std::printf("\n");
   }
 }
+
+void Screen::frame_rendered(double ms) {
+  SDL_Delay(1000 / 60 - ms);
+}

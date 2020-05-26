@@ -33,6 +33,7 @@ PPU::skip_cycle() {
     odd_frame = !odd_frame;
   }
   ppustatus.sprite0_hit = 0;
+  frame_start = std::chrono::high_resolution_clock::now();
 }
 
 inline void
@@ -201,6 +202,7 @@ PPU::events_for(int s, int c) {
       }
       if (c == 256) scy();
       else if (c == 257) cpx();
+      else if (c == 260) frame_done();
       else if (c == 338 || c == 340) extra_nt_read();
     } else if (s == -1 && c >= 280 && c <= 304) {
       cpy();
@@ -330,4 +332,12 @@ PPU::tick() {
   }
 
   next_cycle();
+}
+
+void PPU::frame_done() {
+  auto now = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff = std::chrono::duration_cast<std::chrono::duration<double>>(
+      now - frame_start);
+
+  screen.frame_rendered(diff.count());
 }

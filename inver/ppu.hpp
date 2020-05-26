@@ -443,6 +443,7 @@ public:
   bool odd_frame;
 
   std::chrono::high_resolution_clock::time_point last_frame;
+  std::chrono::high_resolution_clock::time_point frame_start;
 
   void dump_at();
 
@@ -451,4 +452,6 @@ public:
   void extra_nt_read();
 
   void calculate_sprites();
+
+  void frame_done();
 };
