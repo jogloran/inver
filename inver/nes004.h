@@ -7,13 +7,41 @@
 
 class MMC3 : public Mapper {
 public:
-  void map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, NESHeader* header) override;
+  void
+  map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, NESHeader* header) override;
 
   void connect(Bus* bus) override;
 
   byte read(word addr) override;
 
-  void write(word addr, byte value) override;
+  void irq_enable(bool enable);
+
+  void write(word addr, byte value) override {
+    if (addr >= 0x8000 && addr <= 0x9fff) {
+      if (addr & 1) { // target select
+        auto target_bank = value & 0b111;
+        bool prg_rom_bank_mode = value & (1 << 6);
+        bool chr_a12_swap = value & (1 << 7);
+
+      } else { // bank select
+
+      }
+    } else if (addr <= 0xbfff) {
+      if (addr & 1) { // PRG-RAM protect
+
+      } else { // mirroring
+
+      }
+    } else if (addr <= 0xdfff) {
+      if (addr & 1) { // IRQ reload
+
+      } else { // IRQ latch
+        auto reload_value = value;
+      }
+    } else {
+      irq_enable(addr & 1);
+    }
+  }
 
   byte chr_read(word addr) override;
 

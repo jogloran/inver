@@ -16,10 +16,6 @@ byte MMC3::read(word addr) {
   return 0;
 }
 
-void MMC3::write(word addr, byte value) {
-
-}
-
 byte MMC3::chr_read(word addr) {
   return 0;
 }
@@ -38,4 +34,8 @@ void MMC3::ppu_write(word addr, byte value) {
 
 Mapper::Mirroring MMC3::get_mirroring() {
   return Mirroring::Unknown;
+}
+
+void MMC3::irq_enable(bool enable) {
+
 }
