@@ -285,8 +285,10 @@ PPU::tick() {
 
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
-    screen.fb[scanline * 256 + (ncycles - 1)] =
-        output == 0 ? bg : pal[4 * output_palette + output];
+    if (ppumask.show_left_background || ncycles > 8) {
+      screen.fb[scanline * 256 + (ncycles - 1)] =
+          output == 0 ? bg : pal[4 * output_palette + output];
+    }
 
     if (ppumask.show_sprites && ncycles == 256) {
       for (const Sprite& sprite : shadow_oam) {
@@ -315,7 +317,8 @@ PPU::tick() {
           auto sprite_byte = decoded[selector];
           // TODO: the below causes problems
 //          if (output != 0 && sprite_byte != 0) {
-          if (ppumask.show_background && sprite_byte != 0) {
+          if (ppumask.show_background && sprite_byte != 0 &&
+              (ppumask.show_left_sprites || i >= 8)) {
             screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
             LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
 
