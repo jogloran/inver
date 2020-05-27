@@ -15,6 +15,8 @@
 
 #include <gflags/gflags.h>
 
+std::shared_ptr<Mapper> mapper_for(byte no);
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 DEFINE_bool(dis, false, "Dump disassembly");
@@ -32,13 +34,17 @@ byte chr_rom_size(NESHeader* h) {
   return (((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb);
 }
 
+int mapper_no(NESHeader* h) {
+  return ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8));
+}
+
 void inspect_header(NESHeader* h) {
   std::cout << "PRG-ROM size: "
             << prg_rom_size(h) * 0x4000 << std::endl
             << "CHR-ROM size: " << chr_rom_size(h) * 0x2000
             << std::endl
             << "Mapper: "
-            << ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8))
+            << mapper_no(h)
             << std::endl;
 }
 
@@ -53,13 +59,13 @@ int main(int argc, char** argv) {
 
   auto cpu = std::make_shared<CPU6502>();
   auto ppu = std::make_shared<PPU>();
-  auto mapper = std::make_shared<MMC3>();
   Bus bus(cpu, ppu);
 
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
 
+  std::shared_ptr<Mapper> mapper;
   std::ifstream f(argv[1], std::ios::in);
   if (f) {
     f.seekg(0x10, std::ios::cur);
@@ -77,6 +83,7 @@ int main(int argc, char** argv) {
               std::istreambuf_iterator<char>(),
               std::back_inserter(data));
 
+    mapper = mapper_for(mapper_no(h));
     mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
   }
 
@@ -111,6 +118,14 @@ int main(int argc, char** argv) {
   }
 
   return 0;
+}
+
+std::shared_ptr<Mapper> mapper_for(byte no) {
+  switch (no) {
+    case 0: return std::make_shared<NROM>();
+    case 4: return std::make_shared<MMC3>();
+  }
+  throw std::runtime_error("Unimplemented mapper");
 }
 
 #pragma clang diagnostic pop

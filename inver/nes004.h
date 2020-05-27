@@ -38,6 +38,10 @@ public:
     return rom.data() + bank * 0x2000;
   }
 
+  inline byte* chr_bank(int bank) {
+    return chr.data() + bank * 0x400;
+  }
+
   void log(const char* msg, ...) {
     va_list args;
     static char buf[1024];
@@ -116,24 +120,59 @@ public:
   byte chr_read(word addr) override {
     static const size_t offsets[] = { 0, 0, 1, 1, 2, 3, 4, 5 };
     size_t start = chr_a12_inversion ? 4 : 0;
-
     if (addr <= 0x03ff) {
-      return bank(bank_for_target[(start + 0) % 8])[addr];
+      return chr_bank(bank_for_target[0])[addr];
     } else if (addr <= 0x07ff) {
-      return bank(bank_for_target[(start + 0) % 8])[addr - 0x0400];
+      return chr_bank(bank_for_target[0])[addr];
     } else if (addr <= 0x0bff) {
-      return bank(bank_for_target[(start + 1) % 8])[addr - 0x0800];
+      return chr_bank(bank_for_target[1])[addr - 0x0800];
     } else if (addr <= 0x0fff) {
-      return bank(bank_for_target[(start + 1) % 8])[addr - 0x0c00];
+      return chr_bank(bank_for_target[1])[addr - 0x0800];
     } else if (addr <= 0x13ff) {
-      return bank(bank_for_target[(start + 2) % 8])[addr - 0x1000];
+      return chr_bank(bank_for_target[2])[addr - 0x1000];
     } else if (addr <= 0x17ff) {
-      return bank(bank_for_target[(start + 3) % 8])[addr - 0x1400];
+      return chr_bank(bank_for_target[3])[addr - 0x1400];
     } else if (addr <= 0x1bff) {
-      return bank(bank_for_target[(start + 4) % 8])[addr - 0x1800];
+      return chr_bank(bank_for_target[4])[addr - 0x1800];
     } else if (addr <= 0x1fff) {
-      return bank(bank_for_target[(start + 5) % 8])[addr - 0x1c00];
+      return chr_bank(bank_for_target[5])[addr - 0x1c00];
     }
+//
+//    if (addr <= 0x03ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
+//    } else if (addr <= 0x07ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
+//    } else if (addr <= 0x0bff) {
+//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
+//    } else if (addr <= 0x0fff) {
+//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
+//    } else if (addr <= 0x13ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 2) % 8]])[addr - 0x1000];
+//    } else if (addr <= 0x17ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 3) % 8]])[addr - 0x1400];
+//    } else if (addr <= 0x1bff) {
+//      return chr_bank(bank_for_target[offsets[(start + 4) % 8]])[addr - 0x1800];
+//    } else if (addr <= 0x1fff) {
+//      return chr_bank(bank_for_target[offsets[(start + 5) % 8]])[addr - 0x1c00];
+//    }
+
+//    if (addr <= 0x03ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
+//    } else if (addr <= 0x07ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
+//    } else if (addr <= 0x0bff) {
+//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
+//    } else if (addr <= 0x0fff) {
+//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
+//    } else if (addr <= 0x13ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 2) % 8]])[addr - 0x1000];
+//    } else if (addr <= 0x17ff) {
+//      return chr_bank(bank_for_target[offsets[(start + 3) % 8]])[addr - 0x1400];
+//    } else if (addr <= 0x1bff) {
+//      return chr_bank(bank_for_target[offsets[(start + 4) % 8]])[addr - 0x1800];
+//    } else if (addr <= 0x1fff) {
+//      return chr_bank(bank_for_target[offsets[(start + 5) % 8]])[addr - 0x1c00];
+//    }
     return 0;
   }
 

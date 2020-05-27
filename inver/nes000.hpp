@@ -16,7 +16,7 @@ class Bus;
 
 class NROM : public Mapper {
 public:
-  NROM(): mirroring(Mapper::Mirroring::Unknown) {
+  NROM() : mirroring(Mapper::Mirroring::Unknown) {
     std::fill(rom.begin(), rom.end(), 0);
   }
 
@@ -45,12 +45,13 @@ public:
     return mirroring;
   }
 
-  void map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
+  void
+  map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
     rom.reserve(0x4000 * prg_banks);
     chr.reserve(0x2000 * chr_banks);
 
-    flash    ((byte*)data.data()                     , 0x4000 * prg_banks);
-    flash_chr((byte*)data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
+    flash((byte*) data.data(), 0x4000 * prg_banks);
+    flash_chr((byte*) data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
 
     mirroring = header->flags6 & 1 ? Mirroring::V : Mirroring::H;
   }
