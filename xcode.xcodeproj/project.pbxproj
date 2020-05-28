@@ -10,6 +10,7 @@
 		09050C53247B37E700CCD05B /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09050C52247B37E700CCD05B /* utils.cpp */; };
 		09050C55247B37F500CCD05B /* utils.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09050C54247B37F500CCD05B /* utils.hpp */; };
 		09050C59247CA19B00CCD05B /* nes004.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09050C58247CA19A00CCD05B /* nes004.cpp */; };
+		0941E1D8247FA4CD0017BDF7 /* header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0941E1D7247FA4CD0017BDF7 /* header.cpp */; };
 		09A2C0502478F39500CFB287 /* bus.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A2C03E2478F39300CFB287 /* bus.hpp */; };
 		09A2C0512478F39500CFB287 /* ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A2C03F2478F39300CFB287 /* ops.cpp */; };
 		09A2C0522478F39500CFB287 /* ppu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A2C0402478F39300CFB287 /* ppu.cpp */; };
@@ -48,6 +49,7 @@
 		09050C56247CA19A00CCD05B /* nes000.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes000.hpp; path = inver/nes000.hpp; sourceTree = "<group>"; };
 		09050C57247CA19A00CCD05B /* nes004.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nes004.h; path = inver/nes004.h; sourceTree = "<group>"; };
 		09050C58247CA19A00CCD05B /* nes004.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes004.cpp; path = inver/nes004.cpp; sourceTree = "<group>"; };
+		0941E1D7247FA4CD0017BDF7 /* header.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = header.cpp; path = inver/header.cpp; sourceTree = "<group>"; };
 		09A2C0332478E38A00CFB287 /* xcode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcode; sourceTree = BUILT_PRODUCTS_DIR; };
 		09A2C0362478E38A00CFB287 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		09A2C03D2478F37900CFB287 /* inver */ = {isa = PBXFileReference; lastKnownFileType = folder; path = inver; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		09A2C02A2478E38A00CFB287 = {
 			isa = PBXGroup;
 			children = (
+				0941E1D7247FA4CD0017BDF7 /* header.cpp */,
 				09050C56247CA19A00CCD05B /* nes000.hpp */,
 				09050C58247CA19A00CCD05B /* nes004.cpp */,
 				09050C57247CA19A00CCD05B /* nes004.h */,
@@ -211,6 +214,7 @@
 				09A2C0542478F39500CFB287 /* ops.hpp in Sources */,
 				09050C55247B37F500CCD05B /* utils.hpp in Sources */,
 				09A2C0572478F39500CFB287 /* op_names.hpp in Sources */,
+				0941E1D8247FA4CD0017BDF7 /* header.cpp in Sources */,
 				09A2C0582478F39500CFB287 /* cpu6502.cpp in Sources */,
 				09A2C0592478F39500CFB287 /* op_names.cpp in Sources */,
 				09A2C05A2478F39500CFB287 /* main.hpp in Sources */,
