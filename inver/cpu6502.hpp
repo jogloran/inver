@@ -180,4 +180,5 @@ public:
 
   void dump_pc();
 
+  bool irq();
 };

@@ -25,7 +25,7 @@
 #define BRK [](CPU6502& cpu) { \
   cpu.p.I = 1; \
   cpu.push_word(cpu.pc + 2); \
-  cpu.push(cpu.p.reg); \
+  cpu.push(cpu.p.reg | 0b00110000); \
   return 0; \
 }
 

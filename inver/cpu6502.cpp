@@ -16,6 +16,7 @@ constexpr byte INITIAL_STATUS_REG = 0x24;
   pc = address;
 }
 
+
 void CPU6502::reset() {
   a = x = y = 0;
   sp = 0xfd;
@@ -108,6 +109,23 @@ cycle_count_t CPU6502::branch_with_offset() {
   return ((pc - offset) & 0xff00) == (pc & 0xff00) ? 0 : 1;
 }
 
+bool CPU6502::irq() {
+  if (!p.I) {
+    bus->ppu->log("handling irq\n");
+    push_word(pc);
+    p.B = 0;
+    p.U = 1;
+    p.I = 1;
+    push(p.reg);
+    word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
+    pc = handler;
+
+    cycles_left = 8;
+    return true;
+  }
+  return false;
+}
+
 void
 CPU6502::nmi() {
   push_word(pc);
@@ -135,11 +153,11 @@ void CPU6502::dump() {
             << " a: " << hex_byte << static_cast<int>(a)
             << " x: " << hex_byte << static_cast<int>(x)
             << " y: " << hex_byte << static_cast<int>(y);
-  std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341;
+  std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341
 //            << " (0)+y: " << hex_word << (bus->read(0) | (bus->read(1) << 8)) + y << " = "
 //            << hex_byte << static_cast<int>(bus->read((bus->read(0) | (bus->read(1) << 8)) + y)) << ' '
-//            << "(0),(1): " << hex_byte << static_cast<int>(bus->read(0x0))
-//            << hex_byte << static_cast<int>(bus->read(0x1)) << ' ';
+            << "(0),(1): " << hex_byte << static_cast<int>(bus->read(0x0))
+            << hex_byte << static_cast<int>(bus->read(0x1)) << ' ';
 
   if (FLAGS_dump_stack) {
     std::cout << " stk: ";

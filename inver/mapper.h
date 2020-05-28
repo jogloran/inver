@@ -23,10 +23,15 @@ public:
   virtual byte chr_read(word addr) = 0;
   virtual void chr_write(word addr, byte value) = 0;
 
+  virtual bool irq_requested() { return false; }
+  virtual void irq_handled() {}
+
+  virtual void signal_scanline() {}
+
   virtual void connect(Bus* b) {
     bus = b;
   }
 
-private:
+protected:
   Bus* bus;
 };

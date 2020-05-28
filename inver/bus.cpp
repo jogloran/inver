@@ -17,12 +17,16 @@ Bus::tick() {
 //  then = std::chrono::high_resolution_clock::now();
   ppu->tick();
   if (ncycles % 3 == 0) {
+    if (ppu->nmi_req) {
+      cpu->nmi();
+      ppu->nmi_req = false;
+    } else if (cart->irq_requested()) {
+      bool handled = cpu->irq();
+      if (handled) {
+        cart->irq_handled();
+      }
+    }
     cpu->tick();
-  }
-  if (ppu->nmi_req) {
-//    ppu->log("NMI\n");
-    cpu->nmi();
-    ppu->nmi_req = false;
   }
 
   if (ncycles % (29781*3) == 0) {
@@ -127,4 +131,8 @@ void Bus::attach_cart(std::shared_ptr<Mapper> c) {
 void Bus::reset() {
   cpu->reset();
   ppu->reset();
+}
+
+void Bus::irq() {
+  cpu->irq();
 }

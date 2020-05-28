@@ -210,6 +210,11 @@ PPU::events_for(int s, int c) {
     if (s >= 0 && c == 304) {
       calculate_sprites();
     }
+    if (s >= 0 && s <= 239 && c == 260) {
+      if (ppumask.show_background || ppumask.show_sprites) {
+        cart->signal_scanline();
+      }
+    }
   }
 }
 
