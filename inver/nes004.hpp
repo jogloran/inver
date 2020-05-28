@@ -4,7 +4,7 @@
 #include <cstdio>
 
 #include "header.hpp"
-#include "mapper.h"
+#include "mapper.hpp"
 
 class MMC3 : public Mapper {
 public:

@@ -9,7 +9,7 @@
 #include "tm.hpp"
 #include "screen.hpp"
 #include "utils.hpp"
-#include "mapper.h"
+#include "mapper.hpp"
 
 DECLARE_bool(xx);
 

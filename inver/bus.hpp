@@ -5,7 +5,7 @@
 
 #include "types.h"
 #include "ppu.hpp"
-#include "mapper.h"
+#include "mapper.hpp"
 #include "sdl_input.hpp"
 
 class CPU6502;

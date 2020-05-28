@@ -8,7 +8,7 @@
 
 #include "types.h"
 #include "bus.hpp"
-#include "mapper.h"
+#include "mapper.hpp"
 #include "ppu.hpp"
 #include "header.hpp"
 
