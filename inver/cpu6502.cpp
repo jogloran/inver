@@ -109,10 +109,6 @@ cycle_count_t CPU6502::branch_with_offset() {
   return ((pc - offset) & 0xff00) == (pc & 0xff00) ? 0 : 1;
 }
 
-void CPU6502::set_irq(bool i) {
-  irq_requested = i;
-}
-
 bool CPU6502::irq() {
   if (!p.I) {
     bus->ppu->log("handling irq\n");

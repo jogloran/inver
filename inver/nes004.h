@@ -169,7 +169,7 @@ private:
   bool irq_enabled;
   bool irq_requested_;
 
-  void signal_scanline();
+  void signal_scanline() override;
 
-  void irq_handled();
+  void irq_handled() override;
 };
