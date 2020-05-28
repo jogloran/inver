@@ -8,8 +8,11 @@
 
 class MMC3 : public Mapper {
 public:
-  MMC3() : rom_8000_fixed(false), chr_a12_inversion(false), target_bank(0) {
+  MMC3() : rom_8000_fixed(false), chr_a12_inversion(false), target_bank(0),
+           mirroring_mode(Mapper::Mirroring::H), irq_period(0), irq_counter(0),
+           irq_enabled(false), irq_requested_(false) {
     std::fill(bank_for_target.begin(), bank_for_target.end(), 0x0);
+    std::fill(ram.begin(), ram.end(), 0x0);
   }
 
   void
@@ -17,8 +20,8 @@ public:
     rom.reserve(0x4000 * prg_banks);
     chr.reserve(0x2000 * chr_banks);
 
-    flash    ((byte*)data.data()                     , 0x4000 * prg_banks);
-    flash_chr((byte*)data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
+    flash((byte*) data.data(), 0x4000 * prg_banks);
+    flash_chr((byte*) data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
   }
 
   void flash(byte* ptr, size_t len) {
@@ -55,6 +58,7 @@ public:
   byte read(word addr) override {
     if (addr >= 0x6000 && addr <= 0x7fff) {
       // optional PRG-RAM
+      return ram[addr - 0x6000];
     } else if (addr >= 0x8000 && addr <= 0x9fff) {
       // switchable PRG-ROM (0x8000-0x9fff) OR fixed to second-last bank
       if (rom_8000_fixed) {
@@ -82,43 +86,10 @@ public:
 
   void irq_enable(bool enable);
 
-  void write(word addr, byte value) override {
-    if (addr >= 0x8000 && addr <= 0x9fff) {
-      if (addr & 1) { // bank select
-        if (target_bank <= 1) value &= ~1;
-        if (target_bank >= 6) value &= 0x3f;
-        bank_for_target[target_bank] = value;
-        log("Target bank R%d = %02x\n", target_bank, value);
-      } else { // target select
-        auto target = value & 0b111;
-        bool prg_rom_bank_mode = value & (1 << 6);
-        bool chr_a12_swap = value & (1 << 7);
-
-        target_bank = target;
-        rom_8000_fixed = prg_rom_bank_mode;
-        chr_a12_inversion = chr_a12_swap;
-
-        log("Target bank R%d %02x %02x\n", target_bank, prg_rom_bank_mode, chr_a12_swap);
-      }
-    } else if (addr <= 0xbfff) {
-      if (addr & 1) { // PRG-RAM protect
-
-      } else { // mirroring
-
-      }
-    } else if (addr <= 0xdfff) {
-      if (addr & 1) { // IRQ reload
-
-      } else { // IRQ latch
-        auto reload_value = value;
-      }
-    } else {
-      irq_enable(addr & 1);
-    }
-  }
+  void write(word addr, byte value) override;
 
   byte chr_read(word addr) override {
-    static const size_t offsets[] = { 0, 0, 1, 1, 2, 3, 4, 5 };
+    static const size_t offsets[] = {0, 0, 1, 1, 2, 3, 4, 5};
     size_t start = chr_a12_inversion ? 4 : 0;
     if (addr <= 0x03ff) {
       return chr_bank(bank_for_target[0])[addr];
@@ -180,12 +151,25 @@ public:
 
   Mirroring get_mirroring() override;
 
+  bool irq_requested() override;
+
 private:
   std::vector<byte> rom;
   std::vector<byte> chr;
+  std::array<byte, 0x2000> ram;
 
   bool rom_8000_fixed;
   bool chr_a12_inversion;
   byte target_bank;
   std::array<byte, 8> bank_for_target;
+
+  Mirroring mirroring_mode;
+  byte irq_period;
+  byte irq_counter;
+  bool irq_enabled;
+  bool irq_requested_;
+
+  void signal_scanline();
+
+  void irq_handled();
 };

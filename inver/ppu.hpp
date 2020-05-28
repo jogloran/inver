@@ -84,6 +84,7 @@ public:
   }
 
   void log_select(word ppu_cmd, const char* fmt, ...) {
+    return;
     if (!FLAGS_xx) {
       return;
     }

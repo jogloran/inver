@@ -180,4 +180,9 @@ public:
 
   void dump_pc();
 
+  bool irq();
+
+  void set_irq(bool i);
+
+  bool irq_requested;
 };
