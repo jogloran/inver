@@ -4,6 +4,8 @@ void
 PPU::calculate_sprites() {
   if (!ppumask.show_sprites) return;
 
+  auto height = ppuctrl.sprite_size ? 16 : 8;
+
   std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 0});
 
   // Determine sprite visibility for the next scanline by filling the shadow_oam
@@ -14,7 +16,7 @@ PPU::calculate_sprites() {
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
     if ((sprite.y >= 8 && next_scanline >= sprite.y &&
-         next_scanline < sprite.y + 8)) {
+         next_scanline < sprite.y + height)) {
       candidates.push_back({sprite, sprite_index});
     }
   }
@@ -295,19 +297,43 @@ PPU::tick() {
           output == 0 ? bg : pal[4 * output_palette + output];
     }
 
+    auto height = ppuctrl.sprite_size ? 16 : 8;
+
     if (ppumask.show_sprites && ncycles == 256) {
       for (const Sprite& sprite : shadow_oam) {
         auto visible = sprite.oam;
         if (visible.y >= 0xef) continue;
 
         for (int i = visible.x; i < visible.x + 8; ++i) {
+          word base_address;
+          if (height == 16) {
+            base_address = (visible.tile_no & 1) << 12;
+          } else {
+            base_address = ppuctrl.sprite_pattern_address << 12;
+          }
+
+          auto tile_no = visible.tile_no;
+          bool y_mirrored = visible.attr & 0x80;
+
           byte y_selector =
-              visible.attr & 0x80 ? (7 - (scanline - visible.y)) : scanline - visible.y;
+              y_mirrored ? (7 - (scanline - visible.y) % 8) : (scanline - visible.y) % 8;
+
+          bool select_top_half = false;
+          if (height == 16) {
+            bool rendering_top_half = scanline - visible.y <= 7;
+            // y-mirrored: true  rendering top: true  -> select_top_half: false
+            //             false                true  -> select_top_half: true
+            //             true                 false -> select_top_half: true
+            //             false                false -> select_top_half: false
+            select_top_half = !(y_mirrored ^ rendering_top_half);
+            tile_no &= ~1;
+          }
+
           byte lsb = ppu_read(
-              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+              base_address + ((tile_no + select_top_half) << 4) +
               y_selector);
           byte msb = ppu_read(
-              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
+              base_address + ((tile_no + select_top_half) << 4) +
               y_selector + 8);
 //      log("visible.y %d scanline %d s-v.y-1 %d\n", visible.y, scanline, scanline - visible.y - 1);
           LOG("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
