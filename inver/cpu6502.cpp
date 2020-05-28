@@ -6,6 +6,7 @@
 
 #include "ops.hpp"
 #include "op_names.hpp"
+#include "utils.hpp"
 
 DECLARE_bool(dis);
 DECLARE_bool(dump_stack);
@@ -26,32 +27,6 @@ void CPU6502::reset() {
   ncycles = 0;
   cycles_left = 0;
   crossed_page = false;
-}
-
-const char *to_6502_flag_string(byte f) {
-  static char buf[9] = "________";
-  static const char *flags = "NVstDIZC";
-  for (int i = 0; i < 8; ++i) {
-    buf[7 - i] = (f & 1) ? flags[7 - i] : '_';
-    f >>= 1;
-  }
-  return buf;
-}
-
-std::ostream& hex_byte(std::ostream& out) {
-  return out << std::hex << std::setw(2) << std::setfill('0');
-}
-
-std::ostream& hex_word(std::ostream& out) {
-  return out << std::hex << std::setw(4) << std::setfill('0');
-}
-
-std::ostream& CPU6502::dump_stack(std::ostream& out) {
-  out << "[ ";
-  for (word ptr = 0x1ff; ptr > SP_BASE + sp; --ptr) {
-    out << hex_byte << static_cast<int>(bus->read(ptr)) << ' ';
-  }
-  return out << "]";
 }
 
 void CPU6502::tick() {
@@ -172,4 +147,12 @@ void CPU6502::dump_pc() {
             << hex_byte << int(bus->read(pc)) << ' '
             << std::setw(24) << std::left << std::setfill(' ')
             << instruction_at_pc(*this);
+}
+
+std::ostream& CPU6502::dump_stack(std::ostream& out) {
+  out << "[ ";
+  for (word ptr = 0x1ff; ptr > SP_BASE + sp; --ptr) {
+    out << hex_byte << static_cast<int>(bus->read(ptr)) << ' ';
+  }
+  return out << "]";
 }

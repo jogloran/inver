@@ -2,7 +2,7 @@
 // Created by Daniel Tse on 24/5/20.
 //
 
-#include "nes004.h"
+#include "nes004.hpp"
 #include "bus.hpp"
 #include "cpu6502.hpp"
 

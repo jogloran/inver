@@ -1,3 +1,9 @@
+#include "op_names.hpp"
+#include "ops.hpp"
+#include "cpu6502.hpp"
+#include <gflags/gflags.h>
+#include <iomanip>
+#include <iostream>
 #include "utils.hpp"
 
 static constexpr uint16_t m[256] =
@@ -55,3 +61,20 @@ unpack_bits(byte lsb, byte msb) {
   return result;
 }
 
+const char *to_6502_flag_string(byte f) {
+  static char buf[9] = "________";
+  static const char *flags = "NVstDIZC";
+  for (int i = 0; i < 8; ++i) {
+    buf[7 - i] = (f & 1) ? flags[7 - i] : '_';
+    f >>= 1;
+  }
+  return buf;
+}
+
+std::ostream& hex_byte(std::ostream& out) {
+  return out << std::hex << std::setw(2) << std::setfill('0');
+}
+
+std::ostream& hex_word(std::ostream& out) {
+  return out << std::hex << std::setw(4) << std::setfill('0');
+}

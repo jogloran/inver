@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "header.hpp"
 #include "types.h"
 
 class Bus;
+class NESHeader;
 
 class Mapper {
 public:

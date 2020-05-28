@@ -3,13 +3,11 @@
 #include <iostream>
 
 #include "types.h"
-#include "main.hpp"
 #include "cpu6502.hpp"
 #include "ppu.hpp"
 #include "bus.hpp"
-#include "ops.hpp"
 #include "nes000.hpp"
-#include "nes004.h"
+#include "nes004.hpp"
 #include "util.h"
 #include "header.hpp"
 
@@ -25,28 +23,6 @@ DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops")
 DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
-
-byte prg_rom_size(NESHeader* h) {
-  return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
-}
-
-byte chr_rom_size(NESHeader* h) {
-  return (((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb);
-}
-
-int mapper_no(NESHeader* h) {
-  return ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8));
-}
-
-void inspect_header(NESHeader* h) {
-  std::cout << "PRG-ROM size: "
-            << prg_rom_size(h) * 0x4000 << std::endl
-            << "CHR-ROM size: " << chr_rom_size(h) * 0x2000
-            << std::endl
-            << "Mapper: "
-            << mapper_no(h)
-            << std::endl;
-}
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
