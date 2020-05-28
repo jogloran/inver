@@ -129,6 +129,8 @@ void Bus::attach_cart(std::shared_ptr<Mapper> c) {
 }
 
 void Bus::reset() {
+  std::fill(ram.begin(), ram.end(), 0);
+  
   cpu->reset();
   ppu->reset();
   if (cart) {
@@ -136,6 +138,3 @@ void Bus::reset() {
   }
 }
 
-void Bus::irq() {
-  cpu->irq();
-}

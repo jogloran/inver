@@ -40,6 +40,5 @@ public:
 
   void reset();
 
-  void irq();
 };
 
