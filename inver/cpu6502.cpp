@@ -62,8 +62,9 @@ void CPU6502::tick() {
     ++pc;
     if (FLAGS_dis && should_dump) dump();
 
-    cycle_count_t extra_cycles = ops[opcode](*this);
-    cycles_left = cycle_counts[opcode] + extra_cycles;
+    auto op = ops[opcode];
+    cycle_count_t extra_cycles = op.f(*this);
+    cycles_left = op.cyc + extra_cycles;
   }
 
   --cycles_left;
