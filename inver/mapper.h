@@ -28,6 +28,8 @@ public:
 
   virtual void signal_scanline() {}
 
+  virtual void reset() = 0;
+
   virtual void connect(Bus* b) {
     bus = b;
   }

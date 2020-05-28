@@ -131,6 +131,9 @@ void Bus::attach_cart(std::shared_ptr<Mapper> c) {
 void Bus::reset() {
   cpu->reset();
   ppu->reset();
+  if (cart) {
+    cart->reset();
+  }
 }
 
 void Bus::irq() {

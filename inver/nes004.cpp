@@ -57,7 +57,6 @@ void MMC3::write(word addr, byte value) {
       mirroring_mode = value & 1 ? Mirroring::H : Mirroring::V;
     }
   } else if (addr <= 0xdfff) {
-    bus->ppu->log("%04x <- %02x\n", addr, value);
     if (addr & 1) { // IRQ reload
       // Writing here will reset the IRQ counter and push the value from the latch
       // upon the next scanline (or cycle 260 of this scanline??)

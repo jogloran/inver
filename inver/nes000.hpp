@@ -16,7 +16,7 @@ class Bus;
 
 class NROM : public Mapper {
 public:
-  NROM() : mirroring(Mapper::Mirroring::Unknown) {
+  NROM() : mirroring(Mapper::Mirroring::H) {
     std::fill(rom.begin(), rom.end(), 0);
   }
 
@@ -71,6 +71,8 @@ public:
   void flash_chr(byte* ptr, size_t len) {
     std::copy(ptr, ptr + len, std::back_inserter(chr));
   }
+
+  void reset() override {}
 
   Bus* bus;
   PPU* ppu;

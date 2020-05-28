@@ -11,8 +11,21 @@ public:
   MMC3() : rom_8000_fixed(false), chr_a12_inversion(false), target_bank(0),
            mirroring_mode(Mapper::Mirroring::H), irq_period(0), irq_counter(0),
            irq_enabled(false), irq_requested_(false) {
+    reset_();
+  }
+
+  void reset() override {
+    reset_();
+  }
+
+  void reset_() {
     std::fill(bank_for_target.begin(), bank_for_target.end(), 0x0);
     std::fill(ram.begin(), ram.end(), 0x0);
+
+    target_bank = irq_period = irq_counter = 0;
+    rom_8000_fixed = chr_a12_inversion = false;
+    mirroring_mode = Mapper::Mirroring::H;
+    irq_enabled = irq_requested_ = false;
   }
 
   void
