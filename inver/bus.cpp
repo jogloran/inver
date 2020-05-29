@@ -30,20 +30,11 @@ Bus::tick() {
   }
 
   if (ncycles % (29781*3) == 0) {
-//    ppu->tm.show();
-    ppu->screen.blit();
+    ppu->tm.show();
+//    ppu->screen.blit();
   }
 
   ++ncycles;
-
-
-//  if (ncycles % 29781 == 0) {
-//    auto now = std::chrono::high_resolution_clock::now();
-//    std::cout << "frame tick: " << std::chrono::duration_cast<std::chrono::duration<double>>(
-//        now - then
-//    ).count() * 1000 << "ms" << std::endl;
-//    then = now;
-//  }
 }
 
 byte

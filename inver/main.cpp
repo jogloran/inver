@@ -6,9 +6,9 @@
 #include "cpu6502.hpp"
 #include "ppu.hpp"
 #include "bus.hpp"
-#include "nes000.hpp"
-#include "nes001.hpp"
-#include "nes004.hpp"
+#include "mapper/nes000.hpp"
+#include "mapper/nes001.hpp"
+#include "mapper/nes004.hpp"
 #include "util.h"
 #include "header.hpp"
 

@@ -17,7 +17,6 @@ constexpr byte INITIAL_STATUS_REG = 0x24;
   pc = address;
 }
 
-
 void CPU6502::reset() {
   a = x = y = 0;
   sp = 0xfd;
