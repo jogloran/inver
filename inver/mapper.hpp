@@ -10,7 +10,7 @@ class NESHeader;
 class Mapper {
 public:
   enum class Mirroring {
-    Unknown, V, H, Screen4, Screen1, ABBA, ABBB, ACBC, ABCC, ABBC, AAAA
+    Unknown, V, H, Screen4, Screen1, ABBA, ABBB, ACBC, ABCC, ABBC, AAAA, BBBB
   };
 
   virtual Mirroring get_mirroring() = 0;

@@ -7,6 +7,7 @@
 #include "ppu.hpp"
 #include "bus.hpp"
 #include "nes000.hpp"
+#include "nes001.hpp"
 #include "nes004.hpp"
 #include "util.h"
 #include "header.hpp"
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
   bus.attach_cart(mapper);
 
   cpu->reset();
+  cpu->set_pc(0xff40);
   word last_pc = 0;
   while (true) {
     if (FLAGS_cloop && last_pc != cpu->pc) {
@@ -99,6 +101,7 @@ int main(int argc, char** argv) {
 std::shared_ptr<Mapper> mapper_for(byte no) {
   switch (no) {
     case 0: return std::make_shared<NROM>();
+    case 1: return std::make_shared<MMC1>();
     case 4: return std::make_shared<MMC3>();
   }
   throw std::runtime_error("Unimplemented mapper");

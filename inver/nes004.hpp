@@ -30,11 +30,11 @@ public:
 
   void
   map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
-    rom.reserve(0x4000 * prg_banks);
-    chr.reserve(0x2000 * chr_banks);
+    rom.reserve(PRG_BANK_MULTIPLIER * prg_banks);
+    chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);
 
-    flash((byte*) data.data(), 0x4000 * prg_banks);
-    flash_chr((byte*) data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
+    flash((byte*) data.data(), PRG_BANK_MULTIPLIER * prg_banks);
+    flash_chr((byte*) data.data() + PRG_BANK_MULTIPLIER * prg_banks, CHR_BANK_MULTIPLIER * chr_banks);
   }
 
   void flash(byte* ptr, size_t len) {
@@ -47,15 +47,15 @@ public:
 
   inline byte* bank(int bank) {
     if (bank == -1) {
-      return rom.data() + rom.size() - 0x2000;
+      return rom.data() + rom.size() - PRG_PAGE_SIZE;
     } else if (bank == -2) {
-      return rom.data() + rom.size() - 0x4000;
+      return rom.data() + rom.size() - 2 * PRG_PAGE_SIZE;
     }
-    return rom.data() + bank * 0x2000;
+    return rom.data() + bank * PRG_PAGE_SIZE;
   }
 
   inline byte* chr_bank(int bank) {
-    return chr.data() + bank * 0x400;
+    return chr.data() + bank * CHR_PAGE_SIZE;
   }
 
   void log(const char* msg, ...) {
@@ -103,61 +103,12 @@ public:
 
   byte chr_read(word addr) override {
     static const size_t offsets[] = {0, 0, 1, 1, 2, 3, 4, 5};
+    static const word section_start[] = {0x0, 0x0, 0x0800, 0x0800, 0x1000, 0x1400, 0x1800, 0x1c00};
     size_t start = chr_a12_inversion ? 4 : 0;
-    if (addr <= 0x03ff) {
-      return chr_bank(bank_for_target[0])[addr];
-    } else if (addr <= 0x07ff) {
-      return chr_bank(bank_for_target[0])[addr];
-    } else if (addr <= 0x0bff) {
-      return chr_bank(bank_for_target[1])[addr - 0x0800];
-    } else if (addr <= 0x0fff) {
-      return chr_bank(bank_for_target[1])[addr - 0x0800];
-    } else if (addr <= 0x13ff) {
-      return chr_bank(bank_for_target[2])[addr - 0x1000];
-    } else if (addr <= 0x17ff) {
-      return chr_bank(bank_for_target[3])[addr - 0x1400];
-    } else if (addr <= 0x1bff) {
-      return chr_bank(bank_for_target[4])[addr - 0x1800];
-    } else if (addr <= 0x1fff) {
-      return chr_bank(bank_for_target[5])[addr - 0x1c00];
-    }
-//
-//    if (addr <= 0x03ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
-//    } else if (addr <= 0x07ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
-//    } else if (addr <= 0x0bff) {
-//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
-//    } else if (addr <= 0x0fff) {
-//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
-//    } else if (addr <= 0x13ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 2) % 8]])[addr - 0x1000];
-//    } else if (addr <= 0x17ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 3) % 8]])[addr - 0x1400];
-//    } else if (addr <= 0x1bff) {
-//      return chr_bank(bank_for_target[offsets[(start + 4) % 8]])[addr - 0x1800];
-//    } else if (addr <= 0x1fff) {
-//      return chr_bank(bank_for_target[offsets[(start + 5) % 8]])[addr - 0x1c00];
-//    }
-
-//    if (addr <= 0x03ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
-//    } else if (addr <= 0x07ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 0) % 8]])[addr];
-//    } else if (addr <= 0x0bff) {
-//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
-//    } else if (addr <= 0x0fff) {
-//      return chr_bank(bank_for_target[offsets[(start + 1) % 8]])[addr - 0x0800];
-//    } else if (addr <= 0x13ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 2) % 8]])[addr - 0x1000];
-//    } else if (addr <= 0x17ff) {
-//      return chr_bank(bank_for_target[offsets[(start + 3) % 8]])[addr - 0x1400];
-//    } else if (addr <= 0x1bff) {
-//      return chr_bank(bank_for_target[offsets[(start + 4) % 8]])[addr - 0x1800];
-//    } else if (addr <= 0x1fff) {
-//      return chr_bank(bank_for_target[offsets[(start + 5) % 8]])[addr - 0x1c00];
-//    }
-    return 0;
+    size_t i = (addr >> 10) & 7;
+    size_t offset = (start + i) % 8;
+    size_t bank = bank_for_target[offsets[offset]];
+    return chr_bank(bank)[addr - section_start[offset]];
   }
 
   void chr_write(word addr, byte value) override {}
@@ -167,6 +118,11 @@ public:
   bool irq_requested() override;
 
 private:
+  static constexpr int PRG_BANK_MULTIPLIER = 0x4000;
+  static constexpr int CHR_BANK_MULTIPLIER = 0x2000;
+  static constexpr int PRG_PAGE_SIZE = 0x2000;
+  static constexpr int CHR_PAGE_SIZE = 0x400;
+
   std::vector<byte> rom;
   std::vector<byte> chr;
   std::array<byte, 0x2000> ram;

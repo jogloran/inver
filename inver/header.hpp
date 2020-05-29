@@ -19,7 +19,7 @@ inline byte prg_rom_size(NESHeader* h) {
 }
 
 inline byte chr_rom_size(NESHeader* h) {
-  return (((h->prg_rom_size_msb >> 4) << 8) | h->prg_rom_size_lsb);
+  return h->chr_rom_size_lsb;
 }
 
 inline int mapper_no(NESHeader* h) {
