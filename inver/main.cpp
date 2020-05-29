@@ -67,7 +67,6 @@ int main(int argc, char** argv) {
   bus.attach_cart(mapper);
 
   cpu->reset();
-  cpu->set_pc(0xff40);
   word last_pc = 0;
   while (true) {
     if (FLAGS_cloop && last_pc != cpu->pc) {

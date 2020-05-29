@@ -182,7 +182,6 @@ public:
       // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
       // nametable actually only has 2048 = 0x800 elements
 
-//      auto nt_index = (ppu_addr >> 10) & 3;
       auto nt_offset = ppu_addr & 0x3ff;
       return nt[nt_index * 0x400 + nt_offset];
     } else if (ppu_addr <= 0x3fff) {
@@ -217,10 +216,7 @@ public:
           nt_index = (ppu_addr >> 11) & 1;
           break;
       }
-      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
-      // nametable actually only has 2048 = 0x800 elements
 
-//      auto nt_index = (ppu_addr >> 10) & 3;
       auto nt_offset = ppu_addr & 0x3ff;
       nt[nt_index * 0x400 + nt_offset] = value;
     } else if (ppu_addr <= 0x3fff) {
@@ -443,7 +439,6 @@ public:
   bool nmi_req;
   bool odd_frame;
 
-  std::chrono::high_resolution_clock::time_point last_frame;
   std::chrono::high_resolution_clock::time_point frame_start;
 
   void dump_at();

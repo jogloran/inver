@@ -30,8 +30,8 @@ Bus::tick() {
   }
 
   if (ncycles % (29781*3) == 0) {
-    ppu->tm.show();
-//    ppu->screen.blit();
+//    ppu->tm.show();
+    ppu->screen.blit();
   }
 
   ++ncycles;
