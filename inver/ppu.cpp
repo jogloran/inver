@@ -294,7 +294,7 @@ PPU::tick() {
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
     if (ppumask.show_left_background || ncycles > 8) {
       screen.fb[scanline * 256 + (ncycles - 1)] =
-          output == 0 ? bg : pal[4 * output_palette + output];
+          output == 0 ? 0 : pal[4 * output_palette + output];
     }
 
     auto height = ppuctrl.sprite_size ? 16 : 8;
