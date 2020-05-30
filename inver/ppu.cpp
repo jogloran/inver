@@ -28,7 +28,7 @@ PPU::calculate_sprites() {
 }
 
 inline void
-PPU::skip_cycle() {
+PPU::cycle_start() {
   if (odd_frame) {
     ++ncycles;
   } else {
@@ -181,7 +181,7 @@ PPU::events_for(int s, int c) {
   if ((s == 241 || s == -1) && c == 1) {
     if (s == -1) clr_vblank(); else set_vblank();
   } else if (s == 0 && c == 0) {
-    skip_cycle();
+    cycle_start();
   } else if (s <= 239 || s == -1) {
     if ((c >= 2 && c <= 257) || (c >= 321 && c <= 337)) {
       shift();
@@ -300,25 +300,24 @@ PPU::tick() {
     auto height = ppuctrl.sprite_size ? 16 : 8;
 
     if (ppumask.show_sprites && ncycles == 256) {
+      std::sort(shadow_oam.begin(), shadow_oam.end(), [](const Sprite& s1, const Sprite& s2) {
+        return s1.sprite_index < s2.sprite_index;
+      });
+      std::array<byte, 256> sprite_row;
+      std::fill(sprite_row.begin(), sprite_row.end(), 0x0);
       for (const Sprite& sprite : shadow_oam) {
         auto visible = sprite.oam;
         if (visible.y >= 0xef) continue;
 
         for (int i = visible.x; i < visible.x + 8; ++i) {
-          word base_address;
-          if (height == 16) {
-            base_address = (visible.tile_no & 1) << 12;
-          } else {
-            base_address = ppuctrl.sprite_pattern_address << 12;
-          }
-
           auto tile_no = visible.tile_no;
           bool y_mirrored = visible.attr & 0x80;
 
           byte y_selector =
               y_mirrored ? (7 - (scanline - visible.y) % 8) : (scanline - visible.y) % 8;
 
-          bool select_top_half = false;
+          bool select_top_half;
+          word base_address;
           if (height == 16) {
             bool rendering_top_half = scanline - visible.y <= 7;
             // y-mirrored: true  rendering top: true  -> select_top_half: false
@@ -327,30 +326,32 @@ PPU::tick() {
             //             false                false -> select_top_half: false
             select_top_half = !(y_mirrored ^ rendering_top_half);
             tile_no &= ~1;
+            base_address = (visible.tile_no & 1) << 12;
+          } else {
+            select_top_half = false;
+            base_address = ppuctrl.sprite_pattern_address << 12;
           }
 
-          byte lsb = ppu_read(
+          auto base_at_address {
               base_address + ((tile_no + select_top_half) << 4) +
-              y_selector);
-          byte msb = ppu_read(
-              base_address + ((tile_no + select_top_half) << 4) +
-              y_selector + 8);
-//      log("visible.y %d scanline %d s-v.y-1 %d\n", visible.y, scanline, scanline - visible.y - 1);
-          LOG("%02x sprite (x=% 2d, y=% 2d) %04x\n", visible.tile_no, visible.x, visible.y,
-              (ppuctrl.sprite_pattern_address << 12) + (visible.tile_no << 4) +
-              y_selector);
+              y_selector};
+          byte lsb = ppu_read(base_at_address);
+          byte msb = ppu_read(base_at_address + 8);
 
-          // tile 0xa0 is at pattern table address 0x0a00 to 0xa0f
           auto decoded = unpack_bits(lsb, msb);
           auto sprite_palette = 4 + (visible.attr & 3);
 
+          // apply horizontal flip if necessary
           byte selector = visible.attr & 0x40 ? (7 - (i - visible.x)) : i - visible.x;
           auto sprite_byte = decoded[selector];
           // TODO: the below causes problems
 //          if (output != 0 && sprite_byte != 0) {
           if (ppumask.show_background && sprite_byte != 0 &&
-              (ppumask.show_left_sprites || i >= 8)) {
-            screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
+              (ppumask.show_left_sprites || i >= 8) && i < 256) {
+//            screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
+            if (sprite_row[i] == 0) {
+              sprite_row[i] = pal[4 * sprite_palette + sprite_byte];
+            }
             LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
 
             if (sprite.sprite_index == 0) {
@@ -360,6 +361,14 @@ PPU::tick() {
               ppustatus.sprite0_hit = 1;
             }
           }
+        }
+      }
+
+      // composite
+      for (int i = 0; i < 256; ++i) {
+        byte& b = screen.fb[scanline * 256 + i];
+        if ((sprite_row[i] != 0 && false) || b == 0) {
+          b = sprite_row[i];
         }
       }
     }

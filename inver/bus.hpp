@@ -8,6 +8,8 @@
 #include "mapper.hpp"
 #include "sdl_input.hpp"
 
+static const int CPU_CYCLES_PER_FRAME = 29781 * 3;
+
 class CPU6502;
 
 class Bus {

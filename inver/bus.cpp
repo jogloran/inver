@@ -29,7 +29,7 @@ Bus::tick() {
     cpu->tick();
   }
 
-  if (ncycles % (29781*3) == 0) {
+  if (ncycles % CPU_CYCLES_PER_FRAME == 0) {
 //    ppu->tm.show();
     ppu->screen.blit();
   }

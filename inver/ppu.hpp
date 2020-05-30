@@ -54,7 +54,7 @@ public:
 
   void load_shift_reg();
 
-  void skip_cycle();
+  void cycle_start();
 
   void nt_read();
 
