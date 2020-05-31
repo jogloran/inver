@@ -6,8 +6,20 @@ find_package(SDL2 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include_directories(inver audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12/include)
+add_subdirectory(src/nes_apu)
+link_directories(src/nes_apu)
+
+include_directories(src audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12/include)
 include_directories(${SDL2_INCLUDE_DIRS})
-add_executable(inver inver/main.cpp asobitomo/util.cc inver/bus.cpp inver/mapper/nes000.cpp inver/cpu6502.cpp inver/op_names.cpp inver/ppu.cpp inver/screen.cpp inver/sdl_input.cpp inver/tm.cpp inver/utils.cpp inver/ops.cpp inver/mapper.hpp inver/mapper/nes004.cpp inver/mapper/nes004.hpp inver/header.hpp inver/header.cpp inver/mapper/nes001.cpp inver/mapper/nes001.hpp)
+add_executable(inver src/main.cpp asobitomo/util.cc
+        src/bus.cpp src/mapper/nes000.cpp src/cpu6502.cpp
+        src/op_names.cpp src/ppu.cpp src/screen.cpp
+        src/sdl_input.cpp src/tm.cpp src/utils.cpp
+        src/ops.cpp src/mapper.hpp src/mapper/nes004.cpp
+        src/mapper/nes004.hpp src/header.hpp src/header.cpp
+        src/mapper/nes001.cpp src/mapper/nes001.hpp
+        src/Simple_Apu.cpp src/Simple_Apu.h src/audio.cpp src/audio.hpp src/Sound_Queue.cpp src/Sound_Queue.h)
+
 target_link_libraries(inver gflags)
+target_link_libraries(inver nes_apu)
 target_link_libraries(inver ${SDL2_LIBRARIES})
