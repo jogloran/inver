@@ -164,5 +164,5 @@ void Screen::frame_rendered(double ms) {
   auto then = std::chrono::high_resolution_clock::now();
   blit();
   auto now = std::chrono::high_resolution_clock::now();
-  SDL_Delay(1000 / 60 - (ms + std::chrono::duration_cast<std::chrono::duration<double>>(now - then).count()));
+  SDL_Delay(std::max<uint32_t>(0, 1000 / 60 - (ms + std::chrono::duration_cast<std::chrono::duration<double>>(now - then).count())));
 }

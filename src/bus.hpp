@@ -7,6 +7,8 @@
 #include "ppu.hpp"
 #include "mapper.hpp"
 #include "sdl_input.hpp"
+#include "Simple_Apu.h"
+#include "Sound_Queue.h"
 
 static const int CPU_CYCLES_PER_FRAME = 29781 * 3;
 
@@ -37,6 +39,9 @@ public:
   
   byte controller_state;
   SDLInput controller1;
+
+  Simple_Apu apu;
+  std::shared_ptr<Sound_Queue> sound_queue;
 
   void dmi(byte value);
 

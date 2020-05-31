@@ -5,11 +5,17 @@
 std::chrono::high_resolution_clock::time_point then;
 
 Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
-                                                                   controller_polling(false) {
+                                                                   controller_polling(false),
+                                                                   sound_queue(
+                                                                       std::make_shared<Sound_Queue>()) {
   cpu->connect(this);
   ppu->connect(this);
 
   std::fill(ram.begin(), ram.end(), 0);
+
+  SDL_Init(SDL_INIT_AUDIO);
+  sound_queue->init(44100);
+  apu.sample_rate(44100);
 }
 
 void
@@ -27,6 +33,14 @@ Bus::tick() {
       }
     }
     cpu->tick();
+  }
+
+  if (ncycles % CPU_CYCLES_PER_FRAME == 0) {
+    apu.end_frame();
+
+    static blip_sample_t buf[4096];
+    long count = apu.read_samples(buf, 4096);
+    sound_queue->write(buf, count);
   }
 
   ++ncycles;
@@ -64,6 +78,9 @@ Bus::write(word addr, byte value) {
       }
       case 0x4017:
         break;
+
+      default:
+        apu.write_register(addr, value);
     }
   } else if (addr >= 0x4020) {
     cart->write(addr, value);
@@ -88,6 +105,8 @@ Bus::read(word addr) {
       }
       case 0x4017:
         return 0x0;
+      case 0x4015:
+        return apu.read_status();
     }
     return 0;
   } else if (addr <= 0x401f) { // test mode stuff
