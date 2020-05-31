@@ -34,7 +34,6 @@ PPU::cycle_start() {
   } else {
     odd_frame = !odd_frame;
   }
-  ppustatus.sprite0_hit = 0;
   frame_start = std::chrono::high_resolution_clock::now();
 }
 
@@ -51,6 +50,7 @@ PPU::shift() {
 
 inline void
 PPU::load_shift_reg() {
+//  log("load_shift_reg: %02x %02x\n", bg_tile_lsb, bg_tile_msb);
   pt_shifter[0] = (pt_shifter[0] & 0xff00) | bg_tile_lsb;
   pt_shifter[1] = (pt_shifter[1] & 0xff00) | bg_tile_msb;
 
@@ -159,6 +159,8 @@ PPU::cpy() {
 
 inline void
 PPU::set_vblank() {
+  ppustatus.sprite0_hit = 0;
+  ppustatus.sprite_overflow = 0;
   ppustatus.vblank_started = 1;
   if (ppuctrl.vblank_nmi) {
     nmi_req = true;
@@ -204,8 +206,11 @@ PPU::events_for(int s, int c) {
       }
       if (c == 256) scy();
       else if (c == 257) cpx();
-      else if (c == 260) frame_done();
       else if (c == 338 || c == 340) extra_nt_read();
+
+      if (s == 239 && c == 257) {
+        frame_done();
+      }
     } else if (s == -1 && c >= 280 && c <= 304) {
       cpy();
     }
@@ -234,11 +239,14 @@ PPU::next_cycle() {
 }
 
 void PPU::dump_oam() {
+  int i = 0;
   for (OAM& sprite : oam) {
     if (sprite.y >= 0xef) {
       continue;
     }
-    std::printf("(%02x) x=%02x y=%02x\n", sprite.tile_no, sprite.x, sprite.y);
+    std::printf("%02d: (%02x) x=%02x y=%02x a=%02x %c\n", i, sprite.tile_no, sprite.x, sprite.y, sprite.attr,
+                (sprite.attr & (1 << 5)) ? '*' : ' ');
+    ++i;
   }
   std::printf("\n");
 }
@@ -293,7 +301,10 @@ PPU::tick() {
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
     if (ppumask.show_left_background || ncycles > 8) {
-      screen.fb[scanline * 256 + (ncycles - 1)] =
+      if (output == 0) {
+//        log("bkgd out -> %02x\n", output == 0 ? bg : pal[4 * output_palette + output]);
+      }
+      screen.at(scanline * 256 + (ncycles - 1)) =
           output == 0 ? 0 : pal[4 * output_palette + output];
     }
 
@@ -351,24 +362,46 @@ PPU::tick() {
 //            screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
             if (sprite_row[i] == 0) {
               sprite_row[i] = pal[4 * sprite_palette + sprite_byte];
+              if ((visible.attr & 0x20) && sprite_row[i] != 0) {
+                sprite_row[i] += 64;
+              }
             }
             LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
 
             if (sprite.sprite_index == 0) {
-              if (!ppustatus.sprite0_hit) {
-                log("HIT %d\n", 1);
-              }
               ppustatus.sprite0_hit = 1;
             }
           }
         }
       }
 
+//      log("sprite row\n");
+//      for (int i = 0; i < 256; ++i) {
+//        std::printf("%02x", sprite_row[i]);
+//      }
+//      std::printf("\n");
+//      log("fb row\n");
+//      for (int i = 0; i < 256; ++i) {
+//        std::printf("%02x", screen.fb[scanline * 256 + i]);
+//      }
+//      std::printf("\n");
+//
+//      for (int i = 0; i < 256; ++i) {
+//        std::printf("%02x", sprite_row[i]);
+//      }
+//      std::printf("\n");
+
       // composite
       for (int i = 0; i < 256; ++i) {
-        byte& b = screen.fb[scanline * 256 + i];
-        if ((sprite_row[i] != 0 && false) || b == 0) {
-          b = sprite_row[i];
+        byte& b = screen.at(scanline * 256 + i);
+        bool front_prio = sprite_row[i] < 64;
+
+        if ((sprite_row[i] != 0 && front_prio) || b == 0) {
+          b = sprite_row[i] % 64;
+        }
+
+        if (!b) {
+          b = bg;
         }
       }
     }
@@ -381,6 +414,5 @@ void PPU::frame_done() {
   auto now = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> diff = std::chrono::duration_cast<std::chrono::duration<double>>(
       now - frame_start);
-
-  screen.frame_rendered(diff.count());
+  screen.frame_rendered(diff.count() * 1000);
 }

@@ -56,4 +56,8 @@ public:
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);
 
   void frame_rendered(double ms);
+
+  byte& at(size_t index) {
+    return fb.at(index);
+  }
 };

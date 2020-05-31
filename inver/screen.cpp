@@ -84,6 +84,9 @@ void
 Screen::blit() {
 //  auto then = std::chrono::high_resolution_clock::now();
   int i = 0;
+  if (fb[0] == 0) {
+    ;
+  }
   for (byte b: fb) {
     bool show_vert = i % 32 == 0;
     bool show_horz = (i / 1024) % 8 == 0;
@@ -158,5 +161,8 @@ void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
 }
 
 void Screen::frame_rendered(double ms) {
-  SDL_Delay(1000 / 60 - ms);
+  auto then = std::chrono::high_resolution_clock::now();
+  blit();
+  auto now = std::chrono::high_resolution_clock::now();
+  SDL_Delay(1000 / 60 - (ms + std::chrono::duration_cast<std::chrono::duration<double>>(now - then).count()));
 }
