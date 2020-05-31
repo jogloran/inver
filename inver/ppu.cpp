@@ -206,11 +206,11 @@ PPU::events_for(int s, int c) {
       }
       if (c == 256) scy();
       else if (c == 257) cpx();
-      else if (c == 338 || c == 340) extra_nt_read();
 
       if (s == 239 && c == 257) {
         frame_done();
       }
+      if (c == 338 || c == 340) extra_nt_read();
     } else if (s == -1 && c >= 280 && c <= 304) {
       cpy();
     }
