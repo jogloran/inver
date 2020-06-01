@@ -50,5 +50,7 @@ public:
   void toggle_pause();
 
   bool paused;
+
+  void request_save();
 };
 

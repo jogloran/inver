@@ -1,8 +1,10 @@
 #include "bus.hpp"
 
 #include "cpu6502.hpp"
+#include <fstream>
 
 DECLARE_bool(audio);
+DECLARE_string(save);
 
 Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
                                                                    controller_polling(false),
@@ -152,5 +154,15 @@ void Bus::reset() {
 void Bus::toggle_pause() {
   paused = !paused;
   ppu->screen.set_paused(paused);
+}
+
+void Bus::request_save() {
+  if (FLAGS_save != "") {
+    std::cerr << "Saving to " << FLAGS_save << std::endl;
+    std::ofstream f(FLAGS_save);
+    if (f) {
+      std::copy(ram.begin(), ram.end(), std::ostreambuf_iterator(f));
+    }
+  }
 }
 

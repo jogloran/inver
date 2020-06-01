@@ -146,6 +146,9 @@ Screen::blit() {
         case SDLK_ESCAPE:
           bus->toggle_pause();
           break;
+        case SDLK_w:
+          bus->request_save();
+          break;
       }
     }
   }

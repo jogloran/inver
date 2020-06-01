@@ -67,3 +67,11 @@ void MMC3::write(word addr, byte value) {
     irq_enable(addr & 1);
   }
 }
+
+void MMC3::map_ram(const std::vector<char>& backup, size_t len) {
+  std::copy_n(backup.begin(), ram.size(), ram.begin());
+}
+
+byte* MMC3::get_ram() {
+  return ram.data();
+}

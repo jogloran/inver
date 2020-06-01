@@ -27,6 +27,7 @@ DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
 DEFINE_bool(audio, true, "Enable audio");
+DEFINE_string(save, "", "Save path");
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
@@ -41,6 +42,15 @@ int main(int argc, char** argv) {
   if (!f) {
     std::cerr << "Couldn't access ROM file." << std::endl;
     std::exit(2);
+  }
+
+  std::vector<char> save_data;
+  std::ifstream save(FLAGS_save, std::ios::in);
+  if (save) {
+    std::cerr << "Loading from " << FLAGS_save << std::endl;
+    std::copy(std::istreambuf_iterator<char>(save),
+              std::istreambuf_iterator<char>(),
+              std::back_inserter(save_data));
   }
 
   auto cpu = std::make_shared<CPU6502>();
@@ -70,6 +80,9 @@ int main(int argc, char** argv) {
 
   mapper = mapper_for(mapper_no(h));
   mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
+  if (save_data.size()) {
+    mapper->map_ram(save_data, save_data.size());
+  }
 
   bus.attach_cart(mapper);
 

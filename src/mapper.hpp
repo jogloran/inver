@@ -16,6 +16,8 @@ public:
   virtual Mirroring get_mirroring() = 0;
 
   virtual void map(const std::vector<char>&, byte prg_banks, byte chr_banks, NESHeader* header) = 0;
+  virtual void map_ram(const std::vector<char>&, size_t len) {}
+  virtual byte* get_ram() { return nullptr; }
 
   virtual byte read(word addr) = 0;
   virtual void write(word addr, byte value) = 0;

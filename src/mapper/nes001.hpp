@@ -41,6 +41,10 @@ public:
     return rom.data() + bank * 0x4000;
   }
 
+  void map_ram(const std::vector<char>& vector, size_t len) override;
+
+  byte* get_ram() override;
+
 private:
   std::vector<byte> rom;
   std::vector<byte> chr;

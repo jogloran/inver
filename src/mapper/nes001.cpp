@@ -9,6 +9,14 @@ Mapper::Mirroring MMC1::get_mirroring() {
   return mirroring;
 }
 
+void MMC1::map_ram(const std::vector<char>& backup, size_t len) {
+  std::copy_n(backup.begin(), ram.size(), ram.begin());
+}
+
+byte* MMC1::get_ram() {
+  return ram.data();
+}
+
 void
 MMC1::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) {
   rom.reserve(0x4000 * prg_banks);

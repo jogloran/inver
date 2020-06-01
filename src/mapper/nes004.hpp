@@ -14,6 +14,10 @@ public:
     reset_();
   }
 
+  void map_ram(const std::vector<char>& vector, size_t len) override;
+
+  byte* get_ram() override;
+
   void reset() override {
     reset_();
   }
