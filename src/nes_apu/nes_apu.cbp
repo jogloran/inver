@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="nes_apu"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\local\;CMake Files\..\..\..\..\usr\local\Cellar\;CMake Files\..\..\..\..\usr\local\Cellar\gflags\;CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\;CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\;CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\;CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\gflags\;CMake Files\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\;CMake Files\inver\;CMake Files\inver\nes_apu\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nes_apu">
+				<Option output="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/libnes_apu.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 nes_apu"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nes_apu/fast">
+				<Option output="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/libnes_apu.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 nes_apu/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Blip_Buffer.cpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Blip_Buffer.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Blip_Synth.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Nes_Apu.cpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Nes_Apu.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Nes_Oscs.cpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/Nes_Oscs.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/blargg_common.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/blargg_source.h">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/boost/config.hpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/boost/cstdint.hpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/boost/static_assert.hpp">
+			<Option target="nes_apu"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags/gflags-config-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\gflags\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags/gflags-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\gflags\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags/gflags-nonamespace-targets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\gflags\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags/gflags-nonamespace-targets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\Cellar\gflags\2.2.2\lib\cmake\gflags\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/lib/cmake/SDL2/sdl2-config-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/../../../../usr/local/lib/cmake/SDL2/sdl2-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\"/>
+		</Unit>
+		<Unit filename="/Users/dt0/CLionProjects/asobitomo/inver/nes_apu/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\inver\nes_apu\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
