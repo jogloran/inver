@@ -155,6 +155,7 @@ PPU::cpy() {
     loopy_v.coarse_y = loopy_t.coarse_y;
     loopy_v.nt_y = loopy_t.nt_y;
   }
+  std::fill(bg_is_transparent.begin(), bg_is_transparent.end(), 0x0);
 }
 
 inline void
@@ -297,7 +298,8 @@ PPU::tick() {
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
     if (ppumask.show_left_background || ncycles > 8) {
       screen.at(scanline * 256 + (ncycles - 1)) =
-          output == 0 ? 0 : pal[4 * output_palette + output];
+          output == 0 ? bg : pal[4 * output_palette + output];
+      bg_is_transparent[ncycles - 1] = output == 0;
     }
 
     auto height = ppuctrl.sprite_size ? 16 : 8;
@@ -351,7 +353,8 @@ PPU::tick() {
             if (sprite_row[i] == 0) {
               sprite_row[i] = pal[4 * sprite_palette + sprite_byte];
               if ((visible.attr & 0x20) && sprite_row[i] != 0) {
-                sprite_row[i] += 64;
+                // use bit 6 to encode that the sprite pixel has back priority
+                sprite_row[i] |= 0x40;
               }
             }
 
@@ -364,14 +367,14 @@ PPU::tick() {
 
       for (int i = 0; i < 256; ++i) {
         byte& b = screen.at(scanline * 256 + i);
-        bool front_prio = sprite_row[i] < 64;
+        bool front_prio = (sprite_row[i] & 0x40) == 0;
 
-        if ((sprite_row[i] != 0 && front_prio) || b == 0) {
-          b = sprite_row[i] % 64;
-        }
-
-        if (!b) {
-          b = bg;
+        // Allow the sprite pixel to be shown if:
+        // - the sprite is opaque, and
+        //     - the sprite has front priority over background tiles, or
+        //     - the background pixel is transparent
+        if (sprite_row[i] != 0 && (front_prio || bg_is_transparent[i])) {
+          b = sprite_row[i] & 0x3f;
         }
       }
     }

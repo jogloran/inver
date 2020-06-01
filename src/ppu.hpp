@@ -457,4 +457,6 @@ public:
   void calculate_sprites();
 
   void frame_done();
+
+  std::array<bool, 256> bg_is_transparent;
 };
