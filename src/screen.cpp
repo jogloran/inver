@@ -84,8 +84,7 @@ void
 Screen::blit() {
 //  auto then = std::chrono::high_resolution_clock::now();
   int i = 0;
-  if (fb[0] == 0) {
-    ;
+  if (fb[0] == 0) { ;
   }
   for (byte b: fb) {
     bool show_vert = i % 32 == 0;
@@ -122,26 +121,32 @@ Screen::blit() {
 
 //  SDL_PumpEvents();
 
-  int nkeys;
-  const uint8_t* keystates = SDL_GetKeyboardState(&nkeys);
-  if (keystates[SDL_SCANCODE_D]) {
-    ppu->dump_nt();
-  } else if (keystates[SDL_SCANCODE_P]) {
-    ppu->dump_pt();
-  } else if (keystates[SDL_SCANCODE_A]) {
-    ppu->dump_at();
-  } else if (keystates[SDL_SCANCODE_O]) {
-    dump_fb(fb);
-  } else if (keystates[SDL_SCANCODE_S]) {
-    ppu->dump_oam();
-  } else if (keystates[SDL_SCANCODE_R]) {
-    bus->reset();
-  }
-
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
+    }
+    else if (event.type == SDL_KEYDOWN) {
+      switch (event.key.keysym.sym) {
+        case SDLK_d:
+          ppu->dump_nt();
+          break;
+        case SDLK_p:
+          ppu->dump_pt();
+          break;
+        case SDLK_a:
+          ppu->dump_at();
+          break;
+        case SDLK_o:
+          dump_fb(fb);
+          break;
+        case SDLK_s:
+          ppu->dump_oam();
+          break;
+        case SDLK_r:
+          bus->reset();
+          break;
+      }
     }
   }
 
@@ -164,5 +169,9 @@ void Screen::frame_rendered(double ms) {
   auto then = std::chrono::high_resolution_clock::now();
   blit();
   auto now = std::chrono::high_resolution_clock::now();
-  SDL_Delay(std::max<uint32_t>(0, 1000 / 60 - (ms + std::chrono::duration_cast<std::chrono::duration<double>>(now - then).count())));
+
+  auto frame_time = ms +
+                    std::chrono::duration_cast<std::chrono::duration<double>>(
+                        now - then).count();
+  SDL_Delay(MS_PER_FRAME - std::min<uint32_t>(MS_PER_FRAME, frame_time));
 }

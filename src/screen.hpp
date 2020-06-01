@@ -60,4 +60,6 @@ public:
   inline byte& at(size_t index) {
     return fb[index];
   }
+
+  static constexpr int MS_PER_FRAME = 1000 / 60;
 };
