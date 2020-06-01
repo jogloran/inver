@@ -302,9 +302,6 @@ PPU::tick() {
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
     if (ppumask.show_left_background || ncycles > 8) {
-      if (output == 0) {
-//        log("bkgd out -> %02x\n", output == 0 ? bg : pal[4 * output_palette + output]);
-      }
       screen.at(scanline * 256 + (ncycles - 1)) =
           output == 0 ? 0 : pal[4 * output_palette + output];
     }

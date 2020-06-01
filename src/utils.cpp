@@ -1,9 +1,4 @@
-#include "op_names.hpp"
-#include "ops.hpp"
-#include "cpu6502.hpp"
-#include <gflags/gflags.h>
 #include <iomanip>
-#include <iostream>
 #include "utils.hpp"
 
 static constexpr uint16_t m[256] =
