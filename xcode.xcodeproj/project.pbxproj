@@ -16,12 +16,10 @@
 		09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8024847CB40020B5D4 /* Sound_Queue.cpp */; };
 		09FADC9724847CB40020B5D4 /* header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8124847CB40020B5D4 /* header.cpp */; };
 		09FADC9824847CB40020B5D4 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8424847CB40020B5D4 /* screen.cpp */; };
-		09FADC9924847CB40020B5D4 /* sdl_input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8824847CB40020B5D4 /* sdl_input.cpp */; };
 		09FADC9A24847CB40020B5D4 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8924847CB40020B5D4 /* utils.cpp */; };
 		09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8A24847CB40020B5D4 /* cpu6502.cpp */; };
 		09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8D24847CB40020B5D4 /* ppu.cpp */; };
 		09FADC9D24847CB40020B5D4 /* bus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8F24847CB40020B5D4 /* bus.cpp */; };
-		09FADC9E24847CB40020B5D4 /* audio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC9024847CB40020B5D4 /* audio.cpp */; };
 		09FADCA524847CBA0020B5D4 /* nes000.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC9F24847CBA0020B5D4 /* nes000.cpp */; };
 		09FADCA624847CBA0020B5D4 /* nes001.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCA124847CBA0020B5D4 /* nes001.cpp */; };
 		09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCA424847CBA0020B5D4 /* nes004.cpp */; };
@@ -118,7 +116,6 @@
 		09FADC8524847CB40020B5D4 /* op_names.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = op_names.hpp; path = src/op_names.hpp; sourceTree = "<group>"; };
 		09FADC8624847CB40020B5D4 /* nestest.nes */ = {isa = PBXFileReference; lastKnownFileType = file; name = nestest.nes; path = src/nestest.nes; sourceTree = "<group>"; };
 		09FADC8724847CB40020B5D4 /* bus.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = bus.hpp; path = src/bus.hpp; sourceTree = "<group>"; };
-		09FADC8824847CB40020B5D4 /* sdl_input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sdl_input.cpp; path = src/sdl_input.cpp; sourceTree = "<group>"; };
 		09FADC8924847CB40020B5D4 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utils.cpp; path = src/utils.cpp; sourceTree = "<group>"; };
 		09FADC8A24847CB40020B5D4 /* cpu6502.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cpu6502.cpp; path = src/cpu6502.cpp; sourceTree = "<group>"; };
 		09FADC8B24847CB40020B5D4 /* sdl_input.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sdl_input.hpp; path = src/sdl_input.hpp; sourceTree = "<group>"; };
@@ -219,7 +216,6 @@
 				09FADC7924847CB30020B5D4 /* ppu.hpp */,
 				09FADC8424847CB40020B5D4 /* screen.cpp */,
 				09FADC7324847CB30020B5D4 /* screen.hpp */,
-				09FADC8824847CB40020B5D4 /* sdl_input.cpp */,
 				09FADC8B24847CB40020B5D4 /* sdl_input.hpp */,
 				09FADC7A24847CB30020B5D4 /* Simple_Apu.cpp */,
 				09FADC7624847CB30020B5D4 /* Simple_Apu.h */,
@@ -406,9 +402,7 @@
 				09FADCA624847CBA0020B5D4 /* nes001.cpp in Sources */,
 				09FADC9224847CB40020B5D4 /* tm.cpp in Sources */,
 				09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */,
-				09FADC9E24847CB40020B5D4 /* audio.cpp in Sources */,
 				09FADC9724847CB40020B5D4 /* header.cpp in Sources */,
-				09FADC9924847CB40020B5D4 /* sdl_input.cpp in Sources */,
 				09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */,
 				09FADC9824847CB40020B5D4 /* screen.cpp in Sources */,
 				09FADC9124847CB40020B5D4 /* main.cpp in Sources */,

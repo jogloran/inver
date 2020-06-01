@@ -34,34 +34,26 @@ public:
 
   void blit();
 
-  template<typename T>
-  void set_row(int row, T begin, T end) {
-    std::copy_n(begin, BUF_WIDTH, fb.begin() + row * BUF_WIDTH);
-  }
-
   static constexpr int BUF_WIDTH = 256;
   static constexpr int BUF_HEIGHT = 240;
+  static constexpr int MS_PER_FRAME = 1000 / 60;
 
   // Each byte of fb is a palette index (0...0x40)
   std::array<byte, BUF_WIDTH * BUF_HEIGHT> fb;
   std::array<byte, BUF_WIDTH * BUF_HEIGHT * 4> buf;
-
   SDL_Window* window_;
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
-
   PPU* ppu;
   Bus* bus;
 
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);
 
-  void frame_rendered(double ms);
-
   inline byte& at(size_t index) {
     return fb[index];
   }
 
-  static constexpr int MS_PER_FRAME = 1000 / 60;
-
   void set_paused(bool b);
+
+  void frame_rendered(uint32_t ms);
 };

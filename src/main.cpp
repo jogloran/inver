@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
   mapper = mapper_for(mapper_no(h));
   mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
-  
+
   bus.attach_cart(mapper);
 
   cpu->reset();

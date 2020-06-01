@@ -123,8 +123,7 @@ Screen::blit() {
   if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
-    }
-    else if (event.type == SDL_KEYDOWN) {
+    } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
           ppu->dump_nt();
@@ -166,13 +165,13 @@ void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
   }
 }
 
-void Screen::frame_rendered(double ms) {
+void Screen::frame_rendered(uint32_t ms) {
   auto then = std::chrono::high_resolution_clock::now();
   blit();
   auto now = std::chrono::high_resolution_clock::now();
 
   auto frame_time = ms +
-                    std::chrono::duration_cast<std::chrono::duration<double>>(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
                         now - then).count();
   SDL_Delay(MS_PER_FRAME - std::min<uint32_t>(MS_PER_FRAME, frame_time));
 }

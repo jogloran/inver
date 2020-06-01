@@ -4,8 +4,6 @@
 
 DECLARE_bool(audio);
 
-std::chrono::high_resolution_clock::time_point then;
-
 Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
                                                                    controller_polling(false),
                                                                    sound_queue(
@@ -108,7 +106,6 @@ Bus::read(word addr) {
     switch (addr) {
       case 0x4016: {
         byte lsb = controller_state & 1;
-//        ppu->log("controller read bit: %d\n", lsb);
         controller_state >>= 1;
         return lsb;
       }

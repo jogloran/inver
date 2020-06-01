@@ -12,18 +12,6 @@ class Screen {
 public:
   Screen(): fb(), should_draw(true) {}
 
-  template <typename T>
-  void set_row(int row, T begin, T end) {
-#ifndef NDEBUG
-    if (row < 0 || row >= BUF_HEIGHT) {
-      throw std::range_error("invalid row");
-    }
-    if (std::distance(begin, end) != BUF_WIDTH) {
-      throw std::range_error("invalid range");
-    }
-#endif
-    std::copy_n(begin, BUF_WIDTH, fb.begin() + row * BUF_WIDTH);
-  }
   virtual void blit() = 0;
   
   using exit_handler = std::function<void()>;

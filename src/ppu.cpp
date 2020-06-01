@@ -22,7 +22,8 @@ PPU::calculate_sprites() {
     }
   }
 
-  std::copy_n(candidate_sprites.begin(), std::min<size_t>(candidate_sprites.size(), 8), shadow_oam.begin());
+  std::copy_n(candidate_sprites.begin(), std::min<size_t>(candidate_sprites.size(), 8),
+              shadow_oam.begin());
   if (candidate_sprites.size() > 8) {
     ppustatus.sprite_overflow = 1;
   }
@@ -237,7 +238,8 @@ void PPU::dump_oam() {
     if (sprite.y >= 0xef) {
       continue;
     }
-    std::printf("%02d: (%02x) x=%02x y=%02x a=%02x %c\n", i, sprite.tile_no, sprite.x, sprite.y, sprite.attr,
+    std::printf("%02d: (%02x) x=%02x y=%02x a=%02x %c\n", i, sprite.tile_no, sprite.x, sprite.y,
+                sprite.attr,
                 (sprite.attr & (1 << 5)) ? '*' : ' ');
     ++i;
   }
@@ -380,7 +382,7 @@ PPU::tick() {
 
 void PPU::frame_done() {
   auto now = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> diff = std::chrono::duration_cast<std::chrono::duration<double>>(
+  auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
       now - frame_start);
-  screen.frame_rendered(diff.count() * 1000);
+  screen.frame_rendered(diff.count());
 }
