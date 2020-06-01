@@ -1,7 +1,5 @@
 #pragma once
 
-// Macros for generating ops:
-// set N, Z
 #define OP(op, mode) [](CPU6502& cpu) {\
   byte operand = cpu.deref_##mode(); \
   cpu.a = cpu.check_zn_flags(cpu.a op operand); \
@@ -21,7 +19,6 @@
   return cpu.observe_crossed_page(); \
 }
 
-// set I=1
 #define BRK [](CPU6502& cpu) { \
   cpu.p.I = 1; \
   cpu.push_word(cpu.pc + 2); \
@@ -59,7 +56,6 @@
   return cpu.observe_crossed_page(); \
 }
 
-// set N, Z, C, V
 #define ADC(mode) ADC_GEN(mode, +)
 #define SBC(mode) ADC_GEN(mode, ~)
 
@@ -68,7 +64,6 @@
   operand = cpu.check_zn_flags((operand << 1) & 0xfe); \
   cpu.p.C = msb;
 
-// set N=0, Z, C
 #define LSR_BODY(operand) \
   bool lsb = operand & 0b1; \
   operand = (operand >> 1) & 0x7f; \
@@ -113,7 +108,6 @@
   return cpu.observe_crossed_page(); \
 }
 
-// set N, Z
 #define LD(reg, mode) [](CPU6502& cpu) {\
   auto operand = cpu.deref_##mode(); \
   cpu.reg = cpu.check_zn_flags(operand); \
@@ -127,19 +121,16 @@
   return addt_cycles; \
 }
 
-// set N, Z, C
 #define CMP(mode) CMP_GEN(cpu.a, mode, cpu.observe_crossed_page())
 #define CP(reg, mode) CMP_GEN(cpu.reg, mode, 0)
 
 #define INC_GEN(mode, increment) [](CPU6502& cpu) {\
   word addr = cpu.addr_##mode(); \
-  byte operand = cpu.read(addr); \
-  byte result = cpu.check_zn_flags(operand + increment); \
+  byte result = cpu.check_zn_flags(cpu.read(addr) + increment); \
   cpu.write(addr, result); \
   return cpu.observe_crossed_page(); \
 }
 
-// set N, Z
 #define DEC(mode) INC_GEN(mode, -1)
 #define INC(mode) INC_GEN(mode, +1)
 
@@ -149,7 +140,6 @@
   return 0; \
 }
 
-// set all flags
 #define RTI [](CPU6502& cpu) {\
   cpu.pop_flags(); \
   cpu.pc = cpu.pop_word(); \
@@ -170,19 +160,16 @@
   } \
 }
 
-//set N, Z
 #define IN(reg) [](CPU6502& cpu) {\
   cpu.check_zn_flags(++cpu.reg); \
   return 0; \
 }
 
-//set N, Z
 #define DE(reg) [](CPU6502& cpu) {\
   cpu.check_zn_flags(--cpu.reg); \
   return 0; \
 }
 
-// load into N, V, set Z
 #define BIT(mode) [](CPU6502& cpu) {\
   byte operand = cpu.deref_##mode(); \
   cpu.p.N = (operand & 0x80) != 0; \
@@ -191,7 +178,6 @@
   return 0; \
 }
 
-// set N, Z
 #define PLA [](CPU6502& cpu) {\
   cpu.a = cpu.check_zn_flags(cpu.pop()); \
   return 0; \
@@ -212,7 +198,6 @@
   return 0; \
 }
 
-// set N, Z
 #define T__(src, dst) [](CPU6502& cpu) {\
   cpu.check_zn_flags(cpu.dst = cpu.src); \
   return 0; \

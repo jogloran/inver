@@ -3,7 +3,7 @@
 
 void
 TM::show() {
-  return;
+  SDL_ShowWindow(window_);
   // There are two sections, 0000-0fff and 1000-1fff, each containing 16*16=256 tiles
   // Each tile consists of 16 bytes, encoding palette values 0,1,2,3
   // The total pattern memory is 2*256*16 = 8192 bytes

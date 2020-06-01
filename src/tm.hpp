@@ -20,8 +20,6 @@ public:
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, TM_WIDTH * 4, TM_HEIGHT * 4);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TM_WIDTH, TM_HEIGHT);
-    
-    SDL_ShowWindow(window_);
   }
   
   void connect_ppu(PPU* p) {
