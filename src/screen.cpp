@@ -146,6 +146,9 @@ Screen::blit() {
         case SDLK_r:
           bus->reset();
           break;
+        case SDLK_ESCAPE:
+          bus->toggle_pause();
+          break;
       }
     }
   }
@@ -174,4 +177,12 @@ void Screen::frame_rendered(double ms) {
                     std::chrono::duration_cast<std::chrono::duration<double>>(
                         now - then).count();
   SDL_Delay(MS_PER_FRAME - std::min<uint32_t>(MS_PER_FRAME, frame_time));
+}
+
+void Screen::set_paused(bool paused) {
+  if (paused) {
+    SDL_SetTextureColorMod(texture_, 192, 192, 192);
+  } else {
+    SDL_SetTextureColorMod(texture_, 255, 255, 255);
+  }
 }

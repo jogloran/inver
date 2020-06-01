@@ -47,5 +47,8 @@ public:
 
   void reset();
 
+  void toggle_pause();
+
+  bool paused;
 };
 

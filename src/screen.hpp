@@ -62,4 +62,6 @@ public:
   }
 
   static constexpr int MS_PER_FRAME = 1000 / 60;
+
+  void set_paused(bool b);
 };

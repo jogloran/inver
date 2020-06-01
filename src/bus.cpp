@@ -7,7 +7,8 @@ std::chrono::high_resolution_clock::time_point then;
 Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
                                                                    controller_polling(false),
                                                                    sound_queue(
-                                                                       std::make_shared<Sound_Queue>()) {
+                                                                       std::make_shared<Sound_Queue>()),
+                                                                   paused(false) {
   cpu->connect(this);
   ppu->connect(this);
 
@@ -20,6 +21,10 @@ Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu
 
 void
 Bus::tick() {
+  if (paused) {
+    ppu->screen.frame_rendered(1000 / 60);
+    return;
+  }
 //  then = std::chrono::high_resolution_clock::now();
   ppu->tick();
   if (ncycles % 3 == 0) {
@@ -141,5 +146,10 @@ void Bus::reset() {
   if (cart) {
     cart->reset();
   }
+}
+
+void Bus::toggle_pause() {
+  paused = !paused;
+  ppu->screen.set_paused(paused);
 }
 
