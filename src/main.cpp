@@ -1,6 +1,7 @@
 #include <memory>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 #include "types.h"
 #include "cpu6502.hpp"
@@ -32,7 +33,13 @@ int main(int argc, char** argv) {
 
   if (argc != 2) {
     std::cerr << "Expecting a ROM filename." << std::endl;
-    exit(1);
+    std::exit(1);
+  }
+
+  std::ifstream f(argv[1], std::ios::in);
+  if (!f) {
+    std::cerr << "Couldn't access ROM file." << std::endl;
+    std::exit(2);
   }
 
   auto cpu = std::make_shared<CPU6502>();
@@ -44,27 +51,25 @@ int main(int argc, char** argv) {
   size_t last_period = 0;
 
   std::shared_ptr<Mapper> mapper;
-  std::ifstream f(argv[1], std::ios::in);
-  if (f) {
-    f.seekg(0x10, std::ios::cur);
-    size_t len = f.tellg();
-    f.seekg(0, std::ios::beg);
 
-    byte header_bytes[16];
-    f.read((char*) header_bytes, 16);
-    NESHeader* h = reinterpret_cast<NESHeader*>(header_bytes);
+  f.seekg(0x10, std::ios::cur);
+  size_t len = f.tellg();
+  f.seekg(0, std::ios::beg);
 
-    inspect_header(h);
-    std::vector<char> data;
-    data.reserve(len);
-    std::copy(std::istreambuf_iterator<char>(f),
-              std::istreambuf_iterator<char>(),
-              std::back_inserter(data));
+  byte header_bytes[16];
+  f.read((char*) header_bytes, 16);
+  NESHeader* h = reinterpret_cast<NESHeader*>(header_bytes);
 
-    mapper = mapper_for(mapper_no(h));
-    mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
-  }
+  inspect_header(h);
+  std::vector<char> data;
+  data.reserve(len);
+  std::copy(std::istreambuf_iterator<char>(f),
+            std::istreambuf_iterator<char>(),
+            std::back_inserter(data));
 
+  mapper = mapper_for(mapper_no(h));
+  mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
+  
   bus.attach_cart(mapper);
 
   cpu->reset();
@@ -100,9 +105,12 @@ int main(int argc, char** argv) {
 
 std::shared_ptr<Mapper> mapper_for(byte no) {
   switch (no) {
-    case 0: return std::make_shared<NROM>();
-    case 1: return std::make_shared<MMC1>();
-    case 4: return std::make_shared<MMC3>();
+    case 0:
+      return std::make_shared<NROM>();
+    case 1:
+      return std::make_shared<MMC1>();
+    case 4:
+      return std::make_shared<MMC3>();
   }
   throw std::runtime_error("Unimplemented mapper");
 }
