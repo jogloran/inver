@@ -2,6 +2,8 @@
 
 #include "cpu6502.hpp"
 
+DECLARE_bool(audio);
+
 std::chrono::high_resolution_clock::time_point then;
 
 Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
@@ -14,9 +16,11 @@ Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu
 
   std::fill(ram.begin(), ram.end(), 0);
 
-  SDL_Init(SDL_INIT_AUDIO);
-  sound_queue->init(44100);
-  apu.sample_rate(44100);
+  if (FLAGS_audio) {
+    SDL_Init(SDL_INIT_AUDIO);
+    sound_queue->init(44100);
+    apu.sample_rate(44100);
+  }
 }
 
 void
@@ -40,7 +44,7 @@ Bus::tick() {
     cpu->tick();
   }
 
-  if (ncycles % CPU_CYCLES_PER_FRAME == 0) {
+  if (FLAGS_audio && ncycles % CPU_CYCLES_PER_FRAME == 0) {
     apu.end_frame();
 
     static blip_sample_t buf[4096];

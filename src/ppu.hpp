@@ -36,6 +36,7 @@ public:
     screen.ppu = this;
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite{ {0xff, 0xff, 0xff, 0xff}, 64 });
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
+    candidate_sprites.reserve(64);
   }
 
   void reset() {

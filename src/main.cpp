@@ -24,6 +24,7 @@ DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops")
 DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
+DEFINE_bool(audio, true, "Enable audio");
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
