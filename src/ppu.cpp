@@ -10,19 +10,20 @@ PPU::calculate_sprites() {
 
   // Determine sprite visibility for the next scanline by filling the shadow_oam
   byte next_scanline = scanline == -1 ? 0 : scanline + 1;
-  std::vector<Sprite> candidates;
+
+  candidate_sprites.clear();
 
   auto cur {oam.begin()};
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
     if ((sprite.y >= 8 && next_scanline >= sprite.y &&
          next_scanline < sprite.y + height)) {
-      candidates.push_back({sprite, sprite_index});
+      candidate_sprites.push_back({sprite, sprite_index});
     }
   }
 
-  std::copy_n(candidates.begin(), std::min<size_t>(candidates.size(), 8), shadow_oam.begin());
-  if (candidates.size() > 8) {
+  std::copy_n(candidate_sprites.begin(), std::min<size_t>(candidate_sprites.size(), 8), shadow_oam.begin());
+  if (candidate_sprites.size() > 8) {
     ppustatus.sprite_overflow = 1;
   }
 }

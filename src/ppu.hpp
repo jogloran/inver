@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <deque>
+#include <vector>
 
 #include <gflags/gflags.h>
 
@@ -404,6 +404,7 @@ public:
   std::array<OAM, 64> oam;
   std::array<Sprite, 8> shadow_oam;
   std::array<byte, 8> shadow_oam_indices;
+  std::vector<Sprite> candidate_sprites;
   TM tm;
   Screen screen;
   int scanline; // -1 to 260
