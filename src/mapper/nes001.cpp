@@ -76,6 +76,7 @@ void MMC1::write(word addr, byte value) {
 
 byte MMC1::chr_read(word addr) {
   if (addr <= 0x0fff || chr_mode == CHRMode::Switch8KBBank) {
+    std::printf("chr_read(%04x)\n", addr);
     return chr_bank(ppu_0000_bank)[addr];
   } else {
     return chr_bank(ppu_1000_bank)[addr - 0x1000];

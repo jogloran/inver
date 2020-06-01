@@ -34,7 +34,7 @@ public:
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
     screen.ppu = this;
-    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite{ {0xff, 0xff, 0xff, 0xff}, 64 });
+    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);
   }
@@ -43,7 +43,7 @@ public:
     scanline = ncycles = fine_x = w = ppudata_byte = 0;
     nt_byte = at_byte_lsb = at_byte_msb = 0;
     pt_byte = bg_tile_msb = bg_tile_lsb = 0;
-    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite{ {0xff, 0xff, 0xff, 0xff}, 64 });
+    std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
   }
 
@@ -101,7 +101,7 @@ public:
     va_end(args);
   }
 
-  void log(const char *orig_fmt, ...) {
+  void log(const char* orig_fmt, ...) {
     if (!FLAGS_xx) {
       return;
     }
@@ -110,11 +110,11 @@ public:
 
     bool in_output_cycle = (ncycles >= 2 && ncycles <= 257)
                            || (ncycles >= 321 && ncycles <= 336);
-    static const char *cycle_indicator[] = {
+    static const char* cycle_indicator[] = {
         "nt1", "nt2", "at1", "at2", "lo1", "lo2", "hi1", "++x", "", "v=t"
     };
 
-    const char *cycle_str = "";
+    const char* cycle_str = "";
     switch (scanline) {
       case 241:
         if (ncycles == 1) {
@@ -178,6 +178,9 @@ public:
         case Mapper::Mirroring::H:
           ppu_addr &= ~(1 << 10);
           nt_index = (ppu_addr >> 11) & 1;
+          break;
+        case Mapper::Mirroring::AAAA:
+          nt_index = 0;
           break;
       }
       // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
@@ -290,12 +293,13 @@ public:
         if (!w) {
           loopy_t.coarse_x = value >> 3;
           fine_x = value & 7;
-          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y, loopy_t.fine_y);
+          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y,
+              loopy_t.fine_y);
           w = 1;
         } else {
           loopy_t.fine_y = value & 7;
           loopy_t.coarse_y = value >> 3;
-          LOG("scroll2 cy %d fy %d\n",loopy_t.coarse_y, loopy_t.fine_y);
+          LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
           w = 0;
         }
         break;
@@ -321,7 +325,7 @@ public:
     }
   }
 
-  void connect(Bus *b) {
+  void connect(Bus* b) {
     bus = b;
     screen.bus = b;
   }
@@ -349,7 +353,7 @@ public:
     }
   }
 
-  Bus *bus;
+  Bus* bus;
   std::shared_ptr<Mapper> cart;
 
   std::array<byte, 0x800> nt;

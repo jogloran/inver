@@ -9,6 +9,7 @@
 #include "bus.hpp"
 #include "mapper/nes000.hpp"
 #include "mapper/nes001.hpp"
+#include "mapper/nes003.hpp"
 #include "mapper/nes004.hpp"
 #include "util.h"
 #include "header.hpp"
@@ -109,6 +110,8 @@ std::shared_ptr<Mapper> mapper_for(byte no) {
       return std::make_shared<NROM>();
     case 1:
       return std::make_shared<MMC1>();
+    case 3:
+      return std::make_shared<CNROM>();
     case 4:
       return std::make_shared<MMC3>();
   }
