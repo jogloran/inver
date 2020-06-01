@@ -57,7 +57,7 @@ public:
 
   void frame_rendered(double ms);
 
-  byte& at(size_t index) {
-    return fb.at(index);
+  inline byte& at(size_t index) {
+    return fb[index];
   }
 };
