@@ -50,8 +50,8 @@ public:
     rom.reserve(0x4000 * prg_banks);
     chr.reserve(0x2000 * chr_banks);
 
-    flash((byte*) data.data(), 0x4000 * prg_banks);
-    flash_chr((byte*) data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
+    auto cur = flash((byte*) data.data(), 0x4000 * prg_banks, rom);
+    flash(cur, 0x2000 * chr_banks, chr);
 
     mirroring = header->flags6 & 1 ? Mirroring::V : Mirroring::H;
   }
@@ -62,14 +62,6 @@ public:
 
   void chr_write(word addr, byte value) override {
 
-  }
-
-  void flash(byte* ptr, size_t len) {
-    std::copy(ptr, ptr + len, std::back_inserter(rom));
-  }
-
-  void flash_chr(byte* ptr, size_t len) {
-    std::copy(ptr, ptr + len, std::back_inserter(chr));
   }
 
   void reset() override {}

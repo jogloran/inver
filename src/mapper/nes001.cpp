@@ -18,16 +18,8 @@ MMC1::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHead
     chr.reserve(0x2000 * chr_banks);
   }
 
-  flash((byte*) data.data(), 0x4000 * prg_banks);
-  flash_chr((byte*) data.data() + 0x4000 * prg_banks, 0x2000 * chr_banks);
-}
-
-void MMC1::flash(byte* ptr, size_t len) {
-  std::copy(ptr, ptr + len, std::back_inserter(rom));
-}
-
-void MMC1::flash_chr(byte* ptr, size_t len) {
-  std::copy(ptr, ptr + len, std::back_inserter(chr));
+  auto cur = flash((byte*) data.data(), 0x4000 * prg_banks, rom);
+  flash(cur, 0x2000 * chr_banks, chr);
 }
 
 byte MMC1::read(word addr) {
@@ -76,7 +68,6 @@ void MMC1::write(word addr, byte value) {
 
 byte MMC1::chr_read(word addr) {
   if (addr <= 0x0fff || chr_mode == CHRMode::Switch8KBBank) {
-    std::printf("chr_read(%04x)\n", addr);
     return chr_bank(ppu_0000_bank)[addr];
   } else {
     return chr_bank(ppu_1000_bank)[addr - 0x1000];

@@ -33,16 +33,8 @@ public:
     rom.reserve(PRG_BANK_MULTIPLIER * prg_banks);
     chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);
 
-    flash((byte*) data.data(), PRG_BANK_MULTIPLIER * prg_banks);
-    flash_chr((byte*) data.data() + PRG_BANK_MULTIPLIER * prg_banks, CHR_BANK_MULTIPLIER * chr_banks);
-  }
-
-  void flash(byte* ptr, size_t len) {
-    std::copy(ptr, ptr + len, std::back_inserter(rom));
-  }
-
-  void flash_chr(byte* ptr, size_t len) {
-    std::copy(ptr, ptr + len, std::back_inserter(chr));
+    auto cur = flash((byte*) data.data(), PRG_BANK_MULTIPLIER * prg_banks, rom);
+    flash(cur, CHR_BANK_MULTIPLIER * chr_banks, chr);
   }
 
   inline byte* bank(int bank) {

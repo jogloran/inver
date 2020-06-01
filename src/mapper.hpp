@@ -36,4 +36,9 @@ public:
 
 protected:
   Bus* bus;
+
+  byte* flash(byte* ptr, size_t len, std::vector<byte>& out) {
+    std::copy(ptr, ptr + len, std::back_inserter(out));
+    return ptr + len;
+  }
 };

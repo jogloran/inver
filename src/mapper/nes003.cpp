@@ -19,9 +19,8 @@ CNROM::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHea
   rom.reserve(0x4000 * prg_banks);
   chr.reserve(0x2000 * chr_banks);
 
-  std::copy(data.begin(), data.begin() + 0x4000 * prg_banks, std::back_inserter(rom));
-  std::copy(data.begin() + 0x4000 * prg_banks,
-            data.begin() + 0x4000 * prg_banks + 0x2000 * chr_banks, std::back_inserter(chr));
+  auto cur = flash((byte*) data.data(), 0x4000 * prg_banks, rom);
+  flash(cur, 0x2000 * chr_banks, chr);
 }
 
 byte CNROM::chr_read(word addr) {

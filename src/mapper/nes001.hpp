@@ -65,10 +65,6 @@ private:
 
   byte shift;
 
-  void flash(byte* ptr, size_t len);
-
-  void flash_chr(byte* ptr, size_t len);
-
   void mmc1_command(word mmc1_addr, byte shift);
 
   byte* chr_bank(byte bank);
