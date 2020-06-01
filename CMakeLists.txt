@@ -12,7 +12,7 @@ link_directories(src/nes_apu)
 include_directories(src audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12/include)
 include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
-        src/bus.cpp src/mapper/nes000.cpp src/cpu6502.cpp
+        src/bus.cpp src/cpu6502.cpp
         src/op_names.cpp src/ppu.cpp src/screen.cpp
         src/tm.cpp src/utils.cpp
         src/ops.cpp src/mapper.hpp

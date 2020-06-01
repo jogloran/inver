@@ -20,7 +20,6 @@
 		09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8A24847CB40020B5D4 /* cpu6502.cpp */; };
 		09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8D24847CB40020B5D4 /* ppu.cpp */; };
 		09FADC9D24847CB40020B5D4 /* bus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8F24847CB40020B5D4 /* bus.cpp */; };
-		09FADCA524847CBA0020B5D4 /* nes000.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC9F24847CBA0020B5D4 /* nes000.cpp */; };
 		09FADCA624847CBA0020B5D4 /* nes001.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCA124847CBA0020B5D4 /* nes001.cpp */; };
 		09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCA424847CBA0020B5D4 /* nes004.cpp */; };
 		09FADCBF24847CC70020B5D4 /* apu_snapshot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCB024847CC60020B5D4 /* apu_snapshot.cpp */; };
@@ -46,6 +45,7 @@
 		09FADCFB248481450020B5D4 /* Nes_Namco.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCBB24847CC70020B5D4 /* Nes_Namco.h */; };
 		09FADCFC248481450020B5D4 /* Nes_Oscs.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCB824847CC70020B5D4 /* Nes_Oscs.h */; };
 		09FADCFD248481450020B5D4 /* Nes_Vrc6.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCB924847CC70020B5D4 /* Nes_Vrc6.h */; };
+		09FC20482484CC6F0077BF6B /* nes003.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FC20462484CC6F0077BF6B /* nes003.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,7 +124,6 @@
 		09FADC8E24847CB40020B5D4 /* op_macros.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = op_macros.hpp; path = src/op_macros.hpp; sourceTree = "<group>"; };
 		09FADC8F24847CB40020B5D4 /* bus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bus.cpp; path = src/bus.cpp; sourceTree = "<group>"; };
 		09FADC9024847CB40020B5D4 /* audio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = audio.cpp; path = src/audio.cpp; sourceTree = "<group>"; };
-		09FADC9F24847CBA0020B5D4 /* nes000.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes000.cpp; path = src/mapper/nes000.cpp; sourceTree = "<group>"; };
 		09FADCA024847CBA0020B5D4 /* nes000.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes000.hpp; path = src/mapper/nes000.hpp; sourceTree = "<group>"; };
 		09FADCA124847CBA0020B5D4 /* nes001.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes001.cpp; path = src/mapper/nes001.cpp; sourceTree = "<group>"; };
 		09FADCA224847CBA0020B5D4 /* nes001.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes001.hpp; path = src/mapper/nes001.hpp; sourceTree = "<group>"; };
@@ -157,6 +156,8 @@
 		09FADCCE24847E430020B5D4 /* nes_apu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = nes_apu.m; sourceTree = "<group>"; };
 		09FADCEB24847F530020B5D4 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = asobitomo/util.h; sourceTree = "<group>"; };
 		09FADCEC24847F530020B5D4 /* util.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cc; path = asobitomo/util.cc; sourceTree = "<group>"; };
+		09FC20462484CC6F0077BF6B /* nes003.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes003.cpp; path = src/mapper/nes003.cpp; sourceTree = "<group>"; };
+		09FC20472484CC6F0077BF6B /* nes003.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes003.hpp; path = src/mapper/nes003.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,6 +184,8 @@
 		09A2C02A2478E38A00CFB287 = {
 			isa = PBXGroup;
 			children = (
+				09FC20462484CC6F0077BF6B /* nes003.cpp */,
+				09FC20472484CC6F0077BF6B /* nes003.hpp */,
 				09FADCC524847CD30020B5D4 /* types.h */,
 				09FADCEC24847F530020B5D4 /* util.cc */,
 				09FADCEB24847F530020B5D4 /* util.h */,
@@ -190,7 +193,6 @@
 				09FADCAF24847CC60020B5D4 /* nes_apu.cbp */,
 				09FADCBC24847CC70020B5D4 /* Nonlinear_Buffer.cpp */,
 				09FADCA924847CC50020B5D4 /* Nonlinear_Buffer.h */,
-				09FADC9F24847CBA0020B5D4 /* nes000.cpp */,
 				09FADCA024847CBA0020B5D4 /* nes000.hpp */,
 				09FADCA124847CBA0020B5D4 /* nes001.cpp */,
 				09FADCA224847CBA0020B5D4 /* nes001.hpp */,
@@ -406,10 +408,10 @@
 				09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */,
 				09FADC9824847CB40020B5D4 /* screen.cpp in Sources */,
 				09FADC9124847CB40020B5D4 /* main.cpp in Sources */,
-				09FADCA524847CBA0020B5D4 /* nes000.cpp in Sources */,
 				09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */,
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
 				09FADCED24847F530020B5D4 /* util.cc in Sources */,
+				09FC20482484CC6F0077BF6B /* nes003.cpp in Sources */,
 				09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */,
 				09FADC9D24847CB40020B5D4 /* bus.cpp in Sources */,
 				09FADCF324847F920020B5D4 /* Simple_Apu.cpp in Sources */,
