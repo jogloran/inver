@@ -51,7 +51,6 @@ PPU::shift() {
 
 inline void
 PPU::load_shift_reg() {
-//  log("load_shift_reg: %02x %02x\n", bg_tile_lsb, bg_tile_msb);
   pt_shifter[0] = (pt_shifter[0] & 0xff00) | bg_tile_lsb;
   pt_shifter[1] = (pt_shifter[1] & 0xff00) | bg_tile_msb;
 
@@ -63,7 +62,6 @@ inline void
 PPU::nt_read() {
   load_shift_reg();
   nt_byte = ppu_read(0x2000 + (loopy_v.reg & 0xfff));
-//  log("Read nt byte %02x from %04x\n", nt_byte, 0x2000 + (loopy_v.reg & 0xfff));
 }
 
 inline void
@@ -166,12 +164,6 @@ PPU::set_vblank() {
   if (ppuctrl.vblank_nmi) {
     nmi_req = true;
   }
-
-//  auto now = std::chrono::high_resolution_clock::now();
-//  std::chrono::duration<double> diff = std::chrono::duration_cast<std::chrono::duration<double>>(
-//      now - last_frame);
-//  log("frame: %fms\n", diff.count() * 1000);
-//  last_frame = std::chrono::high_resolution_clock::now();
 }
 
 inline void
@@ -312,7 +304,6 @@ PPU::tick() {
       std::sort(shadow_oam.begin(), shadow_oam.end(), [](const Sprite& s1, const Sprite& s2) {
         return s1.sprite_index < s2.sprite_index;
       });
-      std::array<byte, 256> sprite_row;
       std::fill(sprite_row.begin(), sprite_row.end(), 0x0);
       for (const Sprite& sprite : shadow_oam) {
         auto visible = sprite.oam;
@@ -353,18 +344,14 @@ PPU::tick() {
           // apply horizontal flip if necessary
           byte selector = visible.attr & 0x40 ? (7 - (i - visible.x)) : i - visible.x;
           auto sprite_byte = decoded[selector];
-          // TODO: the below causes problems
-//          if (output != 0 && sprite_byte != 0) {
           if (ppumask.show_background && sprite_byte != 0 &&
               (ppumask.show_left_sprites || i >= 8) && i < 256) {
-//            screen.fb[scanline * 256 + i] = pal[4 * sprite_palette + sprite_byte];
             if (sprite_row[i] == 0) {
               sprite_row[i] = pal[4 * sprite_palette + sprite_byte];
               if ((visible.attr & 0x20) && sprite_row[i] != 0) {
                 sprite_row[i] += 64;
               }
             }
-            LOG("drawing (x=% 2d, y=% 2d) %02x\n", i, scanline, sprite_byte);
 
             if (sprite.sprite_index == 0) {
               ppustatus.sprite0_hit = 1;
@@ -373,23 +360,6 @@ PPU::tick() {
         }
       }
 
-//      log("sprite row\n");
-//      for (int i = 0; i < 256; ++i) {
-//        std::printf("%02x", sprite_row[i]);
-//      }
-//      std::printf("\n");
-//      log("fb row\n");
-//      for (int i = 0; i < 256; ++i) {
-//        std::printf("%02x", screen.fb[scanline * 256 + i]);
-//      }
-//      std::printf("\n");
-//
-//      for (int i = 0; i < 256; ++i) {
-//        std::printf("%02x", sprite_row[i]);
-//      }
-//      std::printf("\n");
-
-      // composite
       for (int i = 0; i < 256; ++i) {
         byte& b = screen.at(scanline * 256 + i);
         bool front_prio = sprite_row[i] < 64;

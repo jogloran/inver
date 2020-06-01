@@ -43,15 +43,19 @@ public:
 
   std::ostream& dump_stack(std::ostream&);
 
-  cycle_count_t branch_with_offset();
+  inline cycle_count_t branch_with_offset() {
+    sbyte offset = static_cast<sbyte>(bus->read(pc++));
+    pc += offset;
+    return ((pc - offset) & 0xff00) == (pc & 0xff00) ? 0 : 1;
+  }
 
-  cycle_count_t observe_crossed_page() {
+  inline cycle_count_t observe_crossed_page() {
     auto result = crossed_page;
     crossed_page = false;
     return cycle_count_t(result);
   }
 
-  void reset_crossed_page() {
+  inline void reset_crossed_page() {
     crossed_page = false;
   }
 
@@ -77,7 +81,7 @@ public:
   bool crossed_page;
   bool should_dump;
 
-  Bus *bus;
+  Bus* bus;
 
   constexpr static word SP_BASE = 0x100;
 
@@ -162,7 +166,7 @@ public:
     return ptr;
   }
 
-  void connect(Bus *other) {
+  void connect(Bus* other) {
     bus = other;
   }
 

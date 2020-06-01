@@ -405,6 +405,7 @@ public:
   std::array<Sprite, 8> shadow_oam;
   std::array<byte, 8> shadow_oam_indices;
   std::vector<Sprite> candidate_sprites;
+  std::array<byte, 256> sprite_row;
   TM tm;
   Screen screen;
   int scanline; // -1 to 260

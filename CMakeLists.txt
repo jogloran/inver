@@ -18,7 +18,7 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/ops.cpp src/mapper.hpp src/mapper/nes004.cpp
         src/mapper/nes004.hpp src/header.hpp src/header.cpp
         src/mapper/nes001.cpp src/mapper/nes001.hpp
-        src/Simple_Apu.cpp src/Simple_Apu.h src/audio.cpp src/audio.hpp src/Sound_Queue.cpp src/Sound_Queue.h)
+        src/Simple_Apu.cpp src/Simple_Apu.h src/Sound_Queue.cpp src/Sound_Queue.h)
 
 target_link_libraries(inver gflags)
 target_link_libraries(inver nes_apu)

@@ -84,8 +84,6 @@ void
 Screen::blit() {
 //  auto then = std::chrono::high_resolution_clock::now();
   int i = 0;
-  if (fb[0] == 0) { ;
-  }
   for (byte b: fb) {
     bool show_vert = i % 32 == 0;
     bool show_horz = (i / 1024) % 8 == 0;
