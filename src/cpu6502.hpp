@@ -185,4 +185,6 @@ public:
   void dump_pc();
 
   bool irq();
+
+  void brk();
 };

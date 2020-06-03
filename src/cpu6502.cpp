@@ -62,13 +62,15 @@ void CPU6502::rts() {
 }
 
 word CPU6502::pop_word() {
-  auto result = (bus->read(SP_BASE + sp + 1) | (bus->read(SP_BASE + sp + 2) << 8));
+  auto result = (bus->read(SP_BASE + ((sp + 1) & 0xff)) |
+                 (bus->read(SP_BASE + ((sp + 2) & 0xff)) << 8));
   sp += 2;
   return result;
 }
 
+// Popping with an empty stack (sp = 0x1ff) must set sp = 0x00 and read from 0x100 instead
 byte CPU6502::pop() {
-  auto result = bus->read(SP_BASE + sp + 1);
+  auto result = bus->read(SP_BASE + ((sp + 1) & 0xff));
   ++sp;
   return result;
 }
@@ -92,6 +94,16 @@ bool CPU6502::irq() {
     return true;
   }
   return false;
+}
+
+// The copy of P pushed by BRK should always contain __11 ____ (the unused bits set to 1)
+// and with the I flag disabled _after_ pushing
+void CPU6502::brk() {
+  push_word(pc + 1); \
+  push((p.reg & ~0b00110000) | 0b00110000); \
+  p.I = 1; \
+  word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
+  pc = handler;
 }
 
 void
@@ -122,8 +134,8 @@ void CPU6502::dump() {
             << " x: " << hex_byte << static_cast<int>(x)
             << " y: " << hex_byte << static_cast<int>(y);
   std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341
-//            << " (0)+y: " << hex_word << (bus->read(0) | (bus->read(1) << 8)) + y << " = "
-//            << hex_byte << static_cast<int>(bus->read((bus->read(0) | (bus->read(1) << 8)) + y)) << ' '
+            //            << " (0)+y: " << hex_word << (bus->read(0) | (bus->read(1) << 8)) + y << " = "
+            //            << hex_byte << static_cast<int>(bus->read((bus->read(0) | (bus->read(1) << 8)) + y)) << ' '
             << "(0),(1): " << hex_byte << static_cast<int>(bus->read(0x0))
             << hex_byte << static_cast<int>(bus->read(0x1)) << ' ';
 

@@ -67,7 +67,7 @@ const char *to_6502_flag_string(byte f) {
 }
 
 std::ostream& hex_byte(std::ostream& out) {
-  return out << std::hex << std::setw(2) << std::setfill('0');
+  return out << std::hex << std::setw(2) << std::setfill('0') << std::right;
 }
 
 std::ostream& hex_word(std::ostream& out) {

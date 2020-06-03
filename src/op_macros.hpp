@@ -20,9 +20,7 @@
 }
 
 #define BRK [](CPU6502& cpu) { \
-  cpu.p.I = 1; \
-  cpu.push_word(cpu.pc + 2); \
-  cpu.push(cpu.p.reg | 0b00110000); \
+  cpu.brk(); \
   return 0; \
 }
 
@@ -36,7 +34,7 @@
 }
 
 #define PHP [](CPU6502& cpu) {\
-  cpu.push(cpu.p.reg | 0b00110000); \
+  cpu.push(cpu.p.reg | 0b00010000); \
   return 0; \
 }
 
