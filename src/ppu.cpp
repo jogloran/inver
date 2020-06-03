@@ -2,6 +2,8 @@
 
 DECLARE_bool(tm);
 DECLARE_bool(td);
+DECLARE_int32(td_scanline);
+DECLARE_int32(td_refresh_rate);
 
 void
 PPU::calculate_sprites() {
@@ -221,6 +223,9 @@ PPU::events_for(int s, int c) {
       }
     }
   }
+  if (FLAGS_td && FLAGS_td_scanline == s && ncycles % FLAGS_td_refresh_rate == 0) {
+    td.show();
+  }
 }
 
 void
@@ -391,6 +396,5 @@ void PPU::frame_done() {
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
       now - frame_start);
   if (FLAGS_tm) tm.show();
-  if (FLAGS_td) td.show();
   screen.frame_rendered(diff.count());
 }
