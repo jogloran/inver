@@ -14,7 +14,8 @@ include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
         src/bus.cpp src/cpu6502.cpp
         src/op_names.cpp src/ppu.cpp src/screen.cpp
-        src/tm.cpp src/utils.cpp
+        src/td.cpp src/tm.cpp
+        src/utils.cpp
         src/ops.cpp src/mapper.hpp
         src/mapper/nes003.hpp src/mapper/nes003.cpp
         src/mapper/nes004.cpp src/mapper/nes004.hpp src/header.hpp src/header.cpp

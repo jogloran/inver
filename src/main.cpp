@@ -29,6 +29,7 @@ DEFINE_bool(dump_stack, false, "Dump stack");
 DEFINE_bool(audio, true, "Enable audio");
 DEFINE_string(save, "", "Save path");
 DEFINE_bool(tm, false, "Show tile map");
+DEFINE_bool(td, true, "Show tile debugger (nametable)");
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");

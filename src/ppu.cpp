@@ -1,6 +1,7 @@
 #include "ppu.hpp"
 
 DECLARE_bool(tm);
+DECLARE_bool(td);
 
 void
 PPU::calculate_sprites() {
@@ -390,5 +391,6 @@ void PPU::frame_done() {
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
       now - frame_start);
   if (FLAGS_tm) tm.show();
+  if (FLAGS_td) td.show();
   screen.frame_rendered(diff.count());
 }

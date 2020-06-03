@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "tm.hpp"
+#include "td.hpp"
 #include "screen.hpp"
 #include "utils.hpp"
 #include "mapper.hpp"
@@ -33,6 +34,7 @@ public:
           nmi_req(false), odd_frame(false) {
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
+    td.connect_ppu(this);
     screen.ppu = this;
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
@@ -156,8 +158,8 @@ public:
   // Each tile consists of 16 bytes, encoding palette values 0,1,2,3
   // The total pattern memory is 2*256*16 = 8192 bytes
   std::array<byte, 8> decode(byte plane, byte tile_index, byte row) {
-    byte lsb = cart->chr_read(plane * 4096 + tile_index * 16 + row);
-    byte msb = cart->chr_read(plane * 4096 + tile_index * 16 + 8 + row);
+    byte lsb = cart->chr_read((plane << 10) + tile_index * 16 + row);
+    byte msb = cart->chr_read((plane << 10) + tile_index * 16 + 8 + row);
     return unpack_bits(lsb, msb);
   }
 
@@ -412,6 +414,7 @@ public:
   std::vector<Sprite> candidate_sprites;
   std::array<byte, 256> sprite_row;
   TM tm;
+  TD td;
   Screen screen;
   int scanline; // -1 to 260
   int ncycles;
