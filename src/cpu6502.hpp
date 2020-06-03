@@ -15,6 +15,15 @@ public:
 
   inline byte read(word address) { return bus->read(address); }
 
+  inline byte read_byte() {
+    return read(pc++);
+  }
+
+  inline word read_word() {
+    word addr = read_byte();
+    return addr | (read_byte() << 8);
+  }
+
   inline void write(word address, byte value) { bus->write(address, value); }
 
   [[maybe_unused]] void set_pc(word address);
@@ -34,8 +43,6 @@ public:
   byte pop();
 
   word pop_word();
-
-  word read_word();
 
   void set_should_dump(bool dump) {
     should_dump = dump;
@@ -96,46 +103,42 @@ public:
   }
 
   DEFINE_ADDR_MODE(abs, {
-    word addr = read(pc++);
-    addr |= (read(pc++) << 8);
-    return addr;
+    return read_word();
   })
 
   DEFINE_ADDR_MODE(zpg, {
-    return read(pc++);
+    return read_byte();
   })
 
   DEFINE_ADDR_MODE(zpg_plus_x, {
-    return (read(pc++) + x) % 256;
+    return (read_byte() + x) % 256;
   })
 
   DEFINE_ADDR_MODE(zpg_plus_y, {
-    return (read(pc++) + y) % 256;
+    return (read_byte() + y) % 256;
   })
 
   DEFINE_ADDR_MODE(abs_plus_x, {
-    word addr = read(pc++);
-    addr |= (read(pc++) << 8);
+    word addr = read_word();
     check_page_crossing(addr, addr + x);
     return addr + x;
   })
 
   DEFINE_ADDR_MODE(abs_plus_y, {
-    word addr = read(pc++);
-    addr |= (read(pc++) << 8);
+    word addr = read_word();
     check_page_crossing(addr, addr + y);
     return addr + y;
   })
 
   DEFINE_ADDR_MODE(x_indirect, {
-    byte zp_offset = read(pc++);
+    byte zp_offset = read_byte();
     word ptr = read((zp_offset + x) % 256);
     ptr |= read((zp_offset + x + 1) % 256) << 8;
     return ptr;
   })
 
   DEFINE_ADDR_MODE(indirect_y, {
-    byte zp_offset = read(pc++);
+    byte zp_offset = read_byte();
     word ptr = read(zp_offset);
     if (ptr & 0xff) {
       crossed_page = true;
@@ -147,12 +150,11 @@ public:
 #undef DEFINE_ADDR_MODE
 
   byte deref_imm() {
-    return read(pc++);
+    return read_byte();
   }
 
   word addr_indirect() {
-    word addr = read(pc++);
-    addr |= (read(pc++) << 8);
+    word addr = read_word();
 
     // The 6502 jmp indirect bug:
     // if addr + 1 crosses a page boundary,

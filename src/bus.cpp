@@ -29,20 +29,6 @@ Bus::tick() {
     ppu->screen.frame_rendered(1000 / 60);
     return;
   }
-//  then = std::chrono::high_resolution_clock::now();
-  ppu->tick();
-  if (ncycles % 3 == 0) {
-    if (ppu->nmi_req) {
-      cpu->nmi();
-      ppu->nmi_req = false;
-    } else if (cart->irq_requested()) {
-      bool handled = cpu->irq();
-      if (handled) {
-        cart->irq_handled();
-      }
-    }
-    cpu->tick();
-  }
 
   if (FLAGS_audio && ncycles % CPU_CYCLES_PER_FRAME == 0) {
     apu.end_frame();
@@ -51,6 +37,22 @@ Bus::tick() {
     long count = apu.read_samples(buf, 4096);
     sound_queue->write(buf, count);
   }
+
+//  then = std::chrono::high_resolution_clock::now();
+  ppu->tick();
+  ppu->tick();
+  ppu->tick();
+
+  if (ppu->nmi_req) {
+    cpu->nmi();
+    ppu->nmi_req = false;
+  } else if (cart->irq_requested()) {
+    bool handled = cpu->irq();
+    if (handled) {
+      cart->irq_handled();
+    }
+  }
+  cpu->tick();
 
   ++ncycles;
 }

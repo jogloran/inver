@@ -75,11 +75,6 @@ byte CPU6502::pop() {
   return result;
 }
 
-word CPU6502::read_word() {
-  word result = bus->read(pc++);
-  return result | (bus->read(pc++) << 8);
-}
-
 bool CPU6502::irq() {
   if (!p.I) {
     push_word(pc);

@@ -10,7 +10,7 @@
 #include "Simple_Apu.h"
 #include "Sound_Queue.h"
 
-static const int CPU_CYCLES_PER_FRAME = 29781 * 3;
+static const int CPU_CYCLES_PER_FRAME = 29781;
 
 class CPU6502;
 
