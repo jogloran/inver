@@ -85,8 +85,8 @@ public:
 
   constexpr static word SP_BASE = 0x100;
 
-  inline bool crosses_page(word addr1, word addr2) {
-    return (addr1 & 0xff00) != (addr2 & 0xff00);
+  inline void check_page_crossing(word addr1, word addr2) {
+    if ((addr1 & 0xff00) != (addr2 & 0xff00)) crossed_page = true;
   }
 
 #define DEFINE_ADDR_MODE(mode, body) \
@@ -116,18 +116,14 @@ public:
   DEFINE_ADDR_MODE(abs_plus_x, {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
-    if (crosses_page(addr, addr + x)) {
-      crossed_page = true;
-    }
+    check_page_crossing(addr, addr + x);
     return addr + x;
   })
 
   DEFINE_ADDR_MODE(abs_plus_y, {
     word addr = read(pc++);
     addr |= (read(pc++) << 8);
-    if (crosses_page(addr, addr + y)) {
-      crossed_page = true;
-    }
+    check_page_crossing(addr, addr + y);
     return addr + y;
   })
 
