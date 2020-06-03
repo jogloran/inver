@@ -17,7 +17,7 @@ Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu
   std::fill(ram.begin(), ram.end(), 0);
 
   if (FLAGS_audio) {
-    SDL_Init(SDL_INIT_AUDIO);
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
     sound_queue->init(44100);
     apu.sample_rate(44100);
   }

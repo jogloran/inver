@@ -14,7 +14,6 @@ class Screen {
 public:
   Screen() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-    SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
     window_ = SDL_CreateWindow("Game",
                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                BUF_WIDTH * 4, BUF_HEIGHT * 4, SDL_WINDOW_HIDDEN);

@@ -29,7 +29,7 @@ DEFINE_bool(dump_stack, false, "Dump stack");
 DEFINE_bool(audio, true, "Enable audio");
 DEFINE_string(save, "", "Save path");
 DEFINE_bool(tm, false, "Show tile map");
-DEFINE_bool(td, true, "Show tile debugger (nametable)");
+DEFINE_bool(td, false, "Show tile debugger (nametable)");
 DEFINE_int32(td_scanline, 0, "Tile debugger samples at this scanline");
 DEFINE_int32(td_refresh_rate, 240, "Tile debugger updates per n PPU cycles");
 

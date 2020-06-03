@@ -14,7 +14,6 @@ public:
   PPU* ppu;
   TD() {
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_InitSubSystem(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TD", 500, 0, TD_WIDTH * 2, TD_HEIGHT * 2, SDL_WINDOW_HIDDEN);
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
