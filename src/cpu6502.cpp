@@ -94,9 +94,9 @@ bool CPU6502::irq() {
 // The copy of P pushed by BRK should always contain __11 ____ (the unused bits set to 1)
 // and with the I flag disabled _after_ pushing
 void CPU6502::brk() {
-  push_word(pc + 1); \
-  push((p.reg & ~0b00110000) | 0b00110000); \
-  p.I = 1; \
+  push_word(pc + 1);
+  push((p.reg & ~0b00110000) | 0b00110000);
+  p.I = 1;
   word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
   pc = handler;
 }
@@ -124,8 +124,7 @@ void CPU6502::dump() {
   std::cout << " sp: " << hex_byte << static_cast<int>(sp) << ' ';
   std::cout << to_6502_flag_string(p.reg) << " ("
             << hex_byte << int(p.reg) << ')';
-  std::cout << std::right
-            << " a: " << hex_byte << static_cast<int>(a)
+  std::cout << " a: " << hex_byte << static_cast<int>(a)
             << " x: " << hex_byte << static_cast<int>(x)
             << " y: " << hex_byte << static_cast<int>(y);
   std::cout << " cyc: " << dec << setw(8) << setfill(' ') << (ncycles * 3) % 341

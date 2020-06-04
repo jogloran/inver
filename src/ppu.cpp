@@ -304,11 +304,10 @@ PPU::tick() {
 
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
-    if (ppumask.show_left_background || ncycles > 8) {
-      screen.at(scanline * 256 + (ncycles - 1)) =
-          output == 0 ? bg : pal[4 * output_palette + output];
-      bg_is_transparent[ncycles - 1] = output == 0;
-    }
+    bool render_left_column = (ppumask.show_left_background || ncycles > 8);
+    screen.at(scanline * 256 + (ncycles - 1)) =
+        (output == 0 || !render_left_column) ? bg : pal[4 * output_palette + output];
+    bg_is_transparent[ncycles - 1] = output == 0;
 
     auto height = ppuctrl.sprite_size ? 16 : 8;
 

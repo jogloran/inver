@@ -149,6 +149,8 @@ Screen::blit() {
         case SDLK_w:
           bus->request_save();
           break;
+        case SDLK_q:
+          std::exit(0);
       }
     }
   }

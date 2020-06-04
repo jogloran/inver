@@ -19,30 +19,6 @@
   return cpu.observe_crossed_page(); \
 }
 
-#define BRK [](CPU6502& cpu) { \
-  cpu.brk(); \
-  return 0; \
-}
-
-#define NOP [](CPU6502& cpu) { return 0; }
-#define XX(len, n) [](CPU6502& cpu) { cpu.pc += len; return n; }
-#define XXX [](CPU6502& cpu) { return 0; }
-
-#define JMP(mode) [](CPU6502& cpu) {\
-  cpu.pc = cpu.addr_##mode(); \
-  return 0; \
-}
-
-#define PHP [](CPU6502& cpu) {\
-  cpu.push(cpu.p.reg | 0b00010000); \
-  return 0; \
-}
-
-#define PHA [](CPU6502& cpu) {\
-  cpu.push(cpu.a); \
-  return 0; \
-}
-
 #define ADC_GEN(mode, unary_op) [](CPU6502& cpu) {\
   byte operand = unary_op cpu.deref_##mode(); \
   byte acc = cpu.a; \
@@ -132,32 +108,6 @@
 #define DEC(mode) INC_GEN(mode, -1)
 #define INC(mode) INC_GEN(mode, +1)
 
-#define JSR [](CPU6502& cpu) {\
-  cpu.push_word(cpu.pc + 1); \
-  cpu.pc = cpu.read_word(); \
-  return 0; \
-}
-
-#define RTI [](CPU6502& cpu) {\
-  cpu.pop_flags(); \
-  cpu.pc = cpu.pop_word(); \
-  return 0; \
-}
-
-#define RTS [](CPU6502& cpu) {\
-  cpu.rts(); \
-  return 0; \
-}
-
-#define BRANCH(cond) [](CPU6502& cpu) {\
-  if (cond) { \
-    return 1 + cpu.branch_with_offset(); \
-  } else { \
-    ++cpu.pc; \
-    return 0; \
-  } \
-}
-
 #define IN(reg) [](CPU6502& cpu) {\
   cpu.check_zn_flags(++cpu.reg); \
   return 0; \
@@ -176,25 +126,44 @@
   return 0; \
 }
 
-#define PLA [](CPU6502& cpu) {\
-  cpu.a = cpu.check_zn_flags(cpu.pop()); \
+#define JSR [](CPU6502& cpu) {\
+  cpu.push_word(cpu.pc + 1); \
+  cpu.pc = cpu.read_word(); \
   return 0; \
 }
 
-#define PLP [](CPU6502& cpu) {\
+#define RTI [](CPU6502& cpu) {\
   cpu.pop_flags(); \
+  cpu.pc = cpu.pop_word(); \
   return 0; \
 }
 
-#define SE(reg, v) [](CPU6502& cpu) {\
-  cpu.p.reg = v; \
-  return 0; \
+#define BRANCH(cond) [](CPU6502& cpu) {\
+  if (cond) { \
+    return 1 + cpu.branch_with_offset(); \
+  } else { \
+    ++cpu.pc; \
+    return 0; \
+  } \
 }
 
-#define TXS [](CPU6502& cpu) {\
-  cpu.sp = cpu.x; \
-  return 0; \
-}
+#define NOP        [](CPU6502& cpu) {                             return 0; }
+#define XX(len, n) [](CPU6502& cpu) { cpu.pc += len;              return n; }
+#define XXX        [](CPU6502& cpu) {                             return 0; }
+
+#define BRK        [](CPU6502& cpu) { cpu.brk();                  return 0; }
+#define JMP(mode)  [](CPU6502& cpu) { cpu.pc = cpu.addr_##mode(); return 0; }
+
+#define PHP        [](CPU6502& cpu) { cpu.push(cpu.p.reg | 0x10); return 0; }
+#define PLP        [](CPU6502& cpu) { cpu.pop_flags();            return 0; }
+
+#define PHA        [](CPU6502& cpu) { cpu.push(cpu.a);            return 0; }
+#define PLA        [](CPU6502& cpu) { cpu.a = cpu.check_zn_flags(cpu.pop()); return 0; }
+
+#define RTS        [](CPU6502& cpu) { cpu.rts();                  return 0; }
+
+#define SE(reg, v) [](CPU6502& cpu) { cpu.p.reg = v;              return 0; }
+#define TXS        [](CPU6502& cpu) { cpu.sp = cpu.x;             return 0; }
 
 #define T__(src, dst) [](CPU6502& cpu) {\
   cpu.check_zn_flags(cpu.dst = cpu.src); \
