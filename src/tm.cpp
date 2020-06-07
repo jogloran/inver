@@ -15,6 +15,8 @@ TM::show() {
       byte row = line / 8;
       word tile_index = row * 16 + (col % 16);
       std::array<byte, 8> tile_row = ppu->decode(col / 16, tile_index, line % 8);
+//      std::printf("(%1.1d, %3.3d, %3.3d) reading from %04x\n", col/16, row, col % 16,
+//                  ((col/16) << 12) + tile_index * 16 + (line % 8));
       for (int i = 0; i < 8; ++i) {
         *ptr++ = tile_row[i] * 64;
         *ptr++ = tile_row[i] * 64;

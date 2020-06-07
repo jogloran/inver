@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		092ED1E6248C63FB00869007 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED1E5248C63FB00869007 /* AppDelegate.m */; };
+		092ED1E9248C63FB00869007 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED1E8248C63FB00869007 /* ViewController.m */; };
+		092ED1EB248C63FB00869007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 092ED1EA248C63FB00869007 /* Assets.xcassets */; };
+		092ED1EE248C63FB00869007 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 092ED1EC248C63FB00869007 /* Main.storyboard */; };
+		092ED1F1248C63FB00869007 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED1F0248C63FB00869007 /* main.m */; };
+		092ED1F9248C668100869007 /* NESCHRTileItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED1F7248C668100869007 /* NESCHRTileItem.m */; };
+		092ED1FA248C668100869007 /* NESCHRTileItem.xib in Resources */ = {isa = PBXBuildFile; fileRef = 092ED1F8248C668100869007 /* NESCHRTileItem.xib */; };
+		092ED1FE248C6E3E00869007 /* HeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 092ED1FD248C6E3E00869007 /* HeaderView.xib */; };
+		092ED201248C6EC800869007 /* HeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED200248C6EC800869007 /* HeaderView.m */; };
+		092ED204248C78C800869007 /* CHRDataSource.mm in Sources */ = {isa = PBXBuildFile; fileRef = 092ED203248C78C800869007 /* CHRDataSource.mm */; };
+		092ED206248C7B8000869007 /* smb3.nes in Resources */ = {isa = PBXBuildFile; fileRef = 092ED205248C7B7F00869007 /* smb3.nes */; };
+		092ED208248C8D2500869007 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8924847CB40020B5D4 /* utils.cpp */; };
+		092ED20D248C95AB00869007 /* NoInterpolationImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 092ED20C248C95AB00869007 /* NoInterpolationImageView.m */; };
+		092ED20E248CA6DE00869007 /* header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8124847CB40020B5D4 /* header.cpp */; };
+		092ED210248CA72900869007 /* header.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8C24847CB40020B5D4 /* header.hpp */; };
+		092ED212248CA9EA00869007 /* smb2.nes in Resources */ = {isa = PBXBuildFile; fileRef = 092ED211248CA9CF00869007 /* smb2.nes */; };
+		092ED214248CAB7F00869007 /* crystalis.nes in Resources */ = {isa = PBXBuildFile; fileRef = 092ED213248CAB7300869007 /* crystalis.nes */; };
+		092ED215248CAC0500869007 /* types.h in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCC524847CD30020B5D4 /* types.h */; };
+		09824A012488945700951FC0 /* tm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 098249FE2488945700951FC0 /* tm.cpp */; };
+		09824A022488945700951FC0 /* td.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09824A002488945700951FC0 /* td.cpp */; };
 		09E3BF872478F60B00496742 /* libgflags.2.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */; };
 		09E3BF8B2478F62200496742 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */; };
 		09FADC9124847CB40020B5D4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7524847CB30020B5D4 /* main.cpp */; };
@@ -89,6 +109,33 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		092ED1E2248C63FB00869007 /* CHRLoupe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CHRLoupe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		092ED1E4248C63FB00869007 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		092ED1E5248C63FB00869007 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		092ED1E7248C63FB00869007 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		092ED1E8248C63FB00869007 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		092ED1EA248C63FB00869007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		092ED1ED248C63FB00869007 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		092ED1EF248C63FB00869007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		092ED1F0248C63FB00869007 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		092ED1F2248C63FB00869007 /* CHRLoupe.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CHRLoupe.entitlements; sourceTree = "<group>"; };
+		092ED1F6248C668100869007 /* NESCHRTileItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NESCHRTileItem.h; sourceTree = "<group>"; };
+		092ED1F7248C668100869007 /* NESCHRTileItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NESCHRTileItem.m; sourceTree = "<group>"; };
+		092ED1F8248C668100869007 /* NESCHRTileItem.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NESCHRTileItem.xib; sourceTree = "<group>"; };
+		092ED1FD248C6E3E00869007 /* HeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HeaderView.xib; sourceTree = "<group>"; };
+		092ED1FF248C6EC800869007 /* HeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HeaderView.h; sourceTree = "<group>"; };
+		092ED200248C6EC800869007 /* HeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeaderView.m; sourceTree = "<group>"; };
+		092ED202248C78C800869007 /* CHRDataSource.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = CHRDataSource.h; sourceTree = "<group>"; };
+		092ED203248C78C800869007 /* CHRDataSource.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CHRDataSource.mm; sourceTree = "<group>"; };
+		092ED205248C7B7F00869007 /* smb3.nes */ = {isa = PBXFileReference; lastKnownFileType = file; path = smb3.nes; sourceTree = SOURCE_ROOT; };
+		092ED20B248C95AB00869007 /* NoInterpolationImageView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NoInterpolationImageView.h; sourceTree = "<group>"; };
+		092ED20C248C95AB00869007 /* NoInterpolationImageView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NoInterpolationImageView.m; sourceTree = "<group>"; };
+		092ED211248CA9CF00869007 /* smb2.nes */ = {isa = PBXFileReference; lastKnownFileType = file; name = smb2.nes; path = ../../../Downloads/smb2.nes; sourceTree = "<group>"; };
+		092ED213248CAB7300869007 /* crystalis.nes */ = {isa = PBXFileReference; lastKnownFileType = file; path = crystalis.nes; sourceTree = "<group>"; };
+		098249FD2488945700951FC0 /* td.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = td.hpp; path = src/td.hpp; sourceTree = "<group>"; };
+		098249FE2488945700951FC0 /* tm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tm.cpp; path = src/tm.cpp; sourceTree = "<group>"; };
+		098249FF2488945700951FC0 /* tm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tm.hpp; path = src/tm.hpp; sourceTree = "<group>"; };
+		09824A002488945700951FC0 /* td.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = td.cpp; path = src/td.cpp; sourceTree = "<group>"; };
 		09A2C0332478E38A00CFB287 /* xcode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcode; sourceTree = BUILT_PRODUCTS_DIR; };
 		09A2C0362478E38A00CFB287 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		09A2C03D2478F37900CFB287 /* inver */ = {isa = PBXFileReference; lastKnownFileType = folder; path = inver; sourceTree = "<group>"; };
@@ -150,7 +197,7 @@
 		09FADCBA24847CC70020B5D4 /* apu_snapshot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = apu_snapshot.h; sourceTree = "<group>"; };
 		09FADCBB24847CC70020B5D4 /* Nes_Namco.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Nes_Namco.h; sourceTree = "<group>"; };
 		09FADCBC24847CC70020B5D4 /* Nonlinear_Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Nonlinear_Buffer.cpp; path = src/nes_apu/Nonlinear_Buffer.cpp; sourceTree = "<group>"; };
-		09FADCC524847CD30020B5D4 /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = types.h; path = asobitomo/types.h; sourceTree = "<group>"; };
+		09FADCC524847CD30020B5D4 /* types.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; name = types.h; path = asobitomo/types.h; sourceTree = "<group>"; };
 		09FADCCA24847E430020B5D4 /* libnes_apu.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libnes_apu.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		09FADCCC24847E430020B5D4 /* nes_apu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nes_apu.h; sourceTree = "<group>"; };
 		09FADCCE24847E430020B5D4 /* nes_apu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = nes_apu.m; sourceTree = "<group>"; };
@@ -161,6 +208,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		092ED1DF248C63FB00869007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		09A2C0302478E38A00CFB287 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -181,9 +235,42 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		092ED1E3248C63FB00869007 /* CHRLoupe */ = {
+			isa = PBXGroup;
+			children = (
+				092ED213248CAB7300869007 /* crystalis.nes */,
+				092ED211248CA9CF00869007 /* smb2.nes */,
+				092ED205248C7B7F00869007 /* smb3.nes */,
+				092ED1E4248C63FB00869007 /* AppDelegate.h */,
+				092ED1E5248C63FB00869007 /* AppDelegate.m */,
+				092ED1E7248C63FB00869007 /* ViewController.h */,
+				092ED1E8248C63FB00869007 /* ViewController.m */,
+				092ED1EA248C63FB00869007 /* Assets.xcassets */,
+				092ED1EC248C63FB00869007 /* Main.storyboard */,
+				092ED1EF248C63FB00869007 /* Info.plist */,
+				092ED1F0248C63FB00869007 /* main.m */,
+				092ED1F2248C63FB00869007 /* CHRLoupe.entitlements */,
+				092ED1F6248C668100869007 /* NESCHRTileItem.h */,
+				092ED1F7248C668100869007 /* NESCHRTileItem.m */,
+				092ED1F8248C668100869007 /* NESCHRTileItem.xib */,
+				092ED1FD248C6E3E00869007 /* HeaderView.xib */,
+				092ED1FF248C6EC800869007 /* HeaderView.h */,
+				092ED200248C6EC800869007 /* HeaderView.m */,
+				092ED202248C78C800869007 /* CHRDataSource.h */,
+				092ED203248C78C800869007 /* CHRDataSource.mm */,
+				092ED20B248C95AB00869007 /* NoInterpolationImageView.h */,
+				092ED20C248C95AB00869007 /* NoInterpolationImageView.m */,
+			);
+			path = CHRLoupe;
+			sourceTree = "<group>";
+		};
 		09A2C02A2478E38A00CFB287 = {
 			isa = PBXGroup;
 			children = (
+				09824A002488945700951FC0 /* td.cpp */,
+				098249FD2488945700951FC0 /* td.hpp */,
+				098249FE2488945700951FC0 /* tm.cpp */,
+				098249FF2488945700951FC0 /* tm.hpp */,
 				09FC20462484CC6F0077BF6B /* nes003.cpp */,
 				09FC20472484CC6F0077BF6B /* nes003.hpp */,
 				09FADCC524847CD30020B5D4 /* types.h */,
@@ -230,6 +317,7 @@
 				09A2C03D2478F37900CFB287 /* inver */,
 				09A2C0352478E38A00CFB287 /* xcode */,
 				09FADCCB24847E430020B5D4 /* nes_apu */,
+				092ED1E3248C63FB00869007 /* CHRLoupe */,
 				09A2C0342478E38A00CFB287 /* Products */,
 				09E3BF852478F60B00496742 /* Frameworks */,
 			);
@@ -240,6 +328,7 @@
 			children = (
 				09A2C0332478E38A00CFB287 /* xcode */,
 				09FADCCA24847E430020B5D4 /* libnes_apu.dylib */,
+				092ED1E2248C63FB00869007 /* CHRLoupe.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -320,6 +409,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		092ED1E1248C63FB00869007 /* CHRLoupe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 092ED1F3248C63FB00869007 /* Build configuration list for PBXNativeTarget "CHRLoupe" */;
+			buildPhases = (
+				092ED1DE248C63FB00869007 /* Sources */,
+				092ED1DF248C63FB00869007 /* Frameworks */,
+				092ED1E0248C63FB00869007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CHRLoupe;
+			productName = CHRLoupe;
+			productReference = 092ED1E2248C63FB00869007 /* CHRLoupe.app */;
+			productType = "com.apple.product-type.application";
+		};
 		09A2C0322478E38A00CFB287 /* xcode */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 09A2C03A2478E38A00CFB287 /* Build configuration list for PBXNativeTarget "xcode" */;
@@ -366,6 +472,9 @@
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Daniel Tse";
 				TargetAttributes = {
+					092ED1E1248C63FB00869007 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
 					09A2C0322478E38A00CFB287 = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
@@ -389,11 +498,47 @@
 			targets = (
 				09A2C0322478E38A00CFB287 /* xcode */,
 				09FADCC924847E430020B5D4 /* nes_apu */,
+				092ED1E1248C63FB00869007 /* CHRLoupe */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		092ED1E0248C63FB00869007 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				092ED206248C7B8000869007 /* smb3.nes in Resources */,
+				092ED1FE248C6E3E00869007 /* HeaderView.xib in Resources */,
+				092ED1EB248C63FB00869007 /* Assets.xcassets in Resources */,
+				092ED214248CAB7F00869007 /* crystalis.nes in Resources */,
+				092ED1EE248C63FB00869007 /* Main.storyboard in Resources */,
+				092ED212248CA9EA00869007 /* smb2.nes in Resources */,
+				092ED1FA248C668100869007 /* NESCHRTileItem.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		092ED1DE248C63FB00869007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				092ED215248CAC0500869007 /* types.h in Sources */,
+				092ED20D248C95AB00869007 /* NoInterpolationImageView.m in Sources */,
+				092ED204248C78C800869007 /* CHRDataSource.mm in Sources */,
+				092ED1E9248C63FB00869007 /* ViewController.m in Sources */,
+				092ED201248C6EC800869007 /* HeaderView.m in Sources */,
+				092ED1F1248C63FB00869007 /* main.m in Sources */,
+				092ED1E6248C63FB00869007 /* AppDelegate.m in Sources */,
+				092ED210248CA72900869007 /* header.hpp in Sources */,
+				092ED20E248CA6DE00869007 /* header.cpp in Sources */,
+				092ED1F9248C668100869007 /* NESCHRTileItem.m in Sources */,
+				092ED208248C8D2500869007 /* utils.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		09A2C02F2478E38A00CFB287 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -412,6 +557,8 @@
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
 				09FADCED24847F530020B5D4 /* util.cc in Sources */,
 				09FC20482484CC6F0077BF6B /* nes003.cpp in Sources */,
+				09824A022488945700951FC0 /* td.cpp in Sources */,
+				09824A012488945700951FC0 /* tm.cpp in Sources */,
 				09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */,
 				09FADC9D24847CB40020B5D4 /* bus.cpp in Sources */,
 				09FADCF324847F920020B5D4 /* Simple_Apu.cpp in Sources */,
@@ -448,7 +595,52 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		092ED1EC248C63FB00869007 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				092ED1ED248C63FB00869007 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
+		092ED1F4248C63FB00869007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CHRLoupe/CHRLoupe.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = CHRLoupe/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overpunch.CHRLoupe;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		092ED1F5248C63FB00869007 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CHRLoupe/CHRLoupe.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = CHRLoupe/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overpunch.CHRLoupe;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		09A2C0382478E38A00CFB287 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -624,6 +816,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		092ED1F3248C63FB00869007 /* Build configuration list for PBXNativeTarget "CHRLoupe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				092ED1F4248C63FB00869007 /* Debug */,
+				092ED1F5248C63FB00869007 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		09A2C02E2478E38A00CFB287 /* Build configuration list for PBXProject "xcode" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

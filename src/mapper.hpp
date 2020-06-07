@@ -30,6 +30,8 @@ public:
 
   virtual void signal_scanline() {}
 
+  virtual void dump_mapper() {}
+
   virtual void reset() = 0;
 
   virtual void connect(Bus* b) {

@@ -22,6 +22,12 @@ public:
     reset_();
   }
 
+  void dump_mapper() override {
+    for (int i = 0; i < bank_for_target.size(); ++i) {
+      log("R%d -> %s bank %02x\n", i, i >= 6 ? "rom" : "chr", bank_for_target[i]);
+    }
+  }
+
   void reset_() {
     std::fill(bank_for_target.begin(), bank_for_target.end(), 0x0);
     std::fill(ram.begin(), ram.end(), 0x0);
@@ -98,13 +104,21 @@ public:
   void write(word addr, byte value) override;
 
   byte chr_read(word addr) override {
+    // each tile ranges from 0xx0 to 0xxf (16 bytes)
+    // there are 256 tiles (zXXy)
+    // there are 2 planes (Zxxy)
+    // 2kb bank can store 128 tiles
     static const size_t offsets[] = {0, 0, 1, 1, 2, 3, 4, 5};
     static const word section_start[] = {0x0, 0x0, 0x0800, 0x0800, 0x1000, 0x1400, 0x1800, 0x1c00};
+    static const word section_start2[] = {0x1000, 0x1000, 0x1800, 0x1800, 0x0, 0x0400, 0x0800, 0x0c00};
     size_t start = chr_a12_inversion ? 4 : 0;
     size_t i = (addr >> 10) & 7;
-    size_t offset = (start + i) % 8;
-    size_t bank = bank_for_target[offsets[offset]];
-    return chr_bank(bank)[addr - section_start[offset]];
+    // i can be 0..7, corresponds to which row it is
+    size_t offset = (start + i) % 8; // offset = 3, offsets[offset] = 1
+    size_t bank = bank_for_target[offsets[offset]]; // bank = 1
+
+    auto section_start_value = (chr_a12_inversion ? section_start2 : section_start)[offset];
+    return chr_bank(bank)[addr - section_start_value];
   }
 
   void chr_write(word addr, byte value) override {}

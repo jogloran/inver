@@ -158,8 +158,8 @@ public:
   // Each tile consists of 16 bytes, encoding palette values 0,1,2,3
   // The total pattern memory is 2*256*16 = 8192 bytes
   std::array<byte, 8> decode(byte plane, byte tile_index, byte row) {
-    byte lsb = cart->chr_read((plane << 10) + tile_index * 16 + row);
-    byte msb = cart->chr_read((plane << 10) + tile_index * 16 + 8 + row);
+    byte lsb = cart->chr_read((plane << 12) + tile_index * 16 + row);
+    byte msb = cart->chr_read((plane << 12) + tile_index * 16 + 8 + row);
     return unpack_bits(lsb, msb);
   }
 
@@ -173,6 +173,7 @@ public:
       Mapper::Mirroring mirroring = cart->get_mirroring();
       auto nt_index = (ppu_addr >> 10) & 1;
       switch (mirroring) {
+        // TODO: I suspect this isn't right
         case Mapper::Mirroring::V:
           ppu_addr &= ~(1 << 11);
           nt_index = (ppu_addr >> 10) & 1;

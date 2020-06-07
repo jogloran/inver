@@ -163,7 +163,7 @@ void Bus::request_save() {
     std::cerr << "Saving to " << FLAGS_save << std::endl;
     std::ofstream f(FLAGS_save);
     if (f) {
-      std::copy(ram.begin(), ram.end(), std::ostreambuf_iterator(f));
+      std::copy(ram.begin(), ram.end(), std::ostreambuf_iterator<char>(f));
     }
   }
 }
