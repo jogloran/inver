@@ -68,6 +68,7 @@ inline void
 PPU::nt_read() {
   load_shift_reg();
   nt_byte = ppu_read(0x2000 + (loopy_v.reg & 0xfff));
+//  log("nt read: %02x\n", nt_byte);
 }
 
 inline void

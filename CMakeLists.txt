@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_subdirectory(src/nes_apu)
 link_directories(src/nes_apu)
 
-include_directories(src audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12/include)
+include_directories(src audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12_1/include)
 include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
         src/bus.cpp src/cpu6502.cpp
