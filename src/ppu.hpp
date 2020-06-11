@@ -36,7 +36,7 @@ public:
           actions {
 //              {at_scanline_cycle(-1, 260), log_ppu_regs}
 //              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
-              {at_tile(0, -1, Subcycle::NTRead), decode_nt_byte}
+              {at_tile(0, -1, Subcycle::NTRead), call({decode_nt_byte, log_ppu_regs})}
           } {
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);

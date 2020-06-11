@@ -69,6 +69,14 @@ Pred first(Pred inner) {
   };
 }
 
+Act call(std::vector<Act> acts) {
+  return [acts](PPU& ppu) {
+    for (Act a : acts) {
+      a(ppu);
+    }
+  };
+}
+
 void log_ppu_regs(PPU& ppu) {
   ppu.log("nt: %02x at: %02x pt: %02x%02x\n", ppu.nt_byte, ppu.at_byte_lsb, ppu.at_byte_msb,
           ppu.pt_byte);
