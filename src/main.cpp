@@ -32,6 +32,7 @@ DEFINE_bool(tm, false, "Show tile map");
 DEFINE_bool(td, false, "Show tile debugger (nametable)");
 DEFINE_int32(td_scanline, 0, "Tile debugger samples at this scanline");
 DEFINE_int32(td_refresh_rate, 240, "Tile debugger updates per n PPU cycles");
+DEFINE_string(ppu_log_spec, "", "PPU log spec");
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");

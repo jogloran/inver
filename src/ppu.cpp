@@ -68,7 +68,6 @@ inline void
 PPU::nt_read() {
   load_shift_reg();
   nt_byte = ppu_read(0x2000 + (loopy_v.reg & 0xfff));
-//  log("nt read: %02x\n", nt_byte);
 }
 
 inline void
@@ -283,6 +282,14 @@ void PPU::dump_at() {
 void
 PPU::tick() {
   events_for(scanline, ncycles);
+
+#ifndef NDEBUG
+  for (const auto& action : actions) {
+    if (action.pred(*this)) {
+      action.action(*this);
+    }
+  }
+#endif
 
   byte output = 0;
   byte output_palette = 0;

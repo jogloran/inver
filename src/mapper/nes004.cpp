@@ -24,7 +24,6 @@ bool MMC3::irq_requested() {
 void MMC3::irq_handled() {}
 
 void MMC3::irq_enable(bool enable) {
-  bus->ppu->log("irq_enable %02x\n", enable);
   if (!enable) {
     irq_requested_ = false;
   }

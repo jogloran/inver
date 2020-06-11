@@ -11,6 +11,7 @@
 #include "screen.hpp"
 #include "utils.hpp"
 #include "mapper.hpp"
+#include "ppu_act.hpp"
 
 DECLARE_bool(xx);
 
@@ -31,7 +32,12 @@ public:
           ppudata_byte(0),
           nt_byte(0), at_byte_lsb(0), at_byte_msb(0),
           pt_byte(0), bg_tile_msb(0), bg_tile_lsb(0),
-          nmi_req(false), odd_frame(false) {
+          nmi_req(false), odd_frame(false),
+          actions {
+//              {at_scanline_cycle(-1, 260), log_ppu_regs}
+//              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
+              {at_tile(0, -1, Subcycle::NTRead), decode_nt_byte}
+          } {
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
     td.connect_ppu(this);
@@ -361,6 +367,8 @@ public:
 
   std::array<byte, 0x800> nt;
   std::array<byte, 0x20> pal;
+
+  std::vector<PPULogSpec> actions;
 
   union ppuctrl {
     struct {
