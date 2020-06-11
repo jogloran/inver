@@ -10,6 +10,11 @@ using Pred = std::function<bool(PPU&)>;
 // an Act implements the action
 using Act  = std::function<void(PPU&)>;
 
+struct PPULogSpec {
+  Pred pred;
+  Act action;
+};
+
 enum class Subcycle : int {
   NTRead = 0,
   ATRead = 2,
@@ -20,15 +25,21 @@ enum class Subcycle : int {
 };
 
 // Preds
+
+/**
+ * Triggers at tile (tile_col, tile_row) at a certain subcycle.
+ */
 Pred at_tile(int tile_col, int tile_row, Subcycle s = Subcycle::All);
 
+/**
+ * Triggers at tile tile_no (0 <= tile_no < 959) at a certain subcycle.
+ */
 Pred at_tile(int tile_no, Subcycle s = Subcycle::All);
 
+/**
+ * Triggers at a given scanline (-1 <= scanline <= 260) and cycle (0 <= cycle <= 340).
+ */
 Pred at_scanline_cycle(int scanline, int cycle);
-
-void log_ppu_regs(PPU& ppu);
-
-void decode_nt_byte(PPU& ppu);
 
 Pred every(size_t n, Pred inner);
 Pred first(Pred inner);
