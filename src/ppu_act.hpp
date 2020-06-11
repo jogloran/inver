@@ -41,10 +41,20 @@ Pred at_tile(int tile_no, Subcycle s = Subcycle::All);
  */
 Pred at_scanline_cycle(int scanline, int cycle);
 
+/**
+ * Triggers every n times the inner Pred triggers.
+ */
 Pred every(size_t n, Pred inner);
+
+/**
+ * Triggers the first time the inner Pred triggers.
+ */
 Pred first(Pred inner);
 
 // Acts
+/**
+ * Calls each of a sequence of sub-actions in turn.
+ */
 Act call(std::vector<Act> acts);
 
 void log_ppu_regs(PPU& ppu);
