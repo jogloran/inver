@@ -168,3 +168,6 @@ void Bus::request_save() {
   }
 }
 
+void Bus::dump() {
+  cpu->dump_pc(); cpu->dump();
+}

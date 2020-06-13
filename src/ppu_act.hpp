@@ -56,6 +56,6 @@ Pred first(Pred inner);
  * Calls each of a sequence of sub-actions in turn.
  */
 Act call(std::vector<Act> acts);
-
+void log_nt_addr(PPU& ppu);
 void log_ppu_regs(PPU& ppu);
 void decode_nt_byte(PPU& ppu);

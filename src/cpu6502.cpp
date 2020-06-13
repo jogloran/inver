@@ -78,10 +78,10 @@ byte CPU6502::pop() {
 bool CPU6502::irq() {
   if (!p.I) {
     push_word(pc);
+    push(p.reg);
     p.B = 0;
     p.U = 1;
     p.I = 1;
-    push(p.reg);
     word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
     pc = handler;
 
@@ -104,10 +104,10 @@ void CPU6502::brk() {
 void
 CPU6502::nmi() {
   push_word(pc);
+  push(p.reg);
   p.B = 0;
   p.U = 1;
   p.I = 1;
-  push(p.reg);
   word handler = bus->read(0xfffa) | (bus->read(0xfffb) << 8);
   pc = handler;
 

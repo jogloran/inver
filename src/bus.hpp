@@ -52,5 +52,7 @@ public:
   bool paused;
 
   void request_save();
+
+  void dump();
 };
 

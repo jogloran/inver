@@ -77,6 +77,10 @@ Act call(std::vector<Act> acts) {
   };
 }
 
+void log_nt_addr(PPU& ppu) {
+  ppu.log("nt byte read from %04x\n", 0x2000 + (ppu.loopy_v.reg & 0xfff));
+}
+
 void log_ppu_regs(PPU& ppu) {
   ppu.log("nt: %02x at: %02x pt: %02x%02x\n", ppu.nt_byte, ppu.at_byte_lsb, ppu.at_byte_msb,
           ppu.pt_byte);
@@ -88,5 +92,6 @@ void decode_nt_byte(PPU& ppu) {
     sprite_bytes[i] = ppu.cart->chr_read(
         (ppu.ppuctrl.background_pattern_address << 12) + ppu.nt_byte * 16 + i);
   }
+  ppu.log("tile data from %04x\n", (ppu.ppuctrl.background_pattern_address << 12) + ppu.nt_byte * 16);
   output_braille_sprite(sprite_bytes.data());
 }

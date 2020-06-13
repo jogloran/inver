@@ -1,9 +1,71 @@
 #include "ppu.hpp"
+#include "bus.hpp"
 
 DECLARE_bool(tm);
 DECLARE_bool(td);
 DECLARE_int32(td_scanline);
 DECLARE_int32(td_refresh_rate);
+
+void
+PPU::select(word ppu_cmd, byte value) {
+  {
+    switch (ppu_cmd) {
+      case 0x0: { // ppuctrl
+        auto old_nametable_base {ppuctrl.nametable_base};
+        ppuctrl.reg = value;
+        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
+        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
+        if (ppuctrl.nametable_base != old_nametable_base) {
+          bus->dump();
+          log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nametable_base);
+        }
+        break;
+      }
+      case 0x1: // ppumask
+        ppumask.reg = value;
+        break;
+      case 0x2: // ppustatus
+        break;
+      case 0x3: // oamaddr
+        break;
+      case 0x4: // oamdata
+        break;
+      case 0x5: // ppuscroll
+        if (!w) {
+          loopy_t.coarse_x = value >> 3;
+          fine_x = value & 7;
+          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y,
+              loopy_t.fine_y);
+          w = 1;
+        } else {
+          loopy_t.fine_y = value & 7;
+          loopy_t.coarse_y = value >> 3;
+          LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
+          w = 0;
+        }
+        break;
+      case 0x6: // ppuaddr
+        log_select(ppu_cmd, "ppu addr write %02x\n", value);
+        if (!w) {
+          loopy_t.reg &= 0x3ff;
+          loopy_t.reg = (loopy_t.reg & ~0x3f00) | ((value & 0x3f) << 8);
+          w = 1;
+        } else {
+          loopy_t.reg = (loopy_t.reg & ~0xff) | value;
+          loopy_v = loopy_t;
+          w = 0;
+        }
+
+        break;
+      case 0x7: // ppudata
+        log_select(ppu_cmd, "ppu data write %02x -> %04x\n", value, loopy_v.reg);
+        ppu_write(loopy_v.reg, value);
+        loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
+        break;
+      default:;
+    }
+  }
+}
 
 void
 PPU::calculate_sprites() {
@@ -150,6 +212,7 @@ PPU::cpx() {
   if (ppumask.show_background) {
     loopy_v.coarse_x = loopy_t.coarse_x;
     loopy_v.nt_x = loopy_t.nt_x;
+//    loopy_v.reg = (loopy_v.reg & ~0x41f) | (loopy_t.reg & 0x41f);
   }
 }
 
@@ -159,6 +222,7 @@ PPU::cpy() {
     loopy_v.fine_y = loopy_t.fine_y;
     loopy_v.coarse_y = loopy_t.coarse_y;
     loopy_v.nt_y = loopy_t.nt_y;
+//    loopy_v.reg = (loopy_v.reg & ~0x7be0) | (loopy_t.reg & 0x7be0);
   }
   std::fill(bg_is_transparent.begin(), bg_is_transparent.end(), 0x0);
 }

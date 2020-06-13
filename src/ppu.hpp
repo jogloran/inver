@@ -36,7 +36,7 @@ public:
           actions {
 //              {at_scanline_cycle(-1, 260), log_ppu_regs}
 //              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
-              {at_tile(0, -1, Subcycle::NTRead), call({decode_nt_byte, log_ppu_regs})}
+//              {at_tile(0, -1, Subcycle::NTRead), call({log_nt_addr, decode_nt_byte, log_ppu_regs})}
           } {
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
@@ -282,57 +282,7 @@ public:
     return 0;
   }
 
-  void select(word ppu_cmd, byte value) {
-    switch (ppu_cmd) {
-      case 0x0: // ppuctrl
-        ppuctrl.reg = value;
-        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
-        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
-        break;
-      case 0x1: // ppumask
-        ppumask.reg = value;
-        break;
-      case 0x2: // ppustatus
-        break;
-      case 0x3: // oamaddr
-        break;
-      case 0x4: // oamdata
-        break;
-      case 0x5: // ppuscroll
-        if (!w) {
-          loopy_t.coarse_x = value >> 3;
-          fine_x = value & 7;
-          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y,
-              loopy_t.fine_y);
-          w = 1;
-        } else {
-          loopy_t.fine_y = value & 7;
-          loopy_t.coarse_y = value >> 3;
-          LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
-          w = 0;
-        }
-        break;
-      case 0x6: // ppuaddr
-        log_select(ppu_cmd, "ppu addr write %02x\n", value);
-        if (!w) {
-          loopy_t.reg &= 0x3ff;
-          loopy_t.reg = (loopy_t.reg & ~0x3f00) | ((value & 0x3f) << 8);
-          w = 1;
-        } else {
-          loopy_t.reg = (loopy_t.reg & ~0xff) | value;
-          loopy_v = loopy_t;
-          w = 0;
-        }
-
-        break;
-      case 0x7: // ppudata
-        log_select(ppu_cmd, "ppu data write %02x -> %04x\n", value, loopy_v.reg);
-        ppu_write(loopy_v.reg, value);
-        loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
-        break;
-      default:;
-    }
-  }
+  void select(word ppu_cmd, byte value);
 
   void connect(Bus* b) {
     bus = b;
