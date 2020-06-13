@@ -37,6 +37,17 @@ TD::show() {
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
 
+  SDL_Rect rect {
+      .x = (8*ppu->loopy_t.coarse_x + ppu->fine_x) * 2,
+      .y = (8*ppu->loopy_t.coarse_y + ppu->loopy_t.fine_y) * 2,
+      .w = TD_WIDTH,
+      .h = TD_HEIGHT,
+  };
+  SDL_SetRenderDrawColor(renderer_, 0x09, 0x84, 0xe3, 80);
+  SDL_RenderFillRect(renderer_, &rect);
+  SDL_SetRenderDrawColor(renderer_, 0x09, 0x84, 0xe3, 255);
+  SDL_RenderDrawRect(renderer_, &rect);
+
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
