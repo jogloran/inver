@@ -28,6 +28,9 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/mapper/nes001.cpp src/mapper/nes001.hpp
         src/Simple_Apu.cpp src/Simple_Apu.h src/Sound_Queue.cpp src/Sound_Queue.h src/mapper/nes003.cpp src/ppu_act.hpp src/ppu_act.cpp src/braille_pix.cpp src/braille_pix.hpp src/mapper/nes002.cpp src/mapper/nes002.hpp)
 
+file(COPY res/mplus-2c-medium.ttf DESTINATION "${CMAKE_BINARY_DIR}")
+
 target_link_libraries(inver gflags)
 target_link_libraries(inver nes_apu)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
+

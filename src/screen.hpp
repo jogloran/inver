@@ -8,6 +8,8 @@
 
 #include "types.h"
 
+using namespace std::chrono_literals;
+
 class PPU;
 
 class Bus;
@@ -27,7 +29,7 @@ public:
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888,
                                  SDL_TEXTUREACCESS_STREAMING,
                                  BUF_WIDTH, BUF_HEIGHT);
-    font_ = TTF_OpenFont("/Library/Fonts/Futura.ttc", 24); //this opens a font style and sets a size
+    font_ = TTF_OpenFont("mplus-2c-medium.ttf", 24); //this opens a font style and sets a size
 //    TTF_SetFontOutline(font_, 2);
 
     SDL_ShowWindow(window_);
@@ -40,7 +42,7 @@ public:
 
   static constexpr int BUF_WIDTH = 256;
   static constexpr int BUF_HEIGHT = 240;
-  static constexpr int MS_PER_FRAME = 1000 / 60;
+  static constexpr std::chrono::milliseconds MS_PER_FRAME = 1000ms / 60;
 
   // Each byte of fb is a palette index (0...0x40)
   std::array<byte, BUF_WIDTH * BUF_HEIGHT> fb;
@@ -63,7 +65,7 @@ public:
 
   void set_paused(bool b);
 
-  void frame_rendered(uint32_t ms);
+  void frame_rendered(std::chrono::milliseconds ms);
 
   void toast(std::string text, std::chrono::milliseconds delay);
 };

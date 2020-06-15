@@ -70,5 +70,14 @@ public:
   void unpickle(std::string filename);
 
   void attach_screen(std::shared_ptr<Screen> screen);
+
+  enum Interrupt {
+    NMI, RST, IRQ
+  };
+  template <Interrupt rupt>
+  constexpr inline word read_vector() {
+    constexpr word table[] = {0xfffa, 0xfffc, 0xfffe};
+    return read(table[rupt]) | (read(table[rupt] + 1) << 8);
+  }
 };
 

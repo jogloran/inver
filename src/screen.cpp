@@ -126,8 +126,8 @@ Screen::blit() {
       uint8_t alpha = (text_timeout_ - now > 500ms)
                       ? 255
                       : 255 * (text_timeout_ - now) / 500ms;
-      SDL_Surface* text_surface = TTF_RenderText_Solid(font_, text_.c_str(),
-                                                       {255, 255, 255, alpha});
+      SDL_Surface* text_surface = TTF_RenderText_Blended(font_, text_.c_str(),
+                                                         {255, 255, 255, alpha});
       text_texture_ = SDL_CreateTextureFromSurface(renderer_, text_surface);
       SDL_Rect rect = {16, 16, text_surface->w, text_surface->h};
       SDL_RenderCopy(renderer_, text_texture_, nullptr, &rect);
@@ -173,12 +173,12 @@ Screen::blit() {
           std::exit(0);
           break;
         case SDLK_v:
-          toast("Capturing savestate", 1000ms);
+          toast("Capturing savestate", 1s);
           bus->pickle("save.state");
           break;
         case SDLK_e:
           bus->unpickle("save.state");
-          toast("Loading savestate", 1000ms);
+          toast("Loading savestate", 1s);
           break;
         case SDLK_q:
           std::exit(0);
@@ -196,15 +196,14 @@ void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
   }
 }
 
-void Screen::frame_rendered(uint32_t ms) {
+void Screen::frame_rendered(std::chrono::milliseconds ms) {
   auto then = std::chrono::high_resolution_clock::now();
   blit();
   auto now = std::chrono::high_resolution_clock::now();
 
   auto frame_time = ms +
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
-                        now - then).count();
-  SDL_Delay(MS_PER_FRAME - std::min<uint32_t>(MS_PER_FRAME, frame_time));
+                    std::chrono::duration_cast<std::chrono::milliseconds>(now - then);
+  SDL_Delay((MS_PER_FRAME - std::min<>(MS_PER_FRAME, frame_time)).count());
 }
 
 void Screen::set_paused(bool paused) {

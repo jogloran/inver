@@ -87,7 +87,7 @@ PPU::calculate_sprites() {
   auto cur {oam.begin()};
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
-    if ((sprite.y >= 8 && next_scanline >= sprite.y &&
+    if ((sprite.y >= 0 && next_scanline >= sprite.y &&
          next_scanline < sprite.y + height)) {
       candidate_sprites.push_back({sprite, sprite_index});
     }
@@ -468,8 +468,7 @@ PPU::tick() {
 
 void PPU::frame_done() {
   auto now = std::chrono::high_resolution_clock::now();
-  auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
-      now - frame_start);
+  auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - frame_start);
   if (FLAGS_tm) tm.show();
-  screen->frame_rendered(diff.count());
+  screen->frame_rendered(diff);
 }

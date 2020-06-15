@@ -4,7 +4,6 @@
 #include <fstream>
 #include <chrono>
 #include <cereal/archives/binary.hpp>
-#include <cereal/types/memory.hpp>
 
 using namespace std::chrono_literals;
 
@@ -34,7 +33,7 @@ Bus::Bus() : ncycles(0),
 void
 Bus::tick() {
   if (paused) {
-    screen->frame_rendered(1000 / 60);
+    screen->frame_rendered(1000ms / 60);
     return;
   }
 

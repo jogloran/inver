@@ -82,7 +82,7 @@ bool CPU6502::irq() {
     p.B = 0;
     p.U = 1;
     p.I = 1;
-    word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
+    word handler = bus->read_vector<Bus::Interrupt::IRQ>();
     pc = handler;
 
     cycles_left = 8;
@@ -97,7 +97,7 @@ void CPU6502::brk() {
   push_word(pc + 1);
   push((p.reg & ~0b00110000) | 0b00110000);
   p.I = 1;
-  word handler = bus->read(0xfffe) | (bus->read(0xffff) << 8);
+  word handler = bus->read_vector<Bus::Interrupt::IRQ>();
   pc = handler;
 }
 
@@ -108,7 +108,7 @@ CPU6502::nmi() {
   p.B = 0;
   p.U = 1;
   p.I = 1;
-  word handler = bus->read(0xfffa) | (bus->read(0xfffb) << 8);
+  word handler = bus->read_vector<Bus::Interrupt::NMI>();;
   pc = handler;
 
   cycles_left = 8;
