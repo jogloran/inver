@@ -6,6 +6,9 @@
 #include <cstdio>
 #include <string>
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "types.h"
 #include "bus.hpp"
 #include "mapper.hpp"
@@ -66,9 +69,17 @@ public:
 
   void reset() override {}
 
-  Bus* bus;
-  PPU* ppu;
   std::vector<byte> rom;
   std::vector<byte> chr;
   Mirroring mirroring;
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(rom, chr, mirroring);
+  }
+
+  friend class cereal::access;
 };
+
+CEREAL_REGISTER_TYPE(NROM)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, NROM)

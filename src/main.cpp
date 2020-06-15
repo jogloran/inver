@@ -3,15 +3,15 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "types.h"
-#include "cpu6502.hpp"
-#include "ppu.hpp"
-#include "bus.hpp"
 #include "mapper/nes000.hpp"
 #include "mapper/nes001.hpp"
 #include "mapper/nes002.hpp"
 #include "mapper/nes003.hpp"
 #include "mapper/nes004.hpp"
+#include "types.h"
+#include "cpu6502.hpp"
+#include "ppu.hpp"
+#include "bus.hpp"
 #include "util.h"
 #include "header.hpp"
 
@@ -59,15 +59,16 @@ int main(int argc, char** argv) {
               std::back_inserter(save_data));
   }
 
-  auto cpu = std::make_shared<CPU6502>();
-  auto ppu = std::make_shared<PPU>();
-  Bus bus(cpu, ppu);
+  Bus bus;
 
   std::deque<word> history;
   size_t repeating = 0;
   size_t last_period = 0;
 
+  auto screen{std::make_shared<Screen>()};
+
   std::shared_ptr<Mapper> mapper;
+//  bus.unpickle("test.dat");
 
   f.seekg(0x10, std::ios::cur);
   size_t len = f.tellg();
@@ -90,8 +91,13 @@ int main(int argc, char** argv) {
     mapper->map_ram(save_data, save_data.size());
   }
 
+//  bus.attach_cart(bus.cart);
+//  bus.ppu->connect(&bus);
+//  bus.cpu->connect(&bus);
+  bus.attach_screen(screen);
   bus.attach_cart(mapper);
 
+  auto cpu = bus.cpu;
   cpu->reset();
   word last_pc = 0;
   while (true) {

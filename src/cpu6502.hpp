@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
 
 #include "types.h"
 #include "bus.hpp"
@@ -82,6 +84,11 @@ public:
       byte N: 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) {
+      ar(reg);
+    }
   } p;
   long ncycles;
   word cycles_left;
@@ -185,4 +192,9 @@ public:
   bool irq();
 
   void brk();
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(a, x, y, sp, pc, p, ncycles, cycles_left, crossed_page, should_dump);
+  }
 };

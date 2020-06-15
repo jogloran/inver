@@ -1,6 +1,10 @@
 #include "ppu.hpp"
 #include "bus.hpp"
 
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 DECLARE_bool(tm);
 DECLARE_bool(td);
 DECLARE_int32(td_scanline);
@@ -377,7 +381,7 @@ PPU::tick() {
   byte bg = pal[0];
   if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
     bool render_left_column = (ppumask.show_left_background || ncycles > 8);
-    screen.at(scanline * 256 + (ncycles - 1)) =
+    screen->at(scanline * 256 + (ncycles - 1)) =
         (output == 0 || !render_left_column) ? bg : pal[4 * output_palette + output];
     bg_is_transparent[ncycles - 1] = output == 0;
 
@@ -445,7 +449,7 @@ PPU::tick() {
       }
 
       for (int i = 0; i < 256; ++i) {
-        byte& b = screen.at(scanline * 256 + i);
+        byte& b = screen->at(scanline * 256 + i);
         bool front_prio = (sprite_row[i] & 0x40) == 0;
 
         // Allow the sprite pixel to be shown if:
@@ -467,5 +471,5 @@ void PPU::frame_done() {
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
       now - frame_start);
   if (FLAGS_tm) tm.show();
-  screen.frame_rendered(diff.count());
+  screen->frame_rendered(diff.count());
 }

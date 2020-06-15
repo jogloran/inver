@@ -2,6 +2,13 @@
 
 #include <vector>
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+
 #include "types.h"
 
 class Bus;
@@ -46,3 +53,5 @@ protected:
     return ptr + len;
   }
 };
+
+CEREAL_REGISTER_TYPE(Mapper)

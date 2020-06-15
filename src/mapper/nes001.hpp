@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include "mapper.hpp"
 
@@ -72,4 +74,15 @@ private:
   void mmc1_command(word mmc1_addr, byte shift);
 
   byte* chr_bank(byte bank);
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(rom, chr, ram, mirroring, prg_mode, chr_mode, ppu_0000_bank, ppu_1000_bank, prg_rom_bank,
+       prg_ram_disabled, shift);
+  }
+
+  friend class cereal::access;
 };
+
+CEREAL_REGISTER_TYPE(MMC1)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, MMC1)

@@ -1,16 +1,24 @@
 #include "bus.hpp"
-
 #include "cpu6502.hpp"
+
 #include <fstream>
+#include <chrono>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/memory.hpp>
+
+using namespace std::chrono_literals;
 
 DECLARE_bool(audio);
 DECLARE_string(save);
 
-Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu(ppu), ncycles(0),
-                                                                   controller_polling(false),
-                                                                   sound_queue(
-                                                                       std::make_shared<Sound_Queue>()),
-                                                                   paused(false) {
+Bus::Bus() : ncycles(0),
+             controller_polling(false),
+             sound_queue(
+                 std::make_shared<Sound_Queue>()),
+             paused(false) {
+  cpu = std::make_shared<CPU6502>();
+  ppu = std::make_shared<PPU>();
+
   cpu->connect(this);
   ppu->connect(this);
 
@@ -26,7 +34,7 @@ Bus::Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu) : cpu(cpu), ppu
 void
 Bus::tick() {
   if (paused) {
-    ppu->screen.frame_rendered(1000 / 60);
+    screen->frame_rendered(1000 / 60);
     return;
   }
 
@@ -79,7 +87,6 @@ Bus::write(word addr, byte value) {
       }
       case 0x4016: {
         bool controller_polling_req = (value & 0x7) == 0x1;
-//        ppu->log("controller poll req: %d\n", controller_polling_req);
         if (controller_polling && !controller_polling_req) {
           controller_state = sample_input();
         } else if (!controller_polling && controller_polling_req) {
@@ -155,7 +162,7 @@ void Bus::reset() {
 
 void Bus::toggle_pause() {
   paused = !paused;
-  ppu->screen.set_paused(paused);
+  screen->set_paused(paused);
 }
 
 void Bus::request_save() {
@@ -169,5 +176,32 @@ void Bus::request_save() {
 }
 
 void Bus::dump() {
-  cpu->dump_pc(); cpu->dump();
+  cpu->dump_pc();
+  cpu->dump();
+}
+
+void Bus::pickle(std::string filename) {
+  std::ofstream ofs(filename);
+  {
+    cereal::BinaryOutputArchive oa(ofs);
+    oa(*this);
+  }
+}
+
+void Bus::unpickle(std::string filename) {
+  std::ifstream ifs(filename);
+  cereal::BinaryInputArchive ia(ifs);
+  ia(*this);
+
+  attach_cart(cart);
+  attach_screen(screen);
+  ppu->connect(this);
+  cpu->connect(this);
+}
+
+void Bus::attach_screen(std::shared_ptr<Screen> s) {
+  screen = s;
+  screen->ppu = ppu;
+  screen->bus = this;
+  ppu->screen = s;
 }

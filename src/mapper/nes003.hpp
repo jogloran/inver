@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "mapper.hpp"
 
 class CNROM : public Mapper {
@@ -28,4 +31,14 @@ public:
   byte read(word addr) override;
 
   void write(word addr, byte value) override;
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(rom, chr, chr_bank, mirroring);
+  }
+
+  friend class cereal::access;
 };
+
+CEREAL_REGISTER_TYPE(CNROM)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, CNROM)

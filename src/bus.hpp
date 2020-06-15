@@ -2,6 +2,10 @@
 
 #include <memory>
 #include <array>
+#include <fstream>
+
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include "types.h"
 #include "ppu.hpp"
@@ -16,7 +20,7 @@ class CPU6502;
 
 class Bus {
 public:
-  Bus(std::shared_ptr<CPU6502> cpu, std::shared_ptr<PPU> ppu);
+  Bus();
   
   void attach_cart(std::shared_ptr<Mapper> c);
   
@@ -31,6 +35,7 @@ public:
   std::shared_ptr<CPU6502> cpu;
   std::shared_ptr<PPU> ppu;
   std::shared_ptr<Mapper> cart;
+  std::shared_ptr<Screen> screen;
   
   std::array<byte, 0x0800> ram;
   
@@ -54,5 +59,16 @@ public:
   void request_save();
 
   void dump();
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(cpu, ppu, cart, ram);
+  }
+
+  void pickle(std::string filename);
+
+  void unpickle(std::string filename);
+
+  void attach_screen(std::shared_ptr<Screen> screen);
 };
 

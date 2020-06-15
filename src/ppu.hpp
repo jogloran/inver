@@ -13,6 +13,9 @@
 #include "mapper.hpp"
 #include "ppu_act.hpp"
 
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+
 DECLARE_bool(xx);
 
 #ifdef NDEBUG
@@ -41,7 +44,6 @@ public:
     loopy_v.reg = loopy_t.reg = 0;
     tm.connect_ppu(this);
     td.connect_ppu(this);
-    screen.ppu = this;
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);
@@ -286,7 +288,6 @@ public:
 
   void connect(Bus* b) {
     bus = b;
-    screen.bus = b;
   }
 
   void connect(std::shared_ptr<Mapper> c) {
@@ -331,6 +332,9 @@ public:
       byte vblank_nmi: 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } ppuctrl;
 
   union ppumask {
@@ -345,6 +349,9 @@ public:
       byte emph_b: 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } ppumask;
 
   union ppustatus {
@@ -355,6 +362,9 @@ public:
       byte vblank_started: 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } ppustatus;
 
   struct OAM {
@@ -362,10 +372,16 @@ public:
     byte tile_no;
     byte attr;
     byte x;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(y, tile_no, attr, x); }
   };
   struct Sprite {
     PPU::OAM oam;
     byte sprite_index;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(oam, sprite_index); }
   };
   std::array<OAM, 64> oam;
   std::array<Sprite, 8> shadow_oam;
@@ -374,7 +390,7 @@ public:
   std::array<byte, 256> sprite_row;
   TM tm;
   TD td;
-  Screen screen;
+  std::shared_ptr<Screen> screen;
   int scanline; // -1 to 260
   int ncycles;
 
@@ -388,6 +404,9 @@ public:
       byte unused: 1;
     };
     word reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } loopy_v, loopy_t;
   byte fine_x;
   bool w;
@@ -421,4 +440,9 @@ public:
   void frame_done();
 
   std::array<bool, 256> bg_is_transparent;
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(nt, pal, ppuctrl, ppumask, ppustatus, oam, shadow_oam, shadow_oam_indices, candidate_sprites, sprite_row, scanline, ncycles, loopy_v, loopy_t, fine_x, w, pt_shifter, at_shifter, nt_byte, at_byte_msb, at_byte_lsb, pt_byte, bg_tile_msb, bg_tile_lsb, ppudata_byte, nmi_req, odd_frame, bg_is_transparent);
+  }
 };

@@ -3,6 +3,9 @@
 #include "bus.hpp"
 
 #include <iostream>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 DECLARE_bool(show_raster);
 DECLARE_bool(fake_sprites);
@@ -81,6 +84,12 @@ std::array<rgb, 0x40> ntsc_palette {
 };
 
 void
+Screen::toast(std::string text, std::chrono::milliseconds delay) {
+  text_ = text;
+  text_timeout_ = std::chrono::high_resolution_clock::now() + delay;
+}
+
+void
 Screen::blit() {
 //  auto then = std::chrono::high_resolution_clock::now();
   int i = 0;
@@ -108,16 +117,26 @@ Screen::blit() {
   }
 
   SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
-//  byte* ptr;
-//  int pitch;
-//  SDL_LockTexture(texture_, NULL, (void**)&ptr, &pitch);
-//  std::copy(buf.data(), buf.data() + buf.size(), ptr);
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
-  SDL_RenderPresent(renderer_);
-//  SDL_UnlockTexture(texture_);
 
-//  SDL_PumpEvents();
+  if (text_.size()) {
+    auto now {std::chrono::high_resolution_clock::now()};
+    if (now <= text_timeout_) {
+      uint8_t alpha = (text_timeout_ - now > 500ms)
+                      ? 255
+                      : 255 * (text_timeout_ - now) / 500ms;
+      SDL_Surface* text_surface = TTF_RenderText_Solid(font_, text_.c_str(),
+                                                       {255, 255, 255, alpha});
+      text_texture_ = SDL_CreateTextureFromSurface(renderer_, text_surface);
+      SDL_Rect rect = {16, 16, text_surface->w, text_surface->h};
+      SDL_RenderCopy(renderer_, text_texture_, nullptr, &rect);
+      SDL_DestroyTexture(text_texture_);
+      SDL_FreeSurface(text_surface);
+    }
+  }
+
+  SDL_RenderPresent(renderer_);
 
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
@@ -153,16 +172,19 @@ Screen::blit() {
           bus->cart->dump_mapper();
           std::exit(0);
           break;
+        case SDLK_v:
+          toast("Capturing savestate", 1000ms);
+          bus->pickle("save.state");
+          break;
+        case SDLK_e:
+          bus->unpickle("save.state");
+          toast("Loading savestate", 1000ms);
+          break;
         case SDLK_q:
           std::exit(0);
       }
     }
   }
-
-//  auto now = std::chrono::high_resolution_clock::now();
-//  std::cout << "tick: "
-//            << std::chrono::duration_cast<std::chrono::duration<double>>(now - then).count()
-//            << std::endl;
 }
 
 void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
@@ -188,7 +210,9 @@ void Screen::frame_rendered(uint32_t ms) {
 void Screen::set_paused(bool paused) {
   if (paused) {
     SDL_SetTextureColorMod(texture_, 192, 192, 192);
+    toast("Paused", 1000ms);
   } else {
     SDL_SetTextureColorMod(texture_, 255, 255, 255);
+    toast("Unpaused", 1000ms);
   }
 }

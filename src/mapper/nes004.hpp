@@ -2,6 +2,8 @@
 
 #include <array>
 #include <cstdio>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include "header.hpp"
 #include "mapper.hpp"
@@ -110,7 +112,8 @@ public:
     // 2kb bank can store 128 tiles
     static const size_t offsets[] = {0, 0, 1, 1, 2, 3, 4, 5};
     static const word section_start[] = {0x0, 0x0, 0x0800, 0x0800, 0x1000, 0x1400, 0x1800, 0x1c00};
-    static const word section_start2[] = {0x1000, 0x1000, 0x1800, 0x1800, 0x0, 0x0400, 0x0800, 0x0c00};
+    static const word section_start2[] = {0x1000, 0x1000, 0x1800, 0x1800, 0x0, 0x0400, 0x0800,
+                                          0x0c00};
     size_t start = chr_a12_inversion ? 4 : 0;
     size_t i = (addr >> 10) & 7;
     // i can be 0..7, corresponds to which row it is
@@ -151,4 +154,17 @@ private:
   void signal_scanline() override;
 
   void irq_handled() override;
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(rom, chr, ram, rom_8000_fixed,
+       chr_a12_inversion, target_bank, bank_for_target,
+       mirroring_mode,
+       irq_period, irq_counter, irq_enabled, irq_requested_);
+  }
+
+  friend class cereal::access;
 };
+
+CEREAL_REGISTER_TYPE(MMC3)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, MMC3)
