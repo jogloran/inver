@@ -31,10 +31,37 @@ TM::show() {
   SDL_UpdateTexture(texture_, NULL, buf.data(), TM_WIDTH * 4);
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
+
+  SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 255);
+  SDL_RenderDrawLine(renderer_, x, 0, x, y - 10);
+  SDL_RenderDrawLine(renderer_, x, y + 10, x, TM_HEIGHT * 4);
+  SDL_RenderDrawLine(renderer_, 0, y, x - 10, y);
+  SDL_RenderDrawLine(renderer_, x + 10, y, TM_WIDTH * 4, y);
+
+  auto pos_x = x / 4, pos_y = y / 4;
+  auto col = pos_x / 8;
+  auto row = pos_y / 8;
+  SDL_Rect rect = {
+      col * 4 * 8, row * 4 * 8, 8 * 4, 8 * 4
+  };
+  SDL_RenderDrawRect(renderer_, &rect);
+
+  selected_tile = row * 16 + (col % 16);
+  if (col >= 16) selected_tile += 256;
+  render_tooltip(selected_tile);
   
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   SDL_Event event;
-  if (SDL_PollEvent(&event)) {
+
+  if (SDL_GetWindowID(SDL_GetMouseFocus()) == SDL_GetWindowID(window_)) {
+    auto state = SDL_GetMouseState(&x, &y);
+    if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+      cl_x = x;
+      cl_y = y;
+    }
+  }
+
+  while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
     }

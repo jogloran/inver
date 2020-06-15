@@ -158,14 +158,16 @@ Screen::blit() {
     }
   }
 
-  raster_ = make_raster_texture(16, 16);
-  SDL_RenderCopy(renderer_, raster_, nullptr, nullptr);
-  SDL_DestroyTexture(raster_);
+  if (FLAGS_show_raster) {
+    raster_ = make_raster_texture(16, 16);
+    SDL_RenderCopy(renderer_, raster_, nullptr, nullptr);
+    SDL_DestroyTexture(raster_);
+  }
 
   SDL_RenderPresent(renderer_);
 
   SDL_Event event;
-  if (SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
     } else if (event.type == SDL_KEYDOWN) {
@@ -205,6 +207,9 @@ Screen::blit() {
         case SDLK_e:
           bus->unpickle("save.state");
           toast("Loading savestate", 1s);
+          break;
+        case SDLK_PERIOD:
+          FLAGS_show_raster = !FLAGS_show_raster;
           break;
         case SDLK_q:
           std::exit(0);

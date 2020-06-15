@@ -50,7 +50,7 @@ TD::show() {
 
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
   SDL_Event event;
-  if (SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
     }

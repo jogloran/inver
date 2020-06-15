@@ -8,6 +8,7 @@
 using namespace std::chrono_literals;
 
 DECLARE_bool(audio);
+DECLARE_bool(tm);
 DECLARE_string(save);
 
 Bus::Bus() : ncycles(0),

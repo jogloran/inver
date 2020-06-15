@@ -469,6 +469,6 @@ PPU::tick() {
 void PPU::frame_done() {
   auto now = std::chrono::high_resolution_clock::now();
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - frame_start);
-  if (FLAGS_tm) tm.show();
   screen->frame_rendered(diff);
+  if (FLAGS_tm) tm.show();
 }
