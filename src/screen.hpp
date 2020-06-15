@@ -48,6 +48,7 @@ public:
   static constexpr int BUF_HEIGHT = 240;
   static constexpr int SCALE = 4;
   static constexpr std::chrono::milliseconds MS_PER_FRAME = 1000ms / 60;
+  static constexpr std::chrono::milliseconds TOAST_FADE_OUT_TIME = 500ms;
 
   // Each byte of fb is a palette index (0...0x40)
   std::array<byte, BUF_WIDTH * BUF_HEIGHT> fb;

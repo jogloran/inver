@@ -119,8 +119,6 @@ Screen::blit() {
   int i = 0;
 
   for (byte b: fb) {
-    bool show_vert = i % 32 == 0;
-    bool show_horz = (i / 1024) % 8 == 0;
     buf[i++] = ntsc_palette[b].b;
     buf[i++] = ntsc_palette[b].g;
     buf[i++] = ntsc_palette[b].r;
@@ -147,9 +145,9 @@ Screen::blit() {
   if (text_.size()) {
     auto now {std::chrono::high_resolution_clock::now()};
     if (now <= text_timeout_) {
-      uint8_t alpha = (text_timeout_ - now > 500ms)
+      uint8_t alpha = (text_timeout_ - now > TOAST_FADE_OUT_TIME)
                       ? 255
-                      : 255 * (text_timeout_ - now) / 500ms;
+                      : 255 * (text_timeout_ - now) / TOAST_FADE_OUT_TIME;
       SDL_Surface* text_surface = TTF_RenderText_Blended(font_, text_.c_str(),
                                                          {255, 255, 255, alpha});
       text_texture_ = SDL_CreateTextureFromSurface(renderer_, text_surface);
