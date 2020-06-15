@@ -32,7 +32,7 @@ public:
                                  SDL_TEXTUREACCESS_TARGET,
                                  BUF_WIDTH, BUF_HEIGHT);
     SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
-    font_ = TTF_OpenFont("mplus-2c-medium.ttf", 24); //this opens a font style and sets a size
+    font_ = TTF_OpenFont("mplus-2c-medium.ttf", 24);
 //    TTF_SetFontOutline(font_, 2);
     raster_ = make_raster_texture(8, 8);
 
