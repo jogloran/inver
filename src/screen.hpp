@@ -23,12 +23,18 @@ public:
                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                BUF_WIDTH * 4, BUF_HEIGHT * 4, SDL_WINDOW_HIDDEN);
     renderer_ = SDL_CreateRenderer(window_, -1,
-                                   SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+                                   SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+                                   | SDL_RENDERER_TARGETTEXTURE
+    );
+    SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, BUF_WIDTH * 4, BUF_HEIGHT * 4);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888,
-                                 SDL_TEXTUREACCESS_STREAMING,
+                                 SDL_TEXTUREACCESS_TARGET,
+//                                 SDL_TEXTUREACCESS_STREAMING,
                                  BUF_WIDTH, BUF_HEIGHT);
+    SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
+//    SDL_SetRenderTarget(renderer_, texture_);
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 24); //this opens a font style and sets a size
 //    TTF_SetFontOutline(font_, 2);
 
@@ -53,6 +59,7 @@ public:
   TTF_Font* font_;
   std::string text_;
   SDL_Texture* text_texture_;
+  SDL_Texture* raster_;
   std::chrono::high_resolution_clock::time_point text_timeout_;
   std::shared_ptr<PPU> ppu;
   Bus* bus;
@@ -68,4 +75,6 @@ public:
   void frame_rendered(std::chrono::milliseconds ms);
 
   void toast(std::string text, std::chrono::milliseconds delay);
+
+  SDL_Texture* make_raster_texture(size_t dx, size_t dy);
 };
