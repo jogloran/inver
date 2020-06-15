@@ -92,24 +92,21 @@ Screen::toast(std::string text, std::chrono::milliseconds delay) {
 SDL_Texture* Screen::make_raster_texture(size_t dx, size_t dy) {
   SDL_Texture* raster = SDL_CreateTexture(renderer_, SDL_GetWindowPixelFormat(window_),
                                           SDL_TEXTUREACCESS_TARGET,
-                                          BUF_WIDTH, BUF_HEIGHT);
+                                          BUF_WIDTH * SCALE, BUF_HEIGHT * SCALE);
   SDL_SetRenderTarget(renderer_, raster);
-//  SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureBlendMode(raster, SDL_BLENDMODE_BLEND);
 
-  SDL_Rect full {0, 0, BUF_WIDTH, BUF_HEIGHT};
   SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 0);
   SDL_RenderClear(renderer_);
-//  SDL_RenderFillRect(renderer_, &full);
 
   SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 255);
 
-  for (int x = dx; x < BUF_WIDTH; x += dx) {
-    SDL_RenderDrawLine(renderer_, x, 0, x, BUF_HEIGHT);
+  for (int x = 0; x < BUF_WIDTH * SCALE; x += dx * SCALE / 2) {
+    SDL_RenderDrawLine(renderer_, x, 0, x, BUF_HEIGHT * SCALE);
   }
 
-  for (int y = dy; y < BUF_HEIGHT; y += dy) {
-    SDL_RenderDrawLine(renderer_, 0, y, BUF_WIDTH, y);
+  for (int y = 0; y < BUF_HEIGHT * SCALE; y += dy * SCALE / 2) {
+    SDL_RenderDrawLine(renderer_, 0, y, BUF_WIDTH * SCALE, y);
   }
 
   SDL_SetRenderTarget(renderer_, nullptr);
@@ -119,15 +116,13 @@ SDL_Texture* Screen::make_raster_texture(size_t dx, size_t dy) {
 
 void
 Screen::blit() {
-//  auto then = std::chrono::high_resolution_clock::now();
   int i = 0;
 
   for (byte b: fb) {
     bool show_vert = i % 32 == 0;
     bool show_horz = (i / 1024) % 8 == 0;
-    bool draw_raster = FLAGS_show_raster && (show_vert || show_horz);
     buf[i++] = ntsc_palette[b].b;
-    buf[i++] = (draw_raster) ? 255 : ntsc_palette[b].g;
+    buf[i++] = ntsc_palette[b].g;
     buf[i++] = ntsc_palette[b].r;
     buf[i++] = 255;
   }
@@ -165,9 +160,9 @@ Screen::blit() {
     }
   }
 
-  raster_ = make_raster_texture(8, 8);
-  SDL_Rect rect = { 0, 0, BUF_WIDTH, BUF_HEIGHT };
-  SDL_RenderCopy(renderer_, raster_, nullptr, &rect);
+  raster_ = make_raster_texture(16, 16);
+  SDL_RenderCopy(renderer_, raster_, nullptr, nullptr);
+  SDL_DestroyTexture(raster_);
 
   SDL_RenderPresent(renderer_);
 
