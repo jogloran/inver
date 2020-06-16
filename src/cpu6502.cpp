@@ -18,13 +18,11 @@ constexpr byte INITIAL_STATUS_REG = 0x24;
 }
 
 void CPU6502::reset() {
-  a = x = y = 0;
+  a = x = y = ncycles = cycles_left = 0;
   sp = 0xfd;
-  pc = bus->read(0xfffc) | (bus->read(0xfffd) << 8);
+  pc = bus->read_vector<Bus::Interrupt::RST>();
   std::cerr << "setting pc to " << std::hex << pc << std::endl;
   p.reg = INITIAL_STATUS_REG;
-  ncycles = 0;
-  cycles_left = 0;
   crossed_page = false;
 }
 
@@ -82,8 +80,7 @@ bool CPU6502::irq() {
     p.B = 0;
     p.U = 1;
     p.I = 1;
-    word handler = bus->read_vector<Bus::Interrupt::IRQ>();
-    pc = handler;
+    pc = bus->read_vector<Bus::Interrupt::IRQ>();
 
     cycles_left = 8;
     return true;
@@ -97,8 +94,7 @@ void CPU6502::brk() {
   push_word(pc + 1);
   push((p.reg & ~0b00110000) | 0b00110000);
   p.I = 1;
-  word handler = bus->read_vector<Bus::Interrupt::IRQ>();
-  pc = handler;
+  pc = bus->read_vector<Bus::Interrupt::IRQ>();
 }
 
 void

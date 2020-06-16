@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-typedef int8_t sbyte;
-typedef uint8_t byte;
-typedef uint16_t word;
+using sbyte = int8_t;
+using byte = uint8_t;
+using word = uint16_t;
 
 using cycle_count_t = int;

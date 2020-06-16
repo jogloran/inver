@@ -12,6 +12,7 @@
 #include "utils.hpp"
 #include "mapper.hpp"
 #include "ppu_act.hpp"
+#include "shifter.hpp"
 
 #include <cereal/types/vector.hpp>
 #include <cereal/types/array.hpp>
@@ -84,8 +85,6 @@ public:
   void cpy();
 
   void set_vblank(bool b);
-
-  void clr_vblank();
 
   void shift();
 
@@ -343,7 +342,7 @@ public:
 
   union ppuctrl {
     struct {
-      byte nametable_base: 2;
+      byte nt_base: 2;
       byte vram_increment: 1;
       byte sprite_pattern_address: 1;
       byte background_pattern_address: 1;
@@ -431,9 +430,9 @@ public:
   bool w;
 
   // Contains the pattern bits for the next two tiles
-  word pt_shifter[2];
+  Shifter pt;
   // Contains the attribute bits for the next two tiles
-  word at_shifter[2];
+  Shifter at;
 
   byte nt_byte;
   byte at_byte_msb;
@@ -462,6 +461,6 @@ public:
 
   template<typename Ar>
   void serialize(Ar& ar) {
-    ar(nt, pal, ppuctrl, ppumask, ppustatus, oam, shadow_oam, shadow_oam_indices, candidate_sprites, sprite_row, scanline, ncycles, loopy_v, loopy_t, fine_x, w, pt_shifter, at_shifter, nt_byte, at_byte_msb, at_byte_lsb, pt_byte, bg_tile_msb, bg_tile_lsb, ppudata_byte, nmi_req, odd_frame, bg_is_transparent);
+    ar(nt, pal, ppuctrl, ppumask, ppustatus, oam, shadow_oam, shadow_oam_indices, candidate_sprites, sprite_row, scanline, ncycles, loopy_v, loopy_t, fine_x, w, pt, at, nt_byte, at_byte_msb, at_byte_lsb, pt_byte, bg_tile_msb, bg_tile_lsb, ppudata_byte, nmi_req, odd_frame, bg_is_transparent);
   }
 };

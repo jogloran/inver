@@ -19,14 +19,12 @@ PPU::select(word ppu_cmd, byte value) {
   {
     switch (ppu_cmd) {
       case 0x0: { // ppuctrl
-        auto old_nametable_base {ppuctrl.nametable_base};
+        auto old_nametable_base {ppuctrl.nt_base};
         ppuctrl.reg = value;
-//        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
-//        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
-        loopy_t.nt = ppuctrl.nametable_base;
-        if (ppuctrl.nametable_base != old_nametable_base) {
+        loopy_t.nt = ppuctrl.nt_base;
+        if (ppuctrl.nt_base != old_nametable_base) {
           bus->dump();
-          log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nametable_base);
+          log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nt_base);
         }
         break;
       }
@@ -47,8 +45,8 @@ PPU::select(word ppu_cmd, byte value) {
               loopy_t.fine_y);
           w = 1;
         } else {
-          loopy_t.fine_y = value & 7;
           loopy_t.coarse_y = value >> 3;
+          loopy_t.fine_y = value & 7;
           LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
           w = 0;
         }
@@ -117,21 +115,15 @@ PPU::cycle_start() {
 inline void
 PPU::shift() {
   if (ppumask.show_background) {
-    pt_shifter[0] <<= 1;
-    pt_shifter[1] <<= 1;
-
-    at_shifter[0] <<= 1;
-    at_shifter[1] <<= 1;
+    pt.shift();
+    at.shift();
   }
 }
 
 inline void
 PPU::load_shift_reg() {
-  pt_shifter[0] = (pt_shifter[0] & 0xff00) | bg_tile_lsb;
-  pt_shifter[1] = (pt_shifter[1] & 0xff00) | bg_tile_msb;
-
-  at_shifter[0] = (at_shifter[0] & 0xff00) | at_byte_lsb;
-  at_shifter[1] = (at_shifter[1] & 0xff00) | at_byte_msb;
+  pt.load(bg_tile_lsb, bg_tile_msb);
+  at.load(at_byte_lsb, at_byte_msb);
 }
 
 inline void
@@ -355,20 +347,9 @@ PPU::tick() {
   byte output = 0;
   byte output_palette = 0;
   if (ppumask.show_background) {
-    // apply fine_x:
-    // fine_x = 0 => take bit 7 of shifters
-    // fine_x = 1 => take bit 6 ...
-    //   ...  = 7 => take bit 0 ...
-    // select one of the top 8 bits
     word mask = 0x8000 >> fine_x;
-    output = !!(pt_shifter[0] & mask) | (!!(pt_shifter[1] & mask) << 1);
-    // apply palette:
-    // these select a set of colour indices:
-    // bg palette 0: 0x3f01-0x3f03
-    // bg palette 1: 0x3f05-0x3f07
-    // bg palette 2: 0x3f09-0x3f0b
-    // bg palette 3: 0x3f0d-0x3f0f
-    output_palette = !!(at_shifter[0] & mask) | (!!(at_shifter[1] & mask) << 1);
+    output = pt(mask);
+    output_palette = at(mask);
   }
 
   byte bg = pal[0];
