@@ -6,6 +6,7 @@ include(FindPkgConfig)
 set(gflags_DIR /usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags)
 find_package(gflags REQUIRED)
 find_package(SDL2 REQUIRED)
+find_package(benchmark REQUIRED)
 pkg_search_module(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -34,3 +35,5 @@ target_link_libraries(inver gflags)
 target_link_libraries(inver nes_apu)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
+add_executable(micro bench/micro.cpp src/utils.cpp)
+target_link_libraries(micro benchmark::benchmark)
