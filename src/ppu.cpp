@@ -183,7 +183,7 @@ PPU::pt_read_msb() {
 
 inline void
 PPU::scx() {
-  if (ppumask.show_background) {
+  if (ppumask.show_background || ppumask.show_sprites) {
     if (loopy_v.coarse_x == 31) {
       loopy_v.coarse_x = 0;
       loopy_v.nt_x = ~loopy_v.nt_x;
@@ -195,7 +195,7 @@ PPU::scx() {
 
 inline void
 PPU::scy() {
-  if (ppumask.show_background) {
+  if (ppumask.show_background || ppumask.show_sprites) {
     if (loopy_v.fine_y == 7) {
       loopy_v.fine_y = 0;
       if (loopy_v.coarse_y == 29) {
@@ -213,7 +213,7 @@ PPU::scy() {
 inline void
 PPU::cpx() {
   load_shift_reg();
-  if (ppumask.show_background) {
+  if (ppumask.show_background || ppumask.show_sprites) {
     loopy_v.coarse_x = loopy_t.coarse_x;
     loopy_v.nt_x = loopy_t.nt_x;
 //    loopy_v.reg = (loopy_v.reg & ~0x41f) | (loopy_t.reg & 0x41f);
@@ -222,7 +222,7 @@ PPU::cpx() {
 
 inline void
 PPU::cpy() {
-  if (ppumask.show_background) {
+  if (ppumask.show_background || ppumask.show_sprites) {
     loopy_v.fine_y = loopy_t.fine_y;
     loopy_v.coarse_y = loopy_t.coarse_y;
     loopy_v.nt_y = loopy_t.nt_y;
