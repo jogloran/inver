@@ -83,7 +83,7 @@ public:
 
   void cpy();
 
-  void set_vblank();
+  void set_vblank(bool b);
 
   void clr_vblank();
 

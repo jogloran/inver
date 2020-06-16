@@ -10,6 +10,10 @@ DECLARE_bool(td);
 DECLARE_int32(td_scanline);
 DECLARE_int32(td_refresh_rate);
 
+inline bool in(int start, int c, int end) {
+  return c >= start && c <= end;
+}
+
 void
 PPU::select(word ppu_cmd, byte value) {
   {
@@ -88,8 +92,7 @@ PPU::calculate_sprites() {
   auto cur {oam.begin()};
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
-    if ((sprite.y >= 0 && next_scanline >= sprite.y &&
-         next_scanline < sprite.y + height)) {
+    if (sprite.y >= 0 && in(sprite.y, next_scanline, sprite.y + height - 1)) {
       candidate_sprites.push_back({sprite, sprite_index});
     }
   }
@@ -233,28 +236,23 @@ PPU::cpy() {
 }
 
 inline void
-PPU::set_vblank() {
-  ppustatus.sprite0_hit = 0;
-  ppustatus.sprite_overflow = 0;
-  ppustatus.vblank_started = 1;
-  if (ppuctrl.vblank_nmi) {
-    nmi_req = true;
+PPU::set_vblank(bool b) {
+  ppustatus.vblank_started = b;
+  if (b) {
+    ppustatus.sprite0_hit = 0;
+    ppustatus.sprite_overflow = 0;
+    if (ppuctrl.vblank_nmi) {
+      nmi_req = true;
+    }
   }
-}
-
-inline void
-PPU::clr_vblank() {
-  ppustatus.vblank_started = 0;
 }
 
 void
 PPU::events_for(int s, int c) {
-  if ((s == 241 || s == -1) && c == 1) {
-    if (s == -1) clr_vblank(); else set_vblank();
-  } else if (s == 0 && c == 0) {
-    cycle_start();
-  } else if (s <= 239 || s == -1) {
-    if ((c >= 2 && c <= 257) || (c >= 321 && c <= 337)) {
+  if ((s == 241 || s == -1) && c == 1) set_vblank(s == 241);
+  else if (s == 0 && c == 0) cycle_start();
+  else if (s <= 239 || s == -1) {
+    if (in(2, c, 257) || in(321, c, 337)) {
       shift();
       switch ((c - 1) % 8) {
         case 0:
@@ -276,17 +274,11 @@ PPU::events_for(int s, int c) {
       if (c == 256) scy();
       else if (c == 257) cpx();
 
-      if (s == 239 && c == 257) {
-        frame_done();
-      }
+      if (s == 239 && c == 257) frame_done();
       if (c == 338 || c == 340) extra_nt_read();
-    } else if (s == -1 && c >= 280 && c <= 304) {
-      cpy();
-    }
-    if (s >= 0 && c == 304) {
-      calculate_sprites();
-    }
-    if (s >= 0 && s <= 239 && c == 260) {
+    } else if (s == -1 && in(280, c, 304)) cpy();
+    if (s >= 0 && c == 304) calculate_sprites();
+    if (in(0, s, 239) && c == 260) {
       if (ppumask.show_background || ppumask.show_sprites) {
         cart->signal_scanline();
       }
@@ -380,7 +372,7 @@ PPU::tick() {
   }
 
   byte bg = pal[0];
-  if (scanline >= 0 && scanline <= 239 && ncycles >= 1 && ncycles <= 256) {
+  if (in(0, scanline, 239) && in(1, ncycles, 256)) {
     bool render_left_column = (ppumask.show_left_background || ncycles > 8);
     screen->at(scanline * 256 + (ncycles - 1)) =
         (output == 0 || !render_left_column) ? bg : pal[4 * output_palette + output];
