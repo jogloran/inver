@@ -17,8 +17,9 @@ PPU::select(word ppu_cmd, byte value) {
       case 0x0: { // ppuctrl
         auto old_nametable_base {ppuctrl.nametable_base};
         ppuctrl.reg = value;
-        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
-        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
+//        loopy_t.nt_x = ppuctrl.nametable_base & 0x1;
+//        loopy_t.nt_y = ppuctrl.nametable_base & 0x2;
+        loopy_t.nt = ppuctrl.nametable_base;
         if (ppuctrl.nametable_base != old_nametable_base) {
           bus->dump();
           log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nametable_base);
@@ -144,8 +145,7 @@ PPU::extra_nt_read() {
 inline void
 PPU::at_read() {
   auto at_byte = ppu_read(0x23c0 +
-                          (loopy_v.nt_y << 11) +
-                          (loopy_v.nt_x << 10) +
+                          (loopy_v.nt << 10) +
                           ((loopy_v.coarse_y >> 2) << 3) +
                           ((loopy_v.coarse_x >> 2)));
   // at_byte contains attribute information for a 16x16 region (2x2 tiles)
@@ -184,12 +184,6 @@ PPU::pt_read_msb() {
 inline void
 PPU::scx() {
   if (ppumask.show_background || ppumask.show_sprites) {
-//    if (loopy_v.coarse_x == 31) {
-//      loopy_v.coarse_x = 0;
-//      loopy_v.nt_x = ~loopy_v.nt_x;
-//    } else {
-//      ++loopy_v.coarse_x;
-//    }
     if (loopy_v.coarse_x == 31) {
       loopy_v.reg ^= 0x41f;
     } else {
@@ -201,29 +195,18 @@ PPU::scx() {
 inline void
 PPU::scy() {
   if (ppumask.show_background || ppumask.show_sprites) {
-//    if (loopy_v.fine_y == 7) {
-//      loopy_v.fine_y = 0;
-//      if (loopy_v.coarse_y == 29) {
-//        loopy_v.coarse_y = 0;
-//        loopy_v.nt_y = ~loopy_v.nt_y;
-//      } else {
-//        ++loopy_v.coarse_y;
-//      }
-//    } else {
-//      ++loopy_v.fine_y;
-//    }
-    if (loopy_v.fine_y < 7) {
-      ++loopy_v.fine_y;
-    } else {
+    if (loopy_v.fine_y == 7) {
       loopy_v.fine_y = 0;
       if (loopy_v.coarse_y == 31) {
         loopy_v.coarse_y = 0;
       } else if (loopy_v.coarse_y == 29) {
         loopy_v.coarse_y = 0;
-        loopy_v.reg ^= 0b10;
+        loopy_v.nt ^= 0b10;
       } else {
         ++loopy_v.coarse_y;
       }
+    } else {
+      ++loopy_v.fine_y;
     }
   }
 }
