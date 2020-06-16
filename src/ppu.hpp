@@ -179,26 +179,34 @@ public:
     } else if (ppu_addr <= 0x3eff) {
       // Mirroring:
       Mapper::Mirroring mirroring = cart->get_mirroring();
-      auto nt_index = (ppu_addr >> 10) & 1;
       switch (mirroring) {
-        // TODO: I suspect this isn't right
         case Mapper::Mirroring::V:
-          ppu_addr &= ~(1 << 11);
-          nt_index = (ppu_addr >> 10) & 1;
-          break;
+          return nt[ppu_addr % 0x800];
         case Mapper::Mirroring::H:
-          ppu_addr &= ~(1 << 10);
-          nt_index = (ppu_addr >> 11) & 1;
-          break;
-        case Mapper::Mirroring::AAAA:
-          nt_index = 0;
-          break;
+          return nt[((ppu_addr / 2) & 0x400) + (ppu_addr % 0x400)];
+        default:
+          return nt[ppu_addr - 0x2000];
       }
-      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
-      // nametable actually only has 2048 = 0x800 elements
-
-      auto nt_offset = ppu_addr & 0x3ff;
-      return nt[nt_index * 0x400 + nt_offset];
+//      auto nt_index = (ppu_addr >> 10) & 1;
+//      switch (mirroring) {
+//        // TODO: I suspect this isn't right
+//        case Mapper::Mirroring::V:
+//          ppu_addr &= ~(1 << 11);
+//          nt_index = (ppu_addr >> 10) & 1;
+//          break;
+//        case Mapper::Mirroring::H:
+//          ppu_addr &= ~(1 << 10);
+//          nt_index = (ppu_addr >> 11) & 1;
+//          break;
+//        case Mapper::Mirroring::AAAA:
+//          nt_index = 0;
+//          break;
+//      }
+//      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
+//      // nametable actually only has 2048 = 0x800 elements
+//
+//      auto nt_offset = ppu_addr & 0x3ff;
+//      return nt[nt_index * 0x400 + nt_offset];
     } else if (ppu_addr <= 0x3fff) {
       // Reading from palette index 0 of sprite palettes 0...3 should read from
       // index 0 of background palettes 0...3 instead
@@ -220,20 +228,32 @@ public:
     } else if (ppu_addr <= 0x3eff) {
       // Mirroring:
       Mapper::Mirroring mirroring = cart->get_mirroring();
-      auto nt_index = (ppu_addr >> 10) & 1;
       switch (mirroring) {
         case Mapper::Mirroring::V:
-          ppu_addr &= ~(1 << 11);
-          nt_index = (ppu_addr >> 10) & 1;
+          nt[ppu_addr % 0x800] = value;
           break;
         case Mapper::Mirroring::H:
-          ppu_addr &= ~(1 << 10);
-          nt_index = (ppu_addr >> 11) & 1;
+          nt[((ppu_addr / 2) & 0x400) + (ppu_addr % 0x400)] = value;
+          break;
+        default:
+          nt[ppu_addr - 0x2000] = value;
           break;
       }
 
-      auto nt_offset = ppu_addr & 0x3ff;
-      nt[nt_index * 0x400 + nt_offset] = value;
+//      auto nt_index = (ppu_addr >> 10) & 1;
+//      switch (mirroring) {
+//        case Mapper::Mirroring::V:
+//          ppu_addr &= ~(1 << 11);
+//          nt_index = (ppu_addr >> 10) & 1;
+//          break;
+//        case Mapper::Mirroring::H:
+//          ppu_addr &= ~(1 << 10);
+//          nt_index = (ppu_addr >> 11) & 1;
+//          break;
+//      }
+//
+//      auto nt_offset = ppu_addr & 0x3ff;
+//      nt[nt_index * 0x400 + nt_offset] = value;
     } else if (ppu_addr <= 0x3fff) {
       // Writing to palette index 0 of sprite palettes 0...3 should write to
       // index 0 of background palettes 0...3 instead
@@ -398,8 +418,7 @@ public:
     struct {
       word coarse_x: 5;
       word coarse_y: 5;
-      byte nt_x: 1;
-      byte nt_y: 1;
+      byte nt: 2;
       word fine_y: 3;
       byte unused: 1;
     };
