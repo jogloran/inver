@@ -1,6 +1,7 @@
 #include <iomanip>
 #include "utils.hpp"
 
+#ifndef NDEBUG
 static constexpr uint16_t m[256] =
 {
   0x0000, 0x0001, 0x0004, 0x0005, 0x0010, 0x0011, 0x0014, 0x0015,
@@ -37,7 +38,6 @@ static constexpr uint16_t m[256] =
   0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555
 };
 
-
 std::array<byte, 8>
 unpack_bits(byte lsb, byte msb) {
   std::array<byte, 8> result;
@@ -55,6 +55,18 @@ unpack_bits(byte lsb, byte msb) {
   *ptr = data;
   return result;
 }
+#else
+std::array<byte, 8>
+unpack_bits(byte lsb, byte msb) {
+  std::array<byte, 8> result;
+  for (int i = 0; i < 8; ++i) {
+    result[7 - i] = (lsb & 1) | ((msb & 1) << 1);
+    lsb >>= 1;
+    msb >>= 1;
+  }
+  return result;
+}
+#endif
 
 const char *to_6502_flag_string(byte f) {
   static char buf[9] = "________";
