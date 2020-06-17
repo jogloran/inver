@@ -26,4 +26,8 @@ inline int mapper_no(NESHeader* h) {
   return ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8));
 }
 
+inline bool is_nes20_header(NESHeader* h) {
+  return (h->system_flags >> 2) & 3;
+}
+
 void inspect_header(NESHeader* h);

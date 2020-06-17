@@ -43,10 +43,16 @@ public:
   void
   map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
     rom.reserve(PRG_BANK_MULTIPLIER * prg_banks);
-    chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);
+    if (chr_banks != 0) {
+      chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);
+    } else {
+      chr.resize(0x2000);
+    }
 
     auto cur = flash((byte*) data.data(), PRG_BANK_MULTIPLIER * prg_banks, rom);
-    flash(cur, CHR_BANK_MULTIPLIER * chr_banks, chr);
+    if (chr_banks != 0) {
+      flash(cur, CHR_BANK_MULTIPLIER * chr_banks, chr);
+    }
   }
 
   inline byte* bank(int bank) {
@@ -124,7 +130,24 @@ public:
     return chr_bank(bank)[addr - section_start_value];
   }
 
-  void chr_write(word addr, byte value) override {}
+  void chr_write(word addr, byte value) override {
+    // each tile ranges from 0xx0 to 0xxf (16 bytes)
+    // there are 256 tiles (zXXy)
+    // there are 2 planes (Zxxy)
+    // 2kb bank can store 128 tiles
+    static const size_t offsets[] = {0, 0, 1, 1, 2, 3, 4, 5};
+    static const word section_start[] = {0x0, 0x0, 0x0800, 0x0800, 0x1000, 0x1400, 0x1800, 0x1c00};
+    static const word section_start2[] = {0x1000, 0x1000, 0x1800, 0x1800, 0x0, 0x0400, 0x0800,
+                                          0x0c00};
+    size_t start = chr_a12_inversion ? 4 : 0;
+    size_t i = (addr >> 10) & 7;
+    // i can be 0..7, corresponds to which row it is
+    size_t offset = (start + i) % 8; // offset = 3, offsets[offset] = 1
+    size_t bank = bank_for_target[offsets[offset]]; // bank = 1
+
+    auto section_start_value = (chr_a12_inversion ? section_start2 : section_start)[offset];
+    chr_bank(bank)[addr - section_start_value] = value;
+  }
 
   Mirroring get_mirroring() override;
 
