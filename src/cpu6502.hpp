@@ -34,15 +34,34 @@ public:
 
   void reset();
 
-  void push_word(word address);
+  void push_word(word address) {
+    bus->write(SP_BASE + sp - 1, address & 0xff);
+    bus->write(SP_BASE + sp, address >> 8);
+    sp -= 2;
+  }
 
-  void push(byte data);
+  void push(byte data) {
+    bus->write(SP_BASE + sp, data);
+    --sp;
+  }
 
-  void rts();
+  inline void rts() {
+    pc = pop_word() + 1; // Note the + 1 for the special behaviour of RTS
+  }
 
-  byte pop();
+  // Popping with an empty stack (sp = 0x1ff) must set sp = 0x00 and read from 0x100 instead
+  byte pop() {
+    auto result = bus->read(SP_BASE + ((sp + 1) & 0xff));
+    ++sp;
+    return result;
+  }
 
-  word pop_word();
+  word pop_word() {
+    auto result = (bus->read(SP_BASE + ((sp + 1) & 0xff)) |
+                   (bus->read(SP_BASE + ((sp + 2) & 0xff)) << 8));
+    sp += 2;
+    return result;
+  }
 
   void set_should_dump(bool dump) {
     should_dump = dump;
@@ -198,7 +217,14 @@ public:
     }
   }
 
-  void brk();
+  // The copy of P pushed by BRK should always contain __11 ____ (the unused bits set to 1)
+  // and with the I flag disabled _after_ pushing
+  void brk() {
+    push_word(pc + 1);
+    push((p.reg & ~0x30) | 0x30);
+    p.I = 1;
+    pc = bus->read_vector<Bus::Interrupt::IRQ>(); // irq and brk share a vector
+  }
 
   template<typename Ar>
   void serialize(Ar& ar) {

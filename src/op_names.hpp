@@ -21,4 +21,6 @@ struct Op {
 std::array<Op, 256> build_ops();
 extern std::array<Op, 256> op_meta;
 
+void dump_op_table(std::ostream& o);
+
 std::string instruction_at_pc(CPU6502& cpu);

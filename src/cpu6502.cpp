@@ -43,45 +43,6 @@ void CPU6502::tick() {
   ++ncycles;
 }
 
-void CPU6502::push_word(word address) {
-  bus->write(SP_BASE + sp - 1, address & 0xff);
-  bus->write(SP_BASE + sp, address >> 8);
-  sp -= 2;
-}
-
-void CPU6502::push(byte data) {
-  bus->write(SP_BASE + sp, data);
-  --sp;
-}
-
-void CPU6502::rts() {
-  // Note the + 1 for the special behaviour of RTS
-  pc = pop_word() + 1;
-}
-
-word CPU6502::pop_word() {
-  auto result = (bus->read(SP_BASE + ((sp + 1) & 0xff)) |
-                 (bus->read(SP_BASE + ((sp + 2) & 0xff)) << 8));
-  sp += 2;
-  return result;
-}
-
-// Popping with an empty stack (sp = 0x1ff) must set sp = 0x00 and read from 0x100 instead
-byte CPU6502::pop() {
-  auto result = bus->read(SP_BASE + ((sp + 1) & 0xff));
-  ++sp;
-  return result;
-}
-
-// The copy of P pushed by BRK should always contain __11 ____ (the unused bits set to 1)
-// and with the I flag disabled _after_ pushing
-void CPU6502::brk() {
-  push_word(pc + 1);
-  push((p.reg & ~0x30) | 0x30);
-  p.I = 1;
-  pc = bus->read_vector<Bus::Interrupt::IRQ>();
-}
-
 void CPU6502::dump() {
   using std::hex;
   using std::dec;
