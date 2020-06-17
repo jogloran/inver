@@ -14,6 +14,8 @@ inline bool in(int start, int c, int end) {
   return c >= start && c <= end;
 }
 
+inline bool PPU::rendering() const { return ppumask.show_background || ppumask.show_sprites; }
+
 void
 PPU::select(word ppu_cmd, byte value) {
   {
@@ -180,7 +182,7 @@ PPU::pt_read_msb() {
 
 inline void
 PPU::scx() {
-  if (ppumask.show_background || ppumask.show_sprites) {
+  if (rendering()) {
     if (loopy_v.coarse_x == 31) {
       loopy_v.coarse_x = 0;
       loopy_v.nt_x = ~loopy_v.nt_x;
@@ -192,7 +194,7 @@ PPU::scx() {
 
 inline void
 PPU::scy() {
-  if (ppumask.show_background || ppumask.show_sprites) {
+  if (rendering()) {
     if (loopy_v.fine_y == 7) {
       loopy_v.fine_y = 0;
       if (loopy_v.coarse_y == 31) {
@@ -212,7 +214,7 @@ PPU::scy() {
 inline void
 PPU::cpx() {
   load_shift_reg();
-  if (ppumask.show_background || ppumask.show_sprites) {
+  if (rendering()) {
     loopy_v.coarse_x = loopy_t.coarse_x;
     loopy_v.nt_x = loopy_t.nt_x;
   }
@@ -220,7 +222,7 @@ PPU::cpx() {
 
 inline void
 PPU::cpy() {
-  if (ppumask.show_background || ppumask.show_sprites) {
+  if (rendering()) {
     loopy_v.fine_y = loopy_t.fine_y;
     loopy_v.coarse_y = loopy_t.coarse_y;
     loopy_v.nt_y = loopy_t.nt_y;
@@ -272,7 +274,7 @@ PPU::events_for(int s, int c) {
     } else if (s == -1 && in(280, c, 304)) cpy();
     if (s >= 0 && c == 304) calculate_sprites();
     if (in(0, s, 239) && c == 260) {
-      if (ppumask.show_background || ppumask.show_sprites) {
+      if (rendering()) {
         cart->signal_scanline();
       }
     }

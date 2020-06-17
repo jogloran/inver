@@ -464,4 +464,6 @@ public:
   void serialize(Ar& ar) {
     ar(nt, pal, ppuctrl, ppumask, ppustatus, oam, shadow_oam, shadow_oam_indices, candidate_sprites, sprite_row, scanline, ncycles, loopy_v, loopy_t, fine_x, w, pt, at, nt_byte, at_byte_msb, at_byte_lsb, pt_byte, bg_tile_msb, bg_tile_lsb, ppudata_byte, nmi_req, odd_frame, bg_is_transparent);
   }
+
+  bool rendering() const;
 };
