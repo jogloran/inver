@@ -18,7 +18,7 @@ static void Unpack(benchmark::State& s) {
   for (auto _ : s) {
     byte lsb = rand() % 0xff;
     byte msb = rand() % 0xff;
-    naive_unpack_bits(lsb, msb);
+    unpack_bits(lsb, msb);
   }
 }
 
