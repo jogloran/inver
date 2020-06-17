@@ -154,7 +154,7 @@
 #define BRK        [](CPU6502& cpu) { cpu.brk();                  return 0; }
 #define JMP(mode)  [](CPU6502& cpu) { cpu.pc = cpu.addr_##mode(); return 0; }
 
-#define PHP        [](CPU6502& cpu) { cpu.push(cpu.p.reg | 0x10); return 0; }
+#define PHP        [](CPU6502& cpu) { cpu.push(cpu.p.reg | 0x30); return 0; }
 #define PLP        [](CPU6502& cpu) { cpu.pop_flags();            return 0; }
 
 #define PHA        [](CPU6502& cpu) { cpu.push(cpu.a);            return 0; }

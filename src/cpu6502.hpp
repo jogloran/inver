@@ -40,8 +40,6 @@ public:
 
   void rts();
 
-  void nmi();
-
   byte pop();
 
   word pop_word();
@@ -189,7 +187,16 @@ public:
 
   void dump_pc();
 
-  bool irq();
+  template <Bus::Interrupt rupt>
+  void irq() {
+    if (rupt == Bus::NMI || !p.I) {
+      push_word(pc);
+      push((p.reg & ~0x20) | 0x20);
+      p.I = 1;
+      pc = bus->read_vector<rupt>();
+      cycles_left = 8;
+    }
+  }
 
   void brk();
 

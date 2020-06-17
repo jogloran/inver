@@ -73,41 +73,13 @@ byte CPU6502::pop() {
   return result;
 }
 
-bool CPU6502::irq() {
-  if (!p.I) {
-    push_word(pc);
-    push(p.reg);
-    p.B = 0;
-    p.U = 1;
-    p.I = 1;
-    pc = bus->read_vector<Bus::Interrupt::IRQ>();
-
-    cycles_left = 8;
-    return true;
-  }
-  return false;
-}
-
 // The copy of P pushed by BRK should always contain __11 ____ (the unused bits set to 1)
 // and with the I flag disabled _after_ pushing
 void CPU6502::brk() {
   push_word(pc + 1);
-  push((p.reg & ~0b00110000) | 0b00110000);
+  push((p.reg & ~0x30) | 0x30);
   p.I = 1;
   pc = bus->read_vector<Bus::Interrupt::IRQ>();
-}
-
-void
-CPU6502::nmi() {
-  push_word(pc);
-  push(p.reg);
-  p.B = 0;
-  p.U = 1;
-  p.I = 1;
-  word handler = bus->read_vector<Bus::Interrupt::NMI>();;
-  pc = handler;
-
-  cycles_left = 8;
 }
 
 void CPU6502::dump() {

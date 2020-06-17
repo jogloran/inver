@@ -52,10 +52,10 @@ Bus::tick() {
   ppu->tick();
 
   if (ppu->nmi_req) {
-    cpu->nmi();
+    cpu->irq<NMI>();
     ppu->nmi_req = false;
   } else if (cart->irq_requested()) {
-    cpu->irq();
+    cpu->irq<IRQ>();
   }
   cpu->tick();
 
