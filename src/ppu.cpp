@@ -14,72 +14,70 @@ inline bool in(int start, int c, int end) {
   return c >= start && c <= end;
 }
 
-inline bool PPU::rendering() const { return ppumask.show_background || ppumask.show_sprites; }
+inline bool PPU::rendering() const { return ppumask.render_bg || ppumask.render_sprites; }
 
 void
 PPU::select(word ppu_cmd, byte value) {
-  {
-    switch (ppu_cmd) {
-      case 0x0: { // ppuctrl
-        auto old_nametable_base {ppuctrl.nt_base};
-        ppuctrl.reg = value;
-        loopy_t.nt_x = ppuctrl.nt_base & 1;
-        loopy_t.nt_y = (ppuctrl.nt_base >> 1) & 1;
-        if (ppuctrl.nt_base != old_nametable_base) {
-          bus->dump();
-          log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nt_base);
-        }
-        break;
+  switch (ppu_cmd) {
+    case 0x0: { // ppuctrl
+      auto old_nametable_base {ppuctrl.nt_base};
+      ppuctrl.reg = value;
+      loopy_t.nt_x = ppuctrl.nt_base & 1;
+      loopy_t.nt_y = (ppuctrl.nt_base & 2) >> 1;
+      if (ppuctrl.nt_base != old_nametable_base) {
+        bus->dump();
+        log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nt_base);
       }
-      case 0x1: // ppumask
-        ppumask.reg = value;
-        break;
-      case 0x2: // ppustatus
-        break;
-      case 0x3: // oamaddr
-        break;
-      case 0x4: // oamdata
-        break;
-      case 0x5: // ppuscroll
-        if (!w) {
-          loopy_t.coarse_x = value >> 3;
-          fine_x = value & 7;
-          LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y,
-              loopy_t.fine_y);
-          w = 1;
-        } else {
-          loopy_t.coarse_y = value >> 3;
-          loopy_t.fine_y = value & 7;
-          LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
-          w = 0;
-        }
-        break;
-      case 0x6: // ppuaddr
-        log_select(ppu_cmd, "ppu addr write %02x\n", value);
-        if (!w) {
-          loopy_t.reg &= 0x3ff;
-          loopy_t.reg = (loopy_t.reg & ~0x3f00) | ((value & 0x3f) << 8);
-          w = 1;
-        } else {
-          loopy_t.reg = (loopy_t.reg & ~0xff) | value;
-          loopy_v = loopy_t;
-          w = 0;
-        }
-
-        break;
-      case 0x7: // ppudata
-        log_select(ppu_cmd, "ppu data write %02x -> %04x\n", value, loopy_v.reg);
-        ppu_write(loopy_v.reg, value);
-        loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
-        break;
-      default:;
+      break;
     }
+    case 0x1: // ppumask
+      ppumask.reg = value;
+      break;
+    case 0x2: // ppustatus
+      break;
+    case 0x3: // oamaddr
+      break;
+    case 0x4: // oamdata
+      break;
+    case 0x5: // ppuscroll
+      if (!w) {
+        loopy_t.coarse_x = value >> 3;
+        fine_x = value & 7;
+        LOG("scroll cx %d fx %d cy %d fy %d\n", loopy_t.coarse_x, fine_x, loopy_t.coarse_y,
+            loopy_t.fine_y);
+        w = 1;
+      } else {
+        loopy_t.coarse_y = value >> 3;
+        loopy_t.fine_y = value & 7;
+        LOG("scroll2 cy %d fy %d\n", loopy_t.coarse_y, loopy_t.fine_y);
+        w = 0;
+      }
+      break;
+    case 0x6: // ppuaddr
+      log_select(ppu_cmd, "ppu addr write %02x\n", value);
+      if (!w) {
+        loopy_t.reg &= 0x3ff;
+        loopy_t.reg = (loopy_t.reg & ~0x3f00) | ((value & 0x3f) << 8);
+        w = 1;
+      } else {
+        loopy_t.reg = (loopy_t.reg & ~0xff) | value;
+        loopy_v = loopy_t;
+        w = 0;
+      }
+
+      break;
+    case 0x7: // ppudata
+      log_select(ppu_cmd, "ppu data write %02x -> %04x\n", value, loopy_v.reg);
+      ppu_write(loopy_v.reg, value);
+      loopy_v.reg += (ppuctrl.vram_increment ? 32 : 1);
+      break;
+    default:;
   }
 }
 
 void
 PPU::calculate_sprites() {
-  if (!ppumask.show_sprites) return;
+  if (!ppumask.render_sprites) return;
 
   auto height = ppuctrl.sprite_size ? 16 : 8;
 
@@ -117,7 +115,7 @@ PPU::cycle_start() {
 
 inline void
 PPU::shift() {
-  if (ppumask.show_background) {
+  if (ppumask.render_bg) {
     pt.shift();
     at.shift();
   }
@@ -171,13 +169,13 @@ PPU::at_read() {
 inline void
 PPU::pt_read_lsb() {
   bg_tile_lsb = ppu_read(
-      (ppuctrl.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.fine_y);
+      (ppuctrl.bg_pt_addr << 12) + (nt_byte << 4) + loopy_v.fine_y);
 }
 
 inline void
 PPU::pt_read_msb() {
   bg_tile_msb = ppu_read(
-      (ppuctrl.background_pattern_address << 12) + (nt_byte << 4) + loopy_v.fine_y + 8);
+      (ppuctrl.bg_pt_addr << 12) + (nt_byte << 4) + loopy_v.fine_y + 8);
 }
 
 inline void
@@ -349,7 +347,7 @@ PPU::tick() {
 
   byte output = 0;
   byte output_palette = 0;
-  if (ppumask.show_background) {
+  if (ppumask.render_bg) {
     word mask = 0x8000 >> fine_x;
     output = pt(mask);
     output_palette = at(mask);
@@ -357,14 +355,14 @@ PPU::tick() {
 
   byte bg = pal[0];
   if (in(0, scanline, 239) && in(1, ncycles, 256)) {
-    bool render_left_column = (ppumask.show_left_background || ncycles > 8);
+    bool render_left_column = (ppumask.render_left_bg || ncycles > 8);
     screen->at(scanline * 256 + (ncycles - 1)) =
         (output == 0 || !render_left_column) ? bg : pal[4 * output_palette + output];
     bg_is_transparent[ncycles - 1] = output == 0;
 
     auto height = ppuctrl.sprite_size ? 16 : 8;
 
-    if (ppumask.show_sprites && ncycles == 256) {
+    if (ppumask.render_sprites && ncycles == 256) {
       std::sort(shadow_oam.begin(), shadow_oam.end(), [](const Sprite& s1, const Sprite& s2) {
         return s1.sprite_index < s2.sprite_index;
       });
@@ -393,7 +391,7 @@ PPU::tick() {
             base_address = (visible.tile_no & 1) << 12;
           } else {
             select_top_half = false;
-            base_address = ppuctrl.sprite_pattern_address << 12;
+            base_address = ppuctrl.sprite_pt_addr << 12;
           }
 
           auto base_at_address {
@@ -408,8 +406,8 @@ PPU::tick() {
           // apply horizontal flip if necessary
           byte selector = visible.attr & 0x40 ? (7 - (i - visible.x)) : i - visible.x;
           auto sprite_byte = decoded[selector];
-          if (ppumask.show_background && sprite_byte != 0 &&
-              (ppumask.show_left_sprites || i >= 8) && i < 256) {
+          if (ppumask.render_bg && sprite_byte != 0 &&
+              (ppumask.render_left_sprites || i >= 8) && i < 256) {
             if (sprite_row[i] == 0) {
               sprite_row[i] = pal[4 * sprite_palette + sprite_byte];
               if ((visible.attr & 0x20) && sprite_row[i] != 0) {

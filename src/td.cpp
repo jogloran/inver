@@ -16,7 +16,7 @@ TD::show() {
         byte nt_byte = ppu->ppu_read(base + 32 * (line / 8) + (col % 32));
 
         word lsb_addr =
-            (ppu->ppuctrl.background_pattern_address << 12) + (nt_byte << 4) + (line % 8);
+            (ppu->ppuctrl.bg_pt_addr << 12) + (nt_byte << 4) + (line % 8);
         byte lsb = ppu->ppu_read(lsb_addr);
         byte msb = ppu->ppu_read(lsb_addr + 8);
         std::array<byte, 8> tile_row = unpack_bits(lsb, msb);

@@ -48,13 +48,13 @@ public:
   Simple_Apu apu;
   std::shared_ptr<Sound_Queue> sound_queue;
 
+  bool paused;
+
   void dmi(byte value);
 
   void reset();
 
   void toggle_pause();
-
-  bool paused;
 
   void request_save();
 

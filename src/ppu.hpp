@@ -186,26 +186,6 @@ public:
         default:
           return nt[ppu_addr - 0x2000];
       }
-//      auto nt_index = (ppu_addr >> 10) & 1;
-//      switch (mirroring) {
-//        // TODO: I suspect this isn't right
-//        case Mapper::Mirroring::V:
-//          ppu_addr &= ~(1 << 11);
-//          nt_index = (ppu_addr >> 10) & 1;
-//          break;
-//        case Mapper::Mirroring::H:
-//          ppu_addr &= ~(1 << 10);
-//          nt_index = (ppu_addr >> 11) & 1;
-//          break;
-//        case Mapper::Mirroring::AAAA:
-//          nt_index = 0;
-//          break;
-//      }
-//      // each nametable is 32x30 + 64 = 1024 = 0x400 tiles
-//      // nametable actually only has 2048 = 0x800 elements
-//
-//      auto nt_offset = ppu_addr & 0x3ff;
-//      return nt[nt_index * 0x400 + nt_offset];
     } else if (ppu_addr <= 0x3fff) {
       // Reading from palette index 0 of sprite palettes 0...3 should read from
       // index 0 of background palettes 0...3 instead
@@ -238,21 +218,6 @@ public:
           nt[ppu_addr - 0x2000] = value;
           break;
       }
-
-//      auto nt_index = (ppu_addr >> 10) & 1;
-//      switch (mirroring) {
-//        case Mapper::Mirroring::V:
-//          ppu_addr &= ~(1 << 11);
-//          nt_index = (ppu_addr >> 10) & 1;
-//          break;
-//        case Mapper::Mirroring::H:
-//          ppu_addr &= ~(1 << 10);
-//          nt_index = (ppu_addr >> 11) & 1;
-//          break;
-//      }
-//
-//      auto nt_offset = ppu_addr & 0x3ff;
-//      nt[nt_index * 0x400 + nt_offset] = value;
     } else if (ppu_addr <= 0x3fff) {
       // Writing to palette index 0 of sprite palettes 0...3 should write to
       // index 0 of background palettes 0...3 instead
@@ -344,8 +309,8 @@ public:
     struct {
       byte nt_base: 2;
       byte vram_increment: 1;
-      byte sprite_pattern_address: 1;
-      byte background_pattern_address: 1;
+      byte sprite_pt_addr: 1;
+      byte bg_pt_addr: 1;
       byte sprite_size: 1;
       byte ppu_master_slave: 1;
       byte vblank_nmi: 1;
@@ -359,10 +324,10 @@ public:
   union ppumask {
     struct {
       byte greyscale: 1;
-      byte show_left_background: 1;
-      byte show_left_sprites: 1;
-      byte show_background: 1;
-      byte show_sprites: 1;
+      byte render_left_bg: 1;
+      byte render_left_sprites: 1;
+      byte render_bg: 1;
+      byte render_sprites: 1;
       byte emph_r: 1;
       byte emph_g: 1;
       byte emph_b: 1;
@@ -448,6 +413,8 @@ public:
 
   std::chrono::high_resolution_clock::time_point frame_start;
 
+  std::array<bool, 256> bg_is_transparent;
+
   void dump_at();
 
   void dump_oam();
@@ -457,8 +424,6 @@ public:
   void calculate_sprites();
 
   void frame_done();
-
-  std::array<bool, 256> bg_is_transparent;
 
   template<typename Ar>
   void serialize(Ar& ar) {

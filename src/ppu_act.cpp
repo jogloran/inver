@@ -90,8 +90,8 @@ void decode_nt_byte(PPU& ppu) {
   std::array<byte, 16> sprite_bytes;
   for (int i = 0; i < 16; ++i) {
     sprite_bytes[i] = ppu.cart->chr_read(
-        (ppu.ppuctrl.background_pattern_address << 12) + ppu.nt_byte * 16 + i);
+        (ppu.ppuctrl.bg_pt_addr << 12) + ppu.nt_byte * 16 + i);
   }
-  ppu.log("tile data from %04x\n", (ppu.ppuctrl.background_pattern_address << 12) + ppu.nt_byte * 16);
+  ppu.log("tile data from %04x\n", (ppu.ppuctrl.bg_pt_addr << 12) + ppu.nt_byte * 16);
   output_braille_sprite(sprite_bytes.data());
 }
