@@ -55,10 +55,7 @@ Bus::tick() {
     cpu->nmi();
     ppu->nmi_req = false;
   } else if (cart->irq_requested()) {
-    bool handled = cpu->irq();
-    if (handled) {
-      cart->irq_handled();
-    }
+    cpu->irq();
   }
   cpu->tick();
 
@@ -73,10 +70,8 @@ Bus::sample_input() {
 
 void
 Bus::write(word addr, byte value) {
-  if (addr <= 0x7ff) {
-    ram[addr] = value;
-  } else if (addr <= 0x1fff) {
-    ram[addr % 0x800] = value;
+  if (addr <= 0x1fff) {
+    ram[addr & 0x7ff] = value;
   } else if (addr <= 0x3fff) {
     ppu->select(addr & 0x7, value);
   } else if (addr <= 0x4017) {
@@ -107,10 +102,8 @@ Bus::write(word addr, byte value) {
 
 byte
 Bus::read(word addr) {
-  if (addr <= 0x7ff) {
-    return ram[addr];
-  } else if (addr <= 0x1fff) {
-    return ram[addr % 0x800];
+  if (addr <= 0x1fff) {
+    return ram[addr & 0x7ff];
   } else if (addr <= 0x3fff) { // ppu
     return ppu->select(addr & 0x7);
   } else if (addr <= 0x4017) { // apu and I/O

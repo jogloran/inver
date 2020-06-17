@@ -33,7 +33,6 @@ public:
   virtual void chr_write(word addr, byte value) = 0;
 
   virtual bool irq_requested() { return false; }
-  virtual void irq_handled() {}
 
   virtual void signal_scanline() {}
 

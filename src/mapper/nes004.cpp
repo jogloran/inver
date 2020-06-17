@@ -21,8 +21,6 @@ bool MMC3::irq_requested() {
   return irq_requested_;
 }
 
-void MMC3::irq_handled() {}
-
 void MMC3::irq_enable(bool enable) {
   if (!enable) {
     irq_requested_ = false;

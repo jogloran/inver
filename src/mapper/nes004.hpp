@@ -153,8 +153,6 @@ private:
 
   void signal_scanline() override;
 
-  void irq_handled() override;
-
   template<typename Ar>
   void serialize(Ar& ar) {
     ar(rom, chr, ram, rom_8000_fixed,
