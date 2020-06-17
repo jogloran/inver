@@ -417,7 +417,8 @@ public:
     struct {
       word coarse_x: 5;
       word coarse_y: 5;
-      byte nt: 2;
+      byte nt_x: 1;
+      byte nt_y: 1;
       word fine_y: 3;
       byte unused: 1;
     };
