@@ -29,7 +29,6 @@
 		0972D493249AED4C00B771EC /* nes002.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0972D491249AED4C00B771EC /* nes002.cpp */; };
 		0972D494249AED6900B771EC /* screen.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7324847CB30020B5D4 /* screen.hpp */; };
 		0972D496249AEE8C00B771EC /* mplus-2c-medium.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */; };
-		09824A012488945700951FC0 /* tm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 098249FE2488945700951FC0 /* tm.cpp */; };
 		09824A022488945700951FC0 /* td.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09824A002488945700951FC0 /* td.cpp */; };
 		09E3BF872478F60B00496742 /* libgflags.2.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */; };
 		09E3BF8B2478F62200496742 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */; };
@@ -69,7 +68,6 @@
 		09FADCFB248481450020B5D4 /* Nes_Namco.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCBB24847CC70020B5D4 /* Nes_Namco.h */; };
 		09FADCFC248481450020B5D4 /* Nes_Oscs.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCB824847CC70020B5D4 /* Nes_Oscs.h */; };
 		09FADCFD248481450020B5D4 /* Nes_Vrc6.h in Headers */ = {isa = PBXBuildFile; fileRef = 09FADCB924847CC70020B5D4 /* Nes_Vrc6.h */; };
-		09FC20482484CC6F0077BF6B /* nes003.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FC20462484CC6F0077BF6B /* nes003.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -574,9 +572,7 @@
 				09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */,
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
 				09FADCED24847F530020B5D4 /* util.cc in Sources */,
-				09FC20482484CC6F0077BF6B /* nes003.cpp in Sources */,
 				09824A022488945700951FC0 /* td.cpp in Sources */,
-				09824A012488945700951FC0 /* tm.cpp in Sources */,
 				09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */,
 				09FADC9D24847CB40020B5D4 /* bus.cpp in Sources */,
 				09FADCF324847F920020B5D4 /* Simple_Apu.cpp in Sources */,
