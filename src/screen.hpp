@@ -29,7 +29,7 @@ public:
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, BUF_WIDTH * SCALE, BUF_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888,
-                                 SDL_TEXTUREACCESS_TARGET,
+                                 SDL_TEXTUREACCESS_STREAMING,
                                  BUF_WIDTH, BUF_HEIGHT);
     SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 24);

@@ -118,11 +118,15 @@ void
 Screen::blit() {
   int i = 0;
 
+  int pitch;
+  unsigned char* pixels;
+  SDL_LockTexture(texture_, nullptr, (void**) &pixels, &pitch);
+
   for (byte b: fb) {
-    buf[i++] = ntsc_palette[b].b;
-    buf[i++] = ntsc_palette[b].g;
-    buf[i++] = ntsc_palette[b].r;
-    buf[i++] = 255;
+    pixels[i++] = ntsc_palette[b].b;
+    pixels[i++] = ntsc_palette[b].g;
+    pixels[i++] = ntsc_palette[b].r;
+    pixels[i++] = 255;
   }
 
   if (FLAGS_fake_sprites) {
@@ -138,8 +142,12 @@ Screen::blit() {
     }
   }
 
-  SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
-  SDL_RenderClear(renderer_);
+//  SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
+//  SDL_RenderClear(renderer_);
+
+//  std::cout << pitch << std::endl;
+//  std::copy(buf.begin(), buf.end(), pixels);
+  SDL_UnlockTexture(texture_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
 
   if (text_.size()) {
@@ -234,7 +242,7 @@ void Screen::frame_rendered(std::chrono::milliseconds ms) {
 
   auto frame_time = ms +
                     std::chrono::duration_cast<std::chrono::milliseconds>(now - then);
-  SDL_Delay((MS_PER_FRAME - std::min<>(MS_PER_FRAME, frame_time)).count());
+//  SDL_Delay((MS_PER_FRAME - std::min<>(MS_PER_FRAME, frame_time)).count());
 }
 
 void Screen::set_paused(bool paused) {
