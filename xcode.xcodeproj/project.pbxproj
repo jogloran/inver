@@ -25,6 +25,10 @@
 		092ED212248CA9EA00869007 /* smb2.nes in Resources */ = {isa = PBXBuildFile; fileRef = 092ED211248CA9CF00869007 /* smb2.nes */; };
 		092ED214248CAB7F00869007 /* crystalis.nes in Resources */ = {isa = PBXBuildFile; fileRef = 092ED213248CAB7300869007 /* crystalis.nes */; };
 		092ED215248CAC0500869007 /* types.h in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCC524847CD30020B5D4 /* types.h */; };
+		0972D492249AED4C00B771EC /* nes003.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0972D48F249AED4B00B771EC /* nes003.cpp */; };
+		0972D493249AED4C00B771EC /* nes002.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0972D491249AED4C00B771EC /* nes002.cpp */; };
+		0972D494249AED6900B771EC /* screen.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7324847CB30020B5D4 /* screen.hpp */; };
+		0972D496249AEE8C00B771EC /* mplus-2c-medium.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */; };
 		09824A012488945700951FC0 /* tm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 098249FE2488945700951FC0 /* tm.cpp */; };
 		09824A022488945700951FC0 /* td.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09824A002488945700951FC0 /* td.cpp */; };
 		09E3BF872478F60B00496742 /* libgflags.2.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */; };
@@ -88,12 +92,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		09A2C0312478E38A00CFB287 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
+				0972D496249AEE8C00B771EC /* mplus-2c-medium.ttf in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		09FADCF224847F7B0020B5D4 /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -132,6 +137,11 @@
 		092ED20C248C95AB00869007 /* NoInterpolationImageView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NoInterpolationImageView.m; sourceTree = "<group>"; };
 		092ED211248CA9CF00869007 /* smb2.nes */ = {isa = PBXFileReference; lastKnownFileType = file; name = smb2.nes; path = ../../../Downloads/smb2.nes; sourceTree = "<group>"; };
 		092ED213248CAB7300869007 /* crystalis.nes */ = {isa = PBXFileReference; lastKnownFileType = file; path = crystalis.nes; sourceTree = "<group>"; };
+		0972D48E249AED4B00B771EC /* nes002.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes002.hpp; path = src/mapper/nes002.hpp; sourceTree = "<group>"; };
+		0972D48F249AED4B00B771EC /* nes003.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes003.cpp; path = src/mapper/nes003.cpp; sourceTree = "<group>"; };
+		0972D490249AED4C00B771EC /* nes003.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = nes003.hpp; path = src/mapper/nes003.hpp; sourceTree = "<group>"; };
+		0972D491249AED4C00B771EC /* nes002.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nes002.cpp; path = src/mapper/nes002.cpp; sourceTree = "<group>"; };
+		0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "mplus-2c-medium.ttf"; path = "res/mplus-2c-medium.ttf"; sourceTree = "<group>"; };
 		098249FD2488945700951FC0 /* td.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = td.hpp; path = src/td.hpp; sourceTree = "<group>"; };
 		098249FE2488945700951FC0 /* tm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tm.cpp; path = src/tm.cpp; sourceTree = "<group>"; };
 		098249FF2488945700951FC0 /* tm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tm.hpp; path = src/tm.hpp; sourceTree = "<group>"; };
@@ -267,6 +277,7 @@
 		09A2C02A2478E38A00CFB287 = {
 			isa = PBXGroup;
 			children = (
+				0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */,
 				09824A002488945700951FC0 /* td.cpp */,
 				098249FD2488945700951FC0 /* td.hpp */,
 				098249FE2488945700951FC0 /* tm.cpp */,
@@ -283,6 +294,10 @@
 				09FADCA024847CBA0020B5D4 /* nes000.hpp */,
 				09FADCA124847CBA0020B5D4 /* nes001.cpp */,
 				09FADCA224847CBA0020B5D4 /* nes001.hpp */,
+				0972D491249AED4C00B771EC /* nes002.cpp */,
+				0972D48E249AED4B00B771EC /* nes002.hpp */,
+				0972D48F249AED4B00B771EC /* nes003.cpp */,
+				0972D490249AED4C00B771EC /* nes003.hpp */,
 				09FADCA424847CBA0020B5D4 /* nes004.cpp */,
 				09FADCA324847CBA0020B5D4 /* nes004.hpp */,
 				09FADC9024847CB40020B5D4 /* audio.cpp */,
@@ -543,6 +558,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0972D492249AED4C00B771EC /* nes003.cpp in Sources */,
 				09FADC9324847CB40020B5D4 /* ops.cpp in Sources */,
 				09FADC9A24847CB40020B5D4 /* utils.cpp in Sources */,
 				09FADCBF24847CC70020B5D4 /* apu_snapshot.cpp in Sources */,
@@ -550,9 +566,11 @@
 				09FADC9224847CB40020B5D4 /* tm.cpp in Sources */,
 				09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */,
 				09FADC9724847CB40020B5D4 /* header.cpp in Sources */,
+				0972D493249AED4C00B771EC /* nes002.cpp in Sources */,
 				09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */,
 				09FADC9824847CB40020B5D4 /* screen.cpp in Sources */,
 				09FADC9124847CB40020B5D4 /* main.cpp in Sources */,
+				0972D494249AED6900B771EC /* screen.hpp in Sources */,
 				09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */,
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
 				09FADCED24847F530020B5D4 /* util.cc in Sources */,
@@ -753,18 +771,23 @@
 		09A2C03B2478E38A00CFB287 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/Cellar/gflags/2.2.2/include,
+					/usr/local/Cellar/cereal/1.3.0/include,
 					"/usr/local/Cellar/sdl2/2.0.12_1/include/**",
 					/usr/local/Cellar/sdl2/2.0.12_1/include/SDL2,
+					/usr/local/Cellar/sdl2_ttf/2.0.15/include/SDL2,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/gflags/2.2.2/lib,
-					/usr/local/Cellar/sdl2/2.0.12/lib,
+					/usr/local/Cellar/sdl2/2.0.12_1/lib,
+					/usr/local/Cellar/sdl2_ttf/2.0.15/lib,
 				);
+				OTHER_LDFLAGS = "-lSDL2_ttf";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -772,17 +795,22 @@
 		09A2C03C2478E38A00CFB287 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				FRAMEWORK_SEARCH_PATHS = "";
 				HEADER_SEARCH_PATHS = (
 					/usr/local/Cellar/gflags/2.2.2/include,
+					/usr/local/Cellar/cereal/1.3.0/include,
 					"/usr/local/Cellar/sdl2/2.0.12_1/include/**",
 					/usr/local/Cellar/sdl2/2.0.12_1/include/SDL2,
+					/usr/local/Cellar/sdl2_ttf/2.0.15/include/SDL2,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/gflags/2.2.2/lib,
-					/usr/local/Cellar/sdl2/2.0.12/lib,
+					/usr/local/Cellar/sdl2/2.0.12_1/lib,
+					/usr/local/Cellar/sdl2_ttf/2.0.15/lib,
 				);
+				OTHER_LDFLAGS = "-lSDL2_ttf";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
