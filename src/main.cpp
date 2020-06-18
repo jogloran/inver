@@ -97,10 +97,7 @@ int main(int argc, char** argv) {
   if (save_data.size()) {
     mapper->map_ram(save_data, save_data.size());
   }
-
-//  bus.attach_cart(bus.cart);
-//  bus.ppu->connect(&bus);
-//  bus.cpu->connect(&bus);
+  
   bus.attach_screen(screen);
   bus.attach_cart(mapper);
 
