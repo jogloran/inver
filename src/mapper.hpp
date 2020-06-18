@@ -16,6 +16,8 @@ class NESHeader;
 
 class Mapper {
 public:
+  virtual ~Mapper() = default;
+
   enum class Mirroring {
     Unknown, V, H, Screen4, Screen1, ABBA, ABBB, ACBC, ABCC, ABBC, AAAA, BBBB
   };

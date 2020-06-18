@@ -42,6 +42,12 @@ public:
     std::fill(buf.begin(), buf.end(), 0);
   }
 
+  ~Screen() {
+    SDL_DestroyTexture(texture_);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
+  }
+
   void blit();
 
   static constexpr int BUF_WIDTH = 256;
