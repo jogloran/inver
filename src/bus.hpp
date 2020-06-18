@@ -58,7 +58,7 @@ public:
 
   void request_save();
 
-  void dump();
+  [[maybe_unused]] void dump();
 
   template<typename Ar>
   void serialize(Ar& ar) {

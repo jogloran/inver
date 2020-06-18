@@ -168,7 +168,7 @@ void Bus::request_save() {
   }
 }
 
-void Bus::dump() {
+[[maybe_unused]] void Bus::dump() {
   cpu->dump_pc();
   cpu->dump();
 }

@@ -54,5 +54,3 @@ protected:
     return ptr + len;
   }
 };
-
-CEREAL_REGISTER_TYPE(Mapper)
