@@ -26,7 +26,6 @@ PPU::select(word ppu_cmd, byte value) {
       loopy_t.nt_y = (ppuctrl.nt_base & 2) >> 1;
 #ifndef NDEBUG
       if (ppuctrl.nt_base != old_nametable_base) {
-        bus->dump();
         log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nt_base);
       }
 #endif
