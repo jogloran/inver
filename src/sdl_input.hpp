@@ -35,6 +35,12 @@ public:
     if (pad != nullptr) SDL_GameControllerClose(pad);
   }
 
+  void push_key(SDL_Keycode k) {
+    SDL_Event e {.type = SDL_KEYDOWN};
+    e.key.keysym.sym = k;
+    SDL_PushEvent(&e);
+  }
+
   Buttons pad_state() {
     state = Buttons::None;
     if (!pad) return state;
@@ -47,9 +53,14 @@ public:
     if (down(SDL_CONTROLLER_BUTTON_DPAD_LEFT)) state |= Buttons::L;
     if (down(SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) state |= Buttons::R;
     if (down(SDL_CONTROLLER_BUTTON_DPAD_UP)) state |= Buttons::U;
+    if (down(SDL_CONTROLLER_BUTTON_X)) push_key(SDLK_v);
+    if (down(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) push_key(SDLK_e);
+    if (down(SDL_CONTROLLER_AXIS_TRIGGERLEFT)) push_key(SDLK_e);
 
     return state;
   }
+
+  bool down(SDL_GameControllerAxis ax) const { return SDL_GameControllerGetAxis(pad, ax) > 0; }
 
   bool down(SDL_GameControllerButton b) const { return SDL_GameControllerGetButton(pad, b); }
 
