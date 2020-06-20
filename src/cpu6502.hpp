@@ -79,7 +79,7 @@ public:
   std::ostream& dump_stack(std::ostream&);
 
   inline cycle_count_t branch_with_offset() {
-    sbyte offset = static_cast<sbyte>(bus->read(pc++));
+    sbyte offset = static_cast<sbyte>(read_byte());
     pc += offset;
     return ((pc - offset) & 0xff00) == (pc & 0xff00) ? 0 : 1;
   }

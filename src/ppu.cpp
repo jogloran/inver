@@ -92,7 +92,7 @@ PPU::calculate_sprites() {
   auto cur {oam.begin()};
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
-    if (sprite.y >= 0 && in(sprite.y, next_scanline, sprite.y + height - 1)) {
+    if (sprite.y >= 0 && in(sprite.y + 1, next_scanline, sprite.y + height)) {
       candidate_sprites.push_back({sprite, sprite_index});
     }
   }
@@ -377,12 +377,12 @@ PPU::tick() {
           bool y_mirrored = visible.attr & 0x80;
 
           byte y_selector =
-              y_mirrored ? (7 - (scanline - visible.y) % 8) : (scanline - visible.y) % 8;
+              y_mirrored ? (7 - (scanline - visible.y - 1) % 8) : (scanline - visible.y - 1) % 8;
 
           bool select_top_half;
           word base_address;
           if (height == 16) {
-            bool rendering_top_half = scanline - visible.y <= 7;
+            bool rendering_top_half = scanline - visible.y - 1 <= 7;
             // y-mirrored: true  rendering top: true  -> select_top_half: false
             //             false                true  -> select_top_half: true
             //             true                 false -> select_top_half: true
