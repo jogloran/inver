@@ -43,8 +43,8 @@ public:
 //              {at_tile(0, -1, Subcycle::NTRead), call({log_nt_addr, decode_nt_byte, log_ppu_regs})}
           } {
     loopy_v.reg = loopy_t.reg = 0;
-    tm.connect_ppu(this);
-    td.connect_ppu(this);
+//    tm.connect_ppu(this);
+//    td.connect_ppu(this);
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);

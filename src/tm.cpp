@@ -1,5 +1,6 @@
 #include "tm.hpp"
 #include "ppu.hpp"
+#include "bus.hpp"
 
 void
 TM::show() {
@@ -66,4 +67,8 @@ TM::show() {
       std::exit(0);
     }
   }
+}
+
+void TM::connect(Bus* bus) {
+  ppu = bus->ppu;
 }

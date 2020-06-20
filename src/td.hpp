@@ -8,11 +8,13 @@
 #include <array>
 
 class PPU;
+class Bus;
 
 class TD {
 public:
-  PPU* ppu;
+  std::shared_ptr<PPU> ppu;
   TD() {
+    std::printf("TD(%p)\n", this);
     SDL_Init(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TD", 500, 0, TD_WIDTH * SCALE, TD_HEIGHT * SCALE, SDL_WINDOW_HIDDEN);
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
@@ -21,11 +23,9 @@ public:
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TD_WIDTH, TD_HEIGHT);
   }
   
-  void connect_ppu(PPU* p) {
-    ppu = p;
-  }
-  
   void show();
+
+  void connect(Bus* bus);
   
 private:
   constexpr static int TD_WIDTH = 2*32*8;

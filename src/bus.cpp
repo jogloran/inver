@@ -18,9 +18,13 @@ Bus::Bus() : ncycles(0),
              paused(false) {
   cpu = std::make_shared<CPU6502>();
   ppu = std::make_shared<PPU>();
+  td = std::make_shared<TD>();
+  tm = std::make_shared<TM>();
 
   cpu->connect(this);
   ppu->connect(this);
+  td->connect(this);
+  tm->connect(this);
 
   std::fill(ram.begin(), ram.end(), 0);
 
@@ -190,6 +194,8 @@ void Bus::unpickle(std::string filename) {
   attach_screen(screen);
   ppu->connect(this);
   cpu->connect(this);
+  td->connect(this);
+  tm->connect(this);
 }
 
 void Bus::attach_screen(std::shared_ptr<Screen> s) {
