@@ -20,15 +20,9 @@ void
 PPU::select(word ppu_cmd, byte value) {
   switch (ppu_cmd) {
     case 0x0: { // ppuctrl
-      auto old_nametable_base {ppuctrl.nt_base};
       ppuctrl.reg = value;
       loopy_t.nt_x = ppuctrl.nt_base & 1;
       loopy_t.nt_y = (ppuctrl.nt_base & 2) >> 1;
-#ifndef NDEBUG
-      if (ppuctrl.nt_base != old_nametable_base) {
-        log("Set nametable base %d -> %d\n", old_nametable_base, ppuctrl.nt_base);
-      }
-#endif
       break;
     }
     case 0x1: // ppumask
@@ -80,18 +74,23 @@ void
 PPU::calculate_sprites() {
   if (!ppumask.render_sprites) return;
 
-  auto height = ppuctrl.sprite_size ? 16 : 8;
-
   std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 0});
 
-  // Determine sprite visibility for the next scanline by filling the shadow_oam
-  byte next_scanline = scanline == -1 ? 0 : scanline + 1;
+  // Sprite visibility is calculated on scanline s-1 to determine whether they should be
+  // rendered on scanline s. s == -1 is used to calculate what is visible on scanline 0.
+  // If a sprite is meant to be displayed on (e.g.) scanline 1,
+  // visible.y will equal 0. (Therefore, sprites cannot be displayed on scanline 0, so no
+  // calculations need to occur on scanline -1)
+  if (scanline == -1) return;
+
+  const byte next_scanline = scanline + 1;
+  const auto height = ppuctrl.sprite_size ? 16 : 8;
 
   candidate_sprites.clear();
-
   auto cur {oam.begin()};
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
+
     if (sprite.y >= 0 && in(sprite.y + 1, next_scanline, sprite.y + height)) {
       candidate_sprites.push_back({sprite, sprite_index});
     }
@@ -376,13 +375,17 @@ PPU::tick() {
           auto tile_no = visible.tile_no;
           bool y_mirrored = visible.attr & 0x80;
 
+          // If a sprite is in shadow_oam, it means that y+1 <= s <= y+8 (or y+16)
+          // Therefore, 0 <= s-y-1 <= 7 (or 15),
+          // so sprite_line is which row (0..7 or 0..15) of the sprite to render
+          byte sprite_line = scanline - visible.y - 1;
           byte y_selector =
-              y_mirrored ? (7 - (scanline - visible.y - 1) % 8) : (scanline - visible.y - 1) % 8;
+              y_mirrored ? (7 - sprite_line % 8) : sprite_line % 8;
 
           bool select_top_half;
           word base_address;
           if (height == 16) {
-            bool rendering_top_half = scanline - visible.y - 1 <= 7;
+            bool rendering_top_half = sprite_line <= 7;
             // y-mirrored: true  rendering top: true  -> select_top_half: false
             //             false                true  -> select_top_half: true
             //             true                 false -> select_top_half: true

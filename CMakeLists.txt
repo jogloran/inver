@@ -35,5 +35,7 @@ target_link_libraries(inver gflags)
 target_link_libraries(inver nes_apu)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
+target_compile_options(inver PRIVATE -march=native)
+
 add_executable(micro bench/micro.cpp src/utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
