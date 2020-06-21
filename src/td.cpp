@@ -50,14 +50,9 @@ TD::show() {
   SDL_RenderDrawRect(renderer_, &rect);
 
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT) {
-      std::exit(0);
-    }
-  }
 }
 
-void TD::connect(Bus* bus) {
-  ppu = bus->ppu;
+void TD::connect(Bus* b) {
+  ppu = b->ppu;
 }
+

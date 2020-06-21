@@ -52,7 +52,6 @@ TM::show() {
   render_tooltip(selected_tile);
   
   SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
-  SDL_Event event;
 
   if (SDL_GetWindowID(SDL_GetMouseFocus()) == SDL_GetWindowID(window_)) {
     auto state = SDL_GetMouseState(&x, &y);
@@ -61,14 +60,8 @@ TM::show() {
       cl_y = y;
     }
   }
-
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT) {
-      std::exit(0);
-    }
-  }
 }
 
-void TM::connect(Bus* bus) {
-  ppu = bus->ppu;
+void TM::connect(Bus* b) {
+  ppu = b->ppu;
 }

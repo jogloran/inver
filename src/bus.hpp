@@ -17,6 +17,9 @@
 static const int CPU_CYCLES_PER_FRAME = 29781;
 
 class CPU6502;
+class Screen;
+class TD;
+class TM;
 
 class Bus {
 public:

@@ -46,6 +46,9 @@ public:
     SDL_DestroyTexture(texture_);
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
+
+    TTF_CloseFont(font_);
+    SDL_DestroyTexture(raster_);
   }
 
   void blit();
@@ -67,7 +70,7 @@ public:
   SDL_Texture* text_texture_;
   SDL_Texture* raster_;
   std::chrono::high_resolution_clock::time_point text_timeout_;
-  std::shared_ptr<PPU> ppu;
+  PPU* ppu;
   Bus* bus;
 
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "bus.hpp"
 
 #include <iostream>
 #include <SDL2/SDL.h>
@@ -22,10 +23,16 @@ public:
     SDL_RenderSetLogicalSize(renderer_, TD_WIDTH * SCALE, TD_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TD_WIDTH, TD_HEIGHT);
   }
+
+  ~TD() {
+    SDL_DestroyTexture(texture_);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
+  }
+  
+  void connect(Bus* b);
   
   void show();
-
-  void connect(Bus* bus);
   
 private:
   constexpr static int TD_WIDTH = 2*32*8;

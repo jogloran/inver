@@ -200,7 +200,7 @@ void Bus::unpickle(std::string filename) {
 
 void Bus::attach_screen(std::shared_ptr<Screen> s) {
   screen = s;
-  screen->ppu = ppu;
+  screen->ppu = ppu.get();
   screen->bus = this;
-  ppu->screen = s;
+  ppu->screen = s.get();
 }

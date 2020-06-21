@@ -26,6 +26,8 @@ DECLARE_bool(xx);
 #endif
 
 class Bus;
+class TM;
+class TD;
 
 class PPU {
 public:
@@ -43,8 +45,6 @@ public:
 //              {at_tile(0, -1, Subcycle::NTRead), call({log_nt_addr, decode_nt_byte, log_ppu_regs})}
           } {
     loopy_v.reg = loopy_t.reg = 0;
-//    tm.connect_ppu(this);
-//    td.connect_ppu(this);
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);
@@ -270,9 +270,7 @@ public:
 
   void select(word ppu_cmd, byte value);
 
-  void connect(Bus* b) {
-    bus = b;
-  }
+  void connect(Bus* b);
 
   void connect(std::shared_ptr<Mapper> c) {
     cart = c;
@@ -372,9 +370,9 @@ public:
   std::array<byte, 8> shadow_oam_indices;
   std::vector<Sprite> candidate_sprites;
   std::array<byte, 256> sprite_row;
-  TM tm;
-  TD td;
-  std::shared_ptr<Screen> screen;
+  std::shared_ptr<TM> tm;
+  std::shared_ptr<TD> td;
+  Screen* screen;
   int scanline; // -1 to 260
   int ncycles;
 

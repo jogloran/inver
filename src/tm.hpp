@@ -25,10 +25,18 @@ public:
 
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 14);
   }
+
+  ~TM() {
+    TTF_CloseFont(font_);
+
+    SDL_DestroyTexture(texture_);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
+  }
+  
+  void connect(Bus* b);
   
   void show();
-
-  void connect(Bus* bus);
   
 private:
   constexpr static int TM_WIDTH = 32*8;
