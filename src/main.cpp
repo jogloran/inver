@@ -28,7 +28,7 @@ DEFINE_bool(cloop, false, "When dumping disassembly, detect and condense loops")
 DEFINE_bool(show_raster, false, "Show raster in rendered output");
 DEFINE_bool(fake_sprites, false, "Show fake sprites");
 DEFINE_bool(dump_stack, false, "Dump stack");
-DEFINE_bool(audio, true, "Enable audio");
+DEFINE_bool(audio, false, "Enable audio");
 DEFINE_string(save, "", "Save path");
 DEFINE_bool(tm, false, "Show tile map");
 DEFINE_bool(td, false, "Show tile debugger (nametable)");
