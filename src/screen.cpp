@@ -142,11 +142,6 @@ Screen::blit() {
     }
   }
 
-//  SDL_UpdateTexture(texture_, NULL, buf.data(), Screen::BUF_WIDTH * 4);
-//  SDL_RenderClear(renderer_);
-
-//  std::cout << pitch << std::endl;
-//  std::copy(buf.begin(), buf.end(), pixels);
   SDL_UnlockTexture(texture_);
   SDL_RenderCopy(renderer_, texture_, NULL, NULL);
 
