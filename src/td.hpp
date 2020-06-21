@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "bus.hpp"
 
 #include <iostream>
 #include <SDL2/SDL.h>
@@ -8,10 +9,11 @@
 #include <array>
 
 class PPU;
+class Bus;
 
 class TD {
 public:
-  PPU* ppu;
+  std::shared_ptr<PPU> ppu;
   TD() {
     SDL_Init(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TD", 500, 0, TD_WIDTH * SCALE, TD_HEIGHT * SCALE, SDL_WINDOW_HIDDEN);
@@ -20,10 +22,14 @@ public:
     SDL_RenderSetLogicalSize(renderer_, TD_WIDTH * SCALE, TD_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TD_WIDTH, TD_HEIGHT);
   }
-  
-  void connect_ppu(PPU* p) {
-    ppu = p;
+
+  ~TD() {
+    SDL_DestroyTexture(texture_);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
   }
+  
+  void connect(Bus* b);
   
   void show();
   

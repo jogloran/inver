@@ -9,10 +9,11 @@
 #include <array>
 
 class PPU;
+class Bus;
 
 class TM {
 public:
-  PPU* ppu;
+  std::shared_ptr<PPU> ppu;
   TM() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -24,10 +25,16 @@ public:
 
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 14);
   }
-  
-  void connect_ppu(PPU* p) {
-    ppu = p;
+
+  ~TM() {
+    TTF_CloseFont(font_);
+
+    SDL_DestroyTexture(texture_);
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
   }
+  
+  void connect(Bus* b);
   
   void show();
   

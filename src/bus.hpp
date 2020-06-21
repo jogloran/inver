@@ -17,6 +17,9 @@
 static const int CPU_CYCLES_PER_FRAME = 29781;
 
 class CPU6502;
+class Screen;
+class TD;
+class TM;
 
 class Bus {
 public:
@@ -36,6 +39,8 @@ public:
   std::shared_ptr<PPU> ppu;
   std::shared_ptr<Mapper> cart;
   std::shared_ptr<Screen> screen;
+  std::shared_ptr<TD> td;
+  std::shared_ptr<TM> tm;
   
   std::array<byte, 0x0800> ram;
   

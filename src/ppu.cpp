@@ -279,7 +279,7 @@ PPU::events_for(int s, int c) {
     }
   }
   if (FLAGS_td && FLAGS_td_scanline == s && ncycles % FLAGS_td_refresh_rate == 0) {
-    td.show();
+    td->show();
   }
 }
 
@@ -445,6 +445,12 @@ PPU::tick() {
 void PPU::frame_done() {
   auto now = std::chrono::high_resolution_clock::now();
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - frame_start);
+  if (FLAGS_tm) tm->show();
   screen->frame_rendered(diff);
-  if (FLAGS_tm) tm.show();
+}
+
+void PPU::connect(Bus* b) {
+  bus = b;
+  tm = b->tm;
+  td = b->td;
 }
