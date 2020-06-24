@@ -10,7 +10,7 @@ public:
     row = 0;
   }
 
-  const SDL_Scancode k[72] = {
+  const std::array<SDL_Scancode, 72> scancodes = {
       SDL_SCANCODE_F8, SDL_SCANCODE_RETURN, SDL_SCANCODE_LEFTBRACKET, SDL_SCANCODE_RIGHTBRACKET,
       SDL_SCANCODE_F10, SDL_SCANCODE_F11, SDL_SCANCODE_BACKSLASH, SDL_SCANCODE_STOP,
       SDL_SCANCODE_F7, SDL_SCANCODE_KP_AT, SDL_SCANCODE_KP_COLON, SDL_SCANCODE_SEMICOLON,
@@ -47,7 +47,7 @@ public:
     byte result = 0;
     int base = row * 8 + (col ? 4 : 0);
     for (int i = 0; i < 4; ++i) {
-      if (pressed(k[base + i])) {
+      if (pressed(scancodes[base + i])) {
         result |= (1 << i);
       }
     }

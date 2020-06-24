@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 
 DECLARE_bool(show_raster);
 DECLARE_bool(fake_sprites);
+DECLARE_bool(kb);
 
 struct rgb {
   byte r;
@@ -174,49 +175,52 @@ Screen::blit() {
     if (event.type == SDL_QUIT) {
       std::exit(0);
     } else if (event.type == SDL_KEYDOWN) {
-//      switch (event.key.keysym.sym) {
-//        case SDLK_d:
-//          ppu->dump_nt();
-//          break;
-//        case SDLK_p:
-//          ppu->dump_pt();
-//          break;
-//        case SDLK_a:
-//          ppu->dump_at();
-//          break;
-//        case SDLK_o:
-//          dump_fb(fb);
-//          break;
-//        case SDLK_s:
-//          ppu->dump_oam();
-//          break;
-//        case SDLK_r:
-//          bus->reset();
-//          break;
-//        case SDLK_ESCAPE:
-//          bus->toggle_pause();
-//          break;
-//        case SDLK_w:
-//          bus->request_save();
-//          break;
-//        case SDLK_m:
-//          bus->cart->dump_mapper();
-//          std::exit(0);
-//          break;
-//        case SDLK_v:
-//          toast("Capturing savestate", 1s);
-//          bus->pickle("save.state");
-//          break;
-//        case SDLK_e:
-//          bus->unpickle("save.state");
-//          toast("Loading savestate", 1s);
-//          break;
-//        case SDLK_PERIOD:
-//          FLAGS_show_raster = !FLAGS_show_raster;
-//          break;
-//        case SDLK_q:
-//          std::exit(0);
-//      }
+      // If Family Basic keyboard is connected, don't consume key events
+      if (FLAGS_kb) continue;
+
+      switch (event.key.keysym.sym) {
+        case SDLK_d:
+          ppu->dump_nt();
+          break;
+        case SDLK_p:
+          ppu->dump_pt();
+          break;
+        case SDLK_a:
+          ppu->dump_at();
+          break;
+        case SDLK_o:
+          dump_fb(fb);
+          break;
+        case SDLK_s:
+          ppu->dump_oam();
+          break;
+        case SDLK_r:
+          bus->reset();
+          break;
+        case SDLK_ESCAPE:
+          bus->toggle_pause();
+          break;
+        case SDLK_w:
+          bus->request_save();
+          break;
+        case SDLK_m:
+          bus->cart->dump_mapper();
+          std::exit(0);
+          break;
+        case SDLK_v:
+          toast("Capturing savestate", 1s);
+          bus->pickle("save.state");
+          break;
+        case SDLK_e:
+          bus->unpickle("save.state");
+          toast("Loading savestate", 1s);
+          break;
+        case SDLK_PERIOD:
+          FLAGS_show_raster = !FLAGS_show_raster;
+          break;
+        case SDLK_q:
+          std::exit(0);
+      }
     }
   }
 }

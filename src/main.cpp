@@ -36,6 +36,7 @@ DEFINE_int32(td_scanline, 0, "Tile debugger samples at this scanline");
 DEFINE_int32(td_refresh_rate, 240, "Tile debugger updates per n PPU cycles");
 DEFINE_string(ppu_log_spec, "", "PPU log spec");
 DEFINE_bool(dump_ops, false, "Dump op table");
+DEFINE_bool(kb, false, "Family Basic keyboard accessible over 0x4016");
 
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
