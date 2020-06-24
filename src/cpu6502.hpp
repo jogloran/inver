@@ -44,8 +44,8 @@ public:
   void reset();
 
   void push_word(word address) {
-    bus->ram[SP_BASE + sp - 1] = address & 0xff;
-    bus->ram[SP_BASE + sp] = address >> 8;
+    bus->ram[SP_BASE + ((sp - 1) & 0xff)] = address & 0xff;
+    bus->ram[SP_BASE + (sp & 0xff)] = address >> 8;
     sp -= 2;
   }
 
