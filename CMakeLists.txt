@@ -15,7 +15,10 @@ add_subdirectory(src/nes_apu)
 link_directories(src/nes_apu)
 link_directories(${SDL2TTF_LIBRARY_DIRS})
 
-include_directories(src cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12_1/include)
+add_subdirectory(ntsc)
+link_directories(ntsc)
+
+include_directories(src ntsc cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12_1/include)
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2TTF_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
@@ -35,6 +38,7 @@ file(COPY res/mplus-2c-medium.ttf DESTINATION "${CMAKE_BINARY_DIR}")
 
 target_link_libraries(inver gflags)
 target_link_libraries(inver nes_apu)
+target_link_libraries(inver ntsc)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
 target_compile_options(inver PRIVATE -march=native)

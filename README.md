@@ -2,6 +2,7 @@
 
 - Incorporates `Nes_Snd_Emu` (LGPL, http://www.slack.net/~ant/libs/audio.html)
 - Incorporates `cereal` (BSD, https://github.com/USCiLab/cereal)
+- Incorporates `nes_ntsc` (LGPL, http://slack.net/~ant/libs/ntsc.html)
 
 ```
 		  GNU LESSER GENERAL PUBLIC LICENSE
