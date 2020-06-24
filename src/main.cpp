@@ -9,8 +9,6 @@
 #include "mapper/nes003.hpp"
 #include "mapper/nes004.hpp"
 #include "types.h"
-#include "cpu6502.hpp"
-#include "ppu.hpp"
 #include "bus.hpp"
 #include "util.h"
 #include "header.hpp"
