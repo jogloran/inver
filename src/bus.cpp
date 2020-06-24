@@ -112,12 +112,12 @@ Bus::read(word addr) {
     return ppu->select(addr & 0x7);
   } else if (addr <= 0x4017) { // apu and I/O
     switch (addr) {
-      case 0x4016: {
+      case 0x4016:
         return io1->read(addr);
-      }
-      case 0x4017: {
+
+      case 0x4017:
         return io2->read(addr);
-      }
+
       case 0x4015:
         return apu.read_status();
     }
