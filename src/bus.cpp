@@ -1,9 +1,11 @@
 #include "bus.hpp"
 #include "cpu6502.hpp"
 #include "dev_null.hpp"
+#include "cloop.hpp"
 
 #include <fstream>
 #include <chrono>
+#include <gflags/gflags.h>
 #include <cereal/archives/binary.hpp>
 
 using namespace std::chrono_literals;
@@ -12,6 +14,7 @@ DECLARE_bool(audio);
 DECLARE_bool(tm);
 DECLARE_string(save);
 DECLARE_bool(kb);
+DECLARE_bool(cloop);
 
 Bus::Bus() : ncycles(0),
              io1(std::make_shared<DevNull>()),
@@ -202,4 +205,13 @@ void Bus::attach_screen(std::shared_ptr<Screen> s) {
   screen->ppu = ppu.get();
   screen->bus = this;
   ppu->screen = s.get();
+}
+
+[[noreturn]] void Bus::run() {
+  LoopCondenser cloop;
+  cpu->reset();
+  while (true) {
+    if (FLAGS_cloop) cloop.observe(*cpu);
+    tick();
+  }
 }

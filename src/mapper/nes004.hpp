@@ -41,7 +41,7 @@ public:
   }
 
   void
-  map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) override {
+  map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const NESHeader* header) override {
     rom.reserve(PRG_BANK_MULTIPLIER * prg_banks);
     if (chr_banks != 0) {
       chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);

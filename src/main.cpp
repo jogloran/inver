@@ -1,5 +1,4 @@
 #include <memory>
-#include <fstream>
 #include <iostream>
 #include <cstdlib>
 
@@ -9,10 +8,7 @@
 #include "mapper/nes003.hpp"
 #include "mapper/nes004.hpp"
 #include "types.h"
-#include "cpu6502.hpp"
-#include "ppu.hpp"
 #include "bus.hpp"
-#include "util.h"
 #include "header.hpp"
 #include "op_names.hpp"
 
@@ -38,6 +34,29 @@ DEFINE_string(ppu_log_spec, "", "PPU log spec");
 DEFINE_bool(dump_ops, false, "Dump op table");
 DEFINE_bool(kb, false, "Family Basic keyboard accessible over 0x4016");
 
+std::vector<char> read_bytes(std::ifstream& f) {
+  return {std::istreambuf_iterator<char>(f),
+          std::istreambuf_iterator<char>()};
+}
+
+NESHeader read_header(std::ifstream& f) {
+  NESHeader h;
+  f.read((char*) &h, 0x10);
+  return h;
+}
+
+std::shared_ptr<Mapper>
+read_mapper(const std::vector<char>& data,
+            const std::vector<char>& save_data,
+            const NESHeader* h) {
+  auto mapper = mapper_for(mapper_no(h));
+  mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
+  if (save_data.size()) {
+    mapper->map_ram(save_data, save_data.size());
+  }
+  return mapper;
+}
+
 int main(int argc, char** argv) {
   gflags::SetUsageMessage("A NES emulator");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -59,45 +78,21 @@ int main(int argc, char** argv) {
   }
 
   std::vector<char> save_data;
-  std::ifstream save(FLAGS_save, std::ios::in);
-  if (save) {
+
+  if (std::ifstream save(FLAGS_save, std::ios::in); save) {
     std::cerr << "Loading from " << FLAGS_save << std::endl;
     std::copy(std::istreambuf_iterator<char>(save),
               std::istreambuf_iterator<char>(),
               std::back_inserter(save_data));
   }
 
+  NESHeader h = read_header(f);
+  inspect_header(&h);
+  std::vector<char> data = read_bytes(f);
+  std::shared_ptr<Mapper> mapper = read_mapper(data, save_data, &h);
+
   Bus bus;
-
-  std::deque<word> history;
-  size_t repeating = 0;
-  size_t last_period = 0;
-
-  auto screen{std::make_shared<Screen>()};
-
-  std::shared_ptr<Mapper> mapper;
-
-  f.seekg(0x10, std::ios::cur);
-  size_t len = f.tellg();
-  f.seekg(0, std::ios::beg);
-
-  byte header_bytes[16];
-  f.read((char*) header_bytes, 16);
-  NESHeader* h = reinterpret_cast<NESHeader*>(header_bytes);
-
-  inspect_header(h);
-  std::vector<char> data;
-  data.reserve(len);
-  std::copy(std::istreambuf_iterator<char>(f),
-            std::istreambuf_iterator<char>(),
-            std::back_inserter(data));
-
-  mapper = mapper_for(mapper_no(h));
-  mapper->map(data, prg_rom_size(h), chr_rom_size(h), h);
-  if (save_data.size()) {
-    mapper->map_ram(save_data, save_data.size());
-  }
-  
+  auto screen = std::make_shared<Screen>();
   bus.attach_screen(screen);
   bus.attach_cart(mapper);
 
@@ -107,36 +102,7 @@ int main(int argc, char** argv) {
     bus.connect1(std::make_shared<SDLInput>());
   }
 
-  auto cpu = bus.cpu;
-  cpu->reset();
-  word last_pc = 0;
-  while (true) {
-    if (FLAGS_cloop && last_pc != cpu->pc) {
-      history.emplace_back(cpu->pc);
-      last_pc = cpu->pc;
-      if (history.size() >= 128) {
-        history.pop_front();
-      }
-
-      auto period = history_repeating(history);
-      if (period) {
-        repeating++;
-        cpu->set_should_dump(repeating == 1);
-      } else {
-        if (FLAGS_dis && repeating > 0) {
-          std::cout << "\t... [last " << std::dec << last_period << " ops repeated " << std::dec
-                    << repeating << " times]" << std::endl << std::endl;
-        }
-
-        repeating = 0;
-        cpu->set_should_dump(true);
-      }
-      last_period = period;
-    }
-    bus.tick();
-  }
-
-  return 0;
+  bus.run();
 }
 
 std::shared_ptr<Mapper> mapper_for(byte no) {

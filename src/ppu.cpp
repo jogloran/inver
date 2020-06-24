@@ -91,7 +91,7 @@ PPU::calculate_sprites() {
   for (byte sprite_index = 0; cur != oam.end(); ++cur, ++sprite_index) {
     const auto& sprite = oam[sprite_index];
 
-    if (sprite.y >= 0 && in(sprite.y + 1, next_scanline, sprite.y + height)) {
+    if (in(sprite.y + 1, next_scanline, sprite.y + height)) {
       candidate_sprites.push_back({sprite, sprite_index});
     }
   }

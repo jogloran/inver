@@ -14,20 +14,20 @@ struct NESHeader {
   byte padding[5];
 } __attribute__((packed, aligned(1)));
 
-inline byte prg_rom_size(NESHeader* h) {
+inline byte prg_rom_size(const NESHeader* h) {
   return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
 }
 
-inline byte chr_rom_size(NESHeader* h) {
+inline byte chr_rom_size(const NESHeader* h) {
   return h->chr_rom_size_lsb;
 }
 
-inline int mapper_no(NESHeader* h) {
+inline int mapper_no(const NESHeader* h) {
   return ((h->system_flags & 0xf0) | (h->flags6 >> 4) | ((h->mapper_flags >> 4) << 8));
 }
 
-inline bool is_nes20_header(NESHeader* h) {
+inline bool is_nes20_header(const NESHeader* h) {
   return (h->system_flags >> 2) & 3;
 }
 
-void inspect_header(NESHeader* h);
+void inspect_header(const NESHeader* h);

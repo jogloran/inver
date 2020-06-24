@@ -22,7 +22,7 @@ public:
   Mirroring get_mirroring() override;
 
   void
-  map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, NESHeader* header) override;
+  map(const std::vector<char>& vector, byte prg_banks, byte chr_banks, const NESHeader* header) override;
 
   byte read(word addr) override;
 

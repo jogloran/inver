@@ -25,7 +25,7 @@ void UxROM::chr_write(word addr, byte value) {
 }
 
 void
-UxROM::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) {
+UxROM::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const NESHeader* header) {
   total_banks = prg_banks;
   rom.reserve(0x4000 * prg_banks);
   chr.reserve(0x2000);

@@ -30,7 +30,9 @@ public:
   
   byte read(word addr);
   void write(word addr, byte value);
-  
+
+  [[noreturn]] void run();
+
   void tick();
   
 public:

@@ -130,6 +130,9 @@ Screen::blit() {
     pixels[i++] = 255;
   }
 
+  SDL_UnlockTexture(texture_);
+  SDL_RenderCopy(renderer_, texture_, NULL, NULL);
+  
   if (FLAGS_fake_sprites) {
     for (const PPU::OAM& oam : ppu->oam) {
       for (int j = oam.x; j < oam.x + 8; ++j) {
@@ -142,9 +145,6 @@ Screen::blit() {
       }
     }
   }
-
-  SDL_UnlockTexture(texture_);
-  SDL_RenderCopy(renderer_, texture_, NULL, NULL);
 
   if (text_.size()) {
     auto now {std::chrono::high_resolution_clock::now()};

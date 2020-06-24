@@ -18,7 +18,7 @@ byte* MMC1::get_ram() {
 }
 
 void
-MMC1::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, NESHeader* header) {
+MMC1::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const NESHeader* header) {
   rom.reserve(0x4000 * prg_banks);
   if (chr_banks == 0) {
     chr.resize(0x2000 * 8);
