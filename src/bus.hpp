@@ -33,8 +33,6 @@ public:
   
   void tick();
   
-  byte sample_input();
-  
 public:
   std::shared_ptr<CPU6502> cpu;
   std::shared_ptr<PPU> ppu;
@@ -46,9 +44,7 @@ public:
   std::array<byte, 0x0800> ram;
   
   long ncycles;
-  
-  SDLInput controller1;
-  FamilyBasicKeyboard kb1;
+
   std::shared_ptr<Peripheral> io1;
   std::shared_ptr<Peripheral> io2;
 
