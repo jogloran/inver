@@ -24,8 +24,10 @@ public:
   }
 
   byte read(word addr) override {
-    // PRG-ROM
-    if (addr >= 0x8000 && (addr <= 0xbfff || rom.size() > 16384)) {
+
+    if (addr >= 0x6000 && addr <= 0x7fff) { // PRG-RAM
+      return ram[(addr % 0x1000) - 0x6000];
+    } else if (addr >= 0x8000 && (addr <= 0xbfff || rom.size() > 16384)) { // PRG-ROM
       return rom[addr - 0x8000];
     } else if (addr >= 0xc000 && addr <= 0xffff) {
       return rom[addr - 0xc000];
@@ -36,8 +38,9 @@ public:
   }
 
   void write(word addr, byte value) override {
-    // PRG-ROM
-    if (addr >= 0x8000 && addr <= 0xbfff) {
+    if (addr >= 0x6000 && addr <= 0x7fff) { // PRG-RAM
+      ram[(addr % 0x1000) - 0x6000] = value;
+    } else if (addr >= 0x8000 && addr <= 0xbfff) { // PRG-ROM
 
     } else if (addr >= 0xc000 && addr <= 0xffff) {
 
@@ -71,6 +74,7 @@ public:
 
   std::vector<byte> rom;
   std::vector<byte> chr;
+  std::array<byte, 0x1000> ram;
   Mirroring mirroring;
 
   template<typename Ar>

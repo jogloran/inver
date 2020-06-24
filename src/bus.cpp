@@ -85,15 +85,20 @@ Bus::write(word addr, byte value) {
         break;
       }
       case 0x4016: {
-        bool controller_polling_req = (value & 0x7) == 0x1;
-        if (controller_polling && !controller_polling_req) {
-          controller_state = sample_input();
-        } else if (!controller_polling && controller_polling_req) {
-          controller_polling = true;
-        }
+//        ppu->log("0x4016 <- %02x\n", value);
+//        bool controller_polling_req = (value & 0x7) == 0x1;
+//        if (controller_polling && !controller_polling_req) {
+//          controller_state = sample_input();
+//        } else if (!controller_polling && controller_polling_req) {
+//          controller_polling = true;
+//        }
+//        ppu->log("0x4016 <- %02x\n", value);
+        kb1.write(addr, value);
         break;
       }
       case 0x4017:
+//        ppu->log("0x4017 <- %02x\n", value);
+//        kb1.write(addr, value);
         break;
 
       default:
@@ -113,12 +118,17 @@ Bus::read(word addr) {
   } else if (addr <= 0x4017) { // apu and I/O
     switch (addr) {
       case 0x4016: {
-        byte lsb = controller_state & 1;
-        controller_state >>= 1;
-        return lsb;
+//        byte lsb = controller_state & 1;
+//        controller_state >>= 1;
+//        return lsb;
+return 0;
       }
-      case 0x4017:
-        return 0x0;
+      case 0x4017: {
+//        ppu->log("0x4017 -> %02x\n", 0);
+//        return 0x5e;
+        byte result = kb1.read(addr);
+        return result;
+      }
       case 0x4015:
         return apu.read_status();
     }

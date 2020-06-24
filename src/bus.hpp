@@ -13,6 +13,7 @@
 #include "sdl_input.hpp"
 #include "Simple_Apu.h"
 #include "Sound_Queue.h"
+#include "family_basic_keyboard.hpp"
 
 static const int CPU_CYCLES_PER_FRAME = 29781;
 
@@ -49,6 +50,7 @@ public:
   
   byte controller_state;
   SDLInput controller1;
+  FamilyBasicKeyboard kb1;
 
   Simple_Apu apu;
   std::shared_ptr<Sound_Queue> sound_queue;
