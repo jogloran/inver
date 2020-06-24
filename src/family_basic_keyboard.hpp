@@ -56,12 +56,13 @@ public:
   }
 
   byte read(word addr) {
-    if (enabled) {
-      auto result = (~keys() << 1) & 0x1e;
-      return result;
-    } else {
-      return 0;
+    if (addr == 0x4017) {
+      if (enabled) {
+        auto result = (~keys() << 1) & 0x1e;
+        return result;
+      }
     }
+    return 0;
   }
 
   void increment() {
@@ -69,16 +70,18 @@ public:
   }
 
   void write(word addr, byte value) {
-    auto old_col = col;
-    col = (value & 2) >> 1;
-    if (old_col && !col) {
-      increment();
-    }
+    if (addr == 0x4016) {
+      auto old_col = col;
+      col = (value & 2) >> 1;
+      if (old_col && !col) {
+        increment();
+      }
 
-    if (value & 1) {
-      reset();
+      if (value & 1) {
+        reset();
+      }
+      enabled = (value & 4);
     }
-    enabled = (value & 4);
   }
 
 private:
