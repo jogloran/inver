@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 
 #include "types.h"
+#include "peripheral.hpp"
 
 enum class Buttons : byte {
   R = 1 << 7,
@@ -21,9 +22,9 @@ inline Buttons operator|(Buttons a, Buttons b);
 
 inline Buttons& operator|=(Buttons& me, Buttons other);
 
-class SDLInput {
+class SDLInput : public Peripheral {
 public:
-  SDLInput() {
+  SDLInput(): controller_polling(false) {
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
     if (SDL_NumJoysticks() >= 1) {
       std::cout << "Pad detected" << std::endl;
@@ -33,6 +34,26 @@ public:
 
   ~SDLInput() {
     if (pad != nullptr) SDL_GameControllerClose(pad);
+  }
+  
+  byte read(word addr) {
+    byte lsb = controller_state & 1;
+    controller_state >>= 1;
+    return lsb;
+  }
+  
+  void write(word addr, byte value) {
+    bool controller_polling_req = (value & 0x7) == 0x1;
+    if (controller_polling && !controller_polling_req) {
+      controller_state = sample_input();
+    } else if (!controller_polling && controller_polling_req) {
+      controller_polling = true;
+    }
+  }
+  
+  byte sample_input() {
+    poll();
+    return static_cast<byte>(state);
   }
 
   void push_key(SDL_Keycode k) {
@@ -87,6 +108,9 @@ public:
 
   Buttons state;
   SDL_GameController* pad = NULL;
+  
+  byte controller_state;
+  bool controller_polling;
 };
 
 inline Buttons operator|(Buttons a, Buttons b) {

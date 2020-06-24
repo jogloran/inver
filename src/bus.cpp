@@ -13,7 +13,8 @@ DECLARE_string(save);
 DECLARE_bool(kb);
 
 Bus::Bus() : ncycles(0),
-             controller_polling(false),
+             io1(
+                 std::make_shared<SDLInput>()),
              sound_queue(
                  std::make_shared<Sound_Queue>()),
              paused(false) {
@@ -67,12 +68,6 @@ Bus::tick() {
   ++ncycles;
 }
 
-byte
-Bus::sample_input() {
-  controller1.poll();
-  return static_cast<byte>(controller1.state);
-}
-
 void
 Bus::write(word addr, byte value) {
   if (addr <= 0x1fff) {
@@ -86,19 +81,11 @@ Bus::write(word addr, byte value) {
         break;
       }
       case 0x4016: {
-        if (FLAGS_kb) {
-          kb1.write(addr, value);
-        } else {
-          bool controller_polling_req = (value & 0x7) == 0x1;
-          if (controller_polling && !controller_polling_req) {
-            controller_state = sample_input();
-          } else if (!controller_polling && controller_polling_req) {
-            controller_polling = true;
-          }
-        }
+        io1->write(addr, value);
         break;
       }
       case 0x4017:
+        io2->write(addr, value);
         break;
 
       default:
@@ -118,13 +105,10 @@ Bus::read(word addr) {
   } else if (addr <= 0x4017) { // apu and I/O
     switch (addr) {
       case 0x4016: {
-        byte lsb = controller_state & 1;
-        controller_state >>= 1;
-        return lsb;
+        return io1->read(addr);
       }
       case 0x4017: {
-        byte result = kb1.read(addr);
-        return result;
+        return io2->read(addr);
       }
       case 0x4015:
         return apu.read_status();

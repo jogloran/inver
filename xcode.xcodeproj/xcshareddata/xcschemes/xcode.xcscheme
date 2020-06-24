@@ -57,6 +57,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/dt0/Downloads/smb.nes"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/dt0/inver/smb3.nes"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
