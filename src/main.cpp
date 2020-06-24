@@ -76,7 +76,6 @@ int main(int argc, char** argv) {
   auto screen{std::make_shared<Screen>()};
 
   std::shared_ptr<Mapper> mapper;
-//  bus.unpickle("test.dat");
 
   f.seekg(0x10, std::ios::cur);
   size_t len = f.tellg();
@@ -101,6 +100,12 @@ int main(int argc, char** argv) {
   
   bus.attach_screen(screen);
   bus.attach_cart(mapper);
+
+  if (FLAGS_kb) {
+    bus.connect2(std::make_shared<FamilyBasicKeyboard>());
+  } else {
+    bus.connect1(std::make_shared<SDLInput>());
+  }
 
   auto cpu = bus.cpu;
   cpu->reset();

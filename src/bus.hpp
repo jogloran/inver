@@ -46,11 +46,11 @@ public:
   std::array<byte, 0x0800> ram;
   
   long ncycles;
-  bool controller_polling;
   
-  byte controller_state;
   SDLInput controller1;
   FamilyBasicKeyboard kb1;
+  std::shared_ptr<Peripheral> io1;
+  std::shared_ptr<Peripheral> io2;
 
   Simple_Apu apu;
   std::shared_ptr<Sound_Queue> sound_queue;
@@ -86,5 +86,9 @@ public:
     constexpr word table[] = {0xfffa, 0xfffc, 0xfffe};
     return read(table[rupt]) | (read(table[rupt] + 1) << 8);
   }
+
+  void connect1(std::shared_ptr<Peripheral> peripheral);
+
+  void connect2(std::shared_ptr<Peripheral> peripheral);
 };
 

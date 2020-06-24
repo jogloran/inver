@@ -3,8 +3,9 @@
 #include <SDL2/SDL.h>
 
 #include "types.h"
+#include "peripheral.hpp"
 
-class FamilyBasicKeyboard {
+class FamilyBasicKeyboard : public Peripheral {
 public:
   void reset() {
     row = 0;
