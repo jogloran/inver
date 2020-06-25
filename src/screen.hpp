@@ -8,6 +8,7 @@
 
 #include "nes_ntsc.h"
 #include "types.h"
+#include "renderer.hpp"
 
 using namespace std::chrono_literals;
 
@@ -33,6 +34,8 @@ public:
   static constexpr int BUF_WIDTH = 256;
   static constexpr int BUF_HEIGHT = 240;
   static constexpr int SCALE = 4;
+  static constexpr int OUTPUT_WIDTH = BUF_WIDTH * SCALE;
+  static constexpr int OUTPUT_HEIGHT = BUF_HEIGHT * SCALE;
   static constexpr std::chrono::milliseconds MS_PER_FRAME = 1000ms / 60;
   static constexpr std::chrono::milliseconds TOAST_FADE_OUT_TIME = 500ms;
 
@@ -49,6 +52,7 @@ public:
   std::chrono::high_resolution_clock::time_point text_timeout_;
   PPU* ppu;
   Bus* bus;
+  std::unique_ptr<Renderer> renderer;
 
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);
 
@@ -65,5 +69,4 @@ public:
   SDL_Texture* make_raster_texture(size_t dx, size_t dy);
 
   std::shared_ptr<nes_ntsc_t> ntsc;
-  int burst_phase;
 };

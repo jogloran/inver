@@ -32,7 +32,9 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/mapper/nes001.cpp src/mapper/nes001.hpp
         src/Simple_Apu.cpp src/Simple_Apu.h
         src/Sound_Queue.cpp src/Sound_Queue.h
-        src/mapper/nes003.cpp src/ppu_act.hpp src/ppu_act.cpp src/braille_pix.cpp src/braille_pix.hpp src/mapper/nes002.cpp src/mapper/nes002.hpp src/shifter.hpp src/family_basic_keyboard.hpp src/dev_null.cpp src/dev_null.hpp src/cloop.hpp src/cloop.cpp)
+        src/mapper/nes003.cpp src/ppu_act.hpp src/ppu_act.cpp src/braille_pix.cpp src/braille_pix.hpp src/mapper/nes002.cpp src/mapper/nes002.hpp src/shifter.hpp src/family_basic_keyboard.hpp src/dev_null.cpp src/dev_null.hpp src/cloop.hpp src/cloop.cpp
+        src/renderer.hpp src/renderer_ntsc.hpp src/renderer_ntsc.cpp
+        src/renderer_palette.hpp src/renderer_palette.cpp)
 
 file(COPY res/mplus-2c-medium.ttf DESTINATION "${CMAKE_BINARY_DIR}")
 
