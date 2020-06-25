@@ -1,12 +1,10 @@
 #include "screen.hpp"
 #include "ppu.hpp"
-#include "nes_ntsc.h"
 #include "renderer.hpp"
 #include "renderer_ntsc.hpp"
 #include "renderer_palette.hpp"
 
 #include <SDL2/SDL.h>
-#include <iostream>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -14,7 +12,6 @@ using namespace std::chrono_literals;
 DECLARE_bool(show_raster);
 DECLARE_bool(fake_sprites);
 DECLARE_bool(kb);
-
 
 void
 Screen::toast(std::string text, std::chrono::milliseconds delay) {
