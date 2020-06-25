@@ -10,8 +10,6 @@ public:
   };
   virtual ~Renderer() = default;
 
-  virtual void init() {}
-
   virtual PixelFormat get_pixel_format() = 0;
 
   virtual std::pair<size_t, size_t> get_output_size() = 0;

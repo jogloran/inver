@@ -180,8 +180,6 @@ void Screen::set_paused(bool paused) {
 }
 
 Screen::Screen() : renderer(std::make_unique<NTSCRenderer>()) {
-  renderer->init();
-
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
   TTF_Init();
   window_ = SDL_CreateWindow("Game",

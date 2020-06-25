@@ -7,7 +7,7 @@
 
 class NTSCRenderer : public Renderer {
 public:
-  void init() override {
+  NTSCRenderer() {
     ntsc = std::make_shared<nes_ntsc_t>();
     nes_ntsc_setup_t setup = nes_ntsc_composite;
     nes_ntsc_init(ntsc.get(), &setup);
