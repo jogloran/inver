@@ -8,7 +8,7 @@
 class NTSCRenderer : public Renderer {
 public:
   NTSCRenderer() {
-    ntsc = std::make_shared<nes_ntsc_t>();
+    ntsc = std::make_unique<nes_ntsc_t>();
     nes_ntsc_setup_t setup = nes_ntsc_composite;
     nes_ntsc_init(ntsc.get(), &setup);
   }
@@ -24,6 +24,6 @@ public:
 
 private:
   int burst_phase = 0;
-  std::shared_ptr<nes_ntsc_t> ntsc;
+  std::unique_ptr<nes_ntsc_t> ntsc;
 };
 
