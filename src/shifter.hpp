@@ -29,5 +29,5 @@ public:
   }
 
 private:
-  word v[2];
+  word v[2] = {};
 };

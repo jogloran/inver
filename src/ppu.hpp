@@ -35,6 +35,9 @@ public:
 
   PPU() : scanline(0), ncycles(0),
           fine_x(0), w(0),
+          loopy_t(), loopy_v(),
+          ppuctrl(), ppustatus(), ppumask(),
+          nt(), pal(), oam(), sprite_row(), bg_is_transparent(),
           ppudata_byte(0),
           nt_byte(0), at_byte_lsb(0), at_byte_msb(0),
           pt_byte(0), bg_tile_msb(0), bg_tile_lsb(0),
@@ -44,7 +47,6 @@ public:
 //              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
 //              {at_tile(0, -1, Subcycle::NTRead), call({log_nt_addr, decode_nt_byte, log_ppu_regs})}
           } {
-    loopy_v.reg = loopy_t.reg = 0;
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);
@@ -54,8 +56,18 @@ public:
     scanline = ncycles = fine_x = w = ppudata_byte = 0;
     nt_byte = at_byte_lsb = at_byte_msb = 0;
     pt_byte = bg_tile_msb = bg_tile_lsb = 0;
+    loopy_v.reg = loopy_t.reg = 0;
+    ppuctrl.reg = ppustatus.reg = ppumask.reg = 0;
+    std::fill(nt.begin(), nt.end(), 0x0);
+    std::fill(pal.begin(), pal.end(), 0x0);
+    std::fill(oam.begin(), oam.end(), OAM {0, 0, 0, 0});
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
+    std::fill(sprite_row.begin(), sprite_row.end(), 0x0);
+    std::fill(bg_is_transparent.begin(), bg_is_transparent.end(), 0x0);
+    candidate_sprites.reserve(64);
+
+    loopy_v.reg = loopy_t.reg = 0;
   }
 
   void events_for(int s, int c);
