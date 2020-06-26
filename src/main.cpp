@@ -33,6 +33,7 @@ DEFINE_int32(td_refresh_rate, 240, "Tile debugger updates per n PPU cycles");
 DEFINE_string(ppu_log_spec, "", "PPU log spec");
 DEFINE_bool(dump_ops, false, "Dump op table");
 DEFINE_bool(kb, false, "Family Basic keyboard accessible over 0x4016");
+DEFINE_int32(pc, -1, "Override initial pc");
 
 std::vector<char> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),

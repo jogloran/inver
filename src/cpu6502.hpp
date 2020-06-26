@@ -247,4 +247,6 @@ public:
   void serialize(Ar& ar) {
     ar(a, x, y, sp, pc, p, ncycles, cycles_left, crossed_page, should_dump);
   }
+
+  word get_initial_pc();
 };

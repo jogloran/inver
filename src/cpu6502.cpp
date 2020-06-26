@@ -10,6 +10,7 @@
 
 DECLARE_bool(dis);
 DECLARE_bool(dump_stack);
+DECLARE_int32(pc);
 
 constexpr byte INITIAL_STATUS_REG = 0x24;
 
@@ -20,7 +21,7 @@ constexpr byte INITIAL_STATUS_REG = 0x24;
 void CPU6502::reset() {
   a = x = y = ncycles = cycles_left = 0;
   sp = 0xfd;
-  pc = bus->read_vector<Bus::Interrupt::RST>();
+  pc = get_initial_pc();
   std::cerr << "setting pc to " << std::hex << pc << std::endl;
   p.reg = INITIAL_STATUS_REG;
   crossed_page = false;
@@ -83,4 +84,12 @@ std::ostream& CPU6502::dump_stack(std::ostream& out) {
     out << hex_byte << static_cast<int>(bus->read(ptr)) << ' ';
   }
   return out << "]";
+}
+
+word CPU6502::get_initial_pc() {
+  if (FLAGS_pc != -1) {
+    assert(FLAGS_pc >= 0x0 && FLAGS_pc <= 0xffff);
+    return FLAGS_pc;
+  }
+  return bus->read_vector<Bus::Interrupt::RST>();
 }
