@@ -19,9 +19,9 @@ DECLARE_bool(cloop);
 Bus::Bus() : ncycles(0),
              io1(std::make_shared<DevNull>()),
              io2(std::make_shared<DevNull>()),
-             sound_queue(std::make_shared<Sound_Queue>()),
+             sound_queue(std::make_unique<Sound_Queue>()),
              paused(false) {
-  cpu = std::make_shared<CPU6502>();
+  cpu = std::make_unique<CPU6502>();
   ppu = std::make_shared<PPU>();
   td = std::make_shared<TD>();
   tm = std::make_shared<TM>();

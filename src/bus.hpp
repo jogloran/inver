@@ -36,7 +36,7 @@ public:
   void tick();
   
 public:
-  std::shared_ptr<CPU6502> cpu;
+  std::unique_ptr<CPU6502> cpu;
   std::shared_ptr<PPU> ppu;
   std::shared_ptr<Mapper> cart;
   std::shared_ptr<Screen> screen;
@@ -51,7 +51,7 @@ public:
   std::shared_ptr<Peripheral> io2;
 
   Simple_Apu apu;
-  std::shared_ptr<Sound_Queue> sound_queue;
+  std::unique_ptr<Sound_Queue> sound_queue;
 
   bool paused;
 

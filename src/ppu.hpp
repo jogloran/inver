@@ -183,6 +183,10 @@ public:
           return nt[ppu_addr % 0x800];
         case Mapper::Mirroring::H:
           return nt[((ppu_addr / 2) & 0x400) + (ppu_addr % 0x400)];
+        case Mapper::Mirroring::AAAA:
+          return nt[ppu_addr % 0x400];
+        case Mapper::Mirroring::BBBB:
+          return nt[0x400 + (ppu_addr % 0x400)];
         default:
           return nt[ppu_addr - 0x2000];
       }
@@ -214,6 +218,12 @@ public:
         case Mapper::Mirroring::H:
           nt[((ppu_addr / 2) & 0x400) + (ppu_addr % 0x400)] = value;
           break;
+        case Mapper::Mirroring::AAAA:
+          nt[ppu_addr % 0x400] = value;
+          break;
+        case Mapper::Mirroring::BBBB:
+          nt[0x400 + (ppu_addr % 0x400)] = value;
+          break;
         default:
           nt[ppu_addr - 0x2000] = value;
           break;
@@ -228,7 +238,7 @@ public:
       // 00111111 0000 0001
       // 00111111 0010 0001
       ppu_addr &= 0xff1f;
-      pal[ppu_addr - 0x3f00] = value;
+      pal.at(ppu_addr - 0x3f00) = value;
     }
   }
 
