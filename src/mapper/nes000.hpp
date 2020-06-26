@@ -54,6 +54,7 @@ public:
   void
   map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const NESHeader* header) override {
     rom.reserve(0x4000 * prg_banks);
+    if (chr_banks == 0) chr_banks = 1; // NES Controller Deck Test (USA) has chr_banks == 0
     chr.reserve(0x2000 * chr_banks);
 
     auto cur = flash((byte*) data.data(), 0x4000 * prg_banks, rom);
