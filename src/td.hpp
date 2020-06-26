@@ -15,7 +15,6 @@ class TD {
 public:
   std::shared_ptr<PPU> ppu;
   TD() {
-    std::printf("TD(%p)\n", this);
     SDL_Init(SDL_INIT_VIDEO);
     window_ = SDL_CreateWindow("TD", 500, 0, TD_WIDTH * SCALE, TD_HEIGHT * SCALE, SDL_WINDOW_HIDDEN);
     renderer_ = SDL_CreateRenderer(window_, -1, 0);
