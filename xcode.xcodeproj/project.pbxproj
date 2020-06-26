@@ -33,6 +33,11 @@
 		09C07AED24A334890085848A /* peripheral.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09C07AEC24A334630085848A /* peripheral.hpp */; };
 		09E3BF872478F60B00496742 /* libgflags.2.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */; };
 		09E3BF8B2478F62200496742 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */; };
+		09EA9C0B24A68F8F0053F72A /* renderer_palette.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C0824A68F8E0053F72A /* renderer_palette.cpp */; };
+		09EA9C0C24A68F8F0053F72A /* renderer_ntsc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C0A24A68F8F0053F72A /* renderer_ntsc.cpp */; };
+		09EA9C1124A68F9B0053F72A /* nes_ntsc.c in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C0E24A68F9B0053F72A /* nes_ntsc.c */; };
+		09EA9C1424A68FB50053F72A /* cloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C1324A68FB50053F72A /* cloop.cpp */; };
+		09EA9C1724A68FDC0053F72A /* dev_null.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C1624A68FDC0053F72A /* dev_null.cpp */; };
 		09FADC9124847CB40020B5D4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7524847CB30020B5D4 /* main.cpp */; };
 		09FADC9224847CB40020B5D4 /* tm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7724847CB30020B5D4 /* tm.cpp */; };
 		09FADC9324847CB40020B5D4 /* ops.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7824847CB30020B5D4 /* ops.cpp */; };
@@ -152,6 +157,20 @@
 		09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.2.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.2/lib/libgflags.2.2.2.dylib; sourceTree = "<group>"; };
 		09E3BF882478F61400496742 /* sdl2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sdl2; path = ../../../../usr/local/Cellar/sdl2; sourceTree = "<group>"; };
 		09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL2-2.0.0.dylib"; path = "../../../../usr/local/Cellar/sdl2/2.0.12/lib/libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
+		09EA9C0624A68F850053F72A /* shifter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = shifter.hpp; path = src/shifter.hpp; sourceTree = "<group>"; };
+		09EA9C0724A68F8E0053F72A /* renderer_palette.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = renderer_palette.hpp; path = src/renderer_palette.hpp; sourceTree = "<group>"; };
+		09EA9C0824A68F8E0053F72A /* renderer_palette.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = renderer_palette.cpp; path = src/renderer_palette.cpp; sourceTree = "<group>"; };
+		09EA9C0924A68F8E0053F72A /* renderer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = renderer.hpp; path = src/renderer.hpp; sourceTree = "<group>"; };
+		09EA9C0A24A68F8F0053F72A /* renderer_ntsc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = renderer_ntsc.cpp; path = src/renderer_ntsc.cpp; sourceTree = "<group>"; };
+		09EA9C0D24A68F9A0053F72A /* nes_ntsc_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nes_ntsc_impl.h; path = ntsc/nes_ntsc_impl.h; sourceTree = "<group>"; };
+		09EA9C0E24A68F9B0053F72A /* nes_ntsc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nes_ntsc.c; path = ntsc/nes_ntsc.c; sourceTree = "<group>"; };
+		09EA9C0F24A68F9B0053F72A /* nes_ntsc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nes_ntsc.h; path = ntsc/nes_ntsc.h; sourceTree = "<group>"; };
+		09EA9C1024A68F9B0053F72A /* nes_ntsc_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nes_ntsc_config.h; path = ntsc/nes_ntsc_config.h; sourceTree = "<group>"; };
+		09EA9C1224A68FB50053F72A /* cloop.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cloop.hpp; path = src/cloop.hpp; sourceTree = "<group>"; };
+		09EA9C1324A68FB50053F72A /* cloop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cloop.cpp; path = src/cloop.cpp; sourceTree = "<group>"; };
+		09EA9C1524A68FDC0053F72A /* dev_null.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dev_null.hpp; path = src/dev_null.hpp; sourceTree = "<group>"; };
+		09EA9C1624A68FDC0053F72A /* dev_null.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dev_null.cpp; path = src/dev_null.cpp; sourceTree = "<group>"; };
+		09EA9C1824A68FE20053F72A /* family_basic_keyboard.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = family_basic_keyboard.hpp; path = src/family_basic_keyboard.hpp; sourceTree = "<group>"; };
 		09FADC7324847CB30020B5D4 /* screen.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = screen.hpp; path = src/screen.hpp; sourceTree = "<group>"; };
 		09FADC7424847CB30020B5D4 /* mapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = mapper.hpp; path = src/mapper.hpp; sourceTree = "<group>"; };
 		09FADC7524847CB30020B5D4 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = "<group>"; };
@@ -277,6 +296,12 @@
 		09A2C02A2478E38A00CFB287 = {
 			isa = PBXGroup;
 			children = (
+				09EA9C1324A68FB50053F72A /* cloop.cpp */,
+				09EA9C1224A68FB50053F72A /* cloop.hpp */,
+				09EA9C1024A68F9B0053F72A /* nes_ntsc_config.h */,
+				09EA9C0D24A68F9A0053F72A /* nes_ntsc_impl.h */,
+				09EA9C0E24A68F9B0053F72A /* nes_ntsc.c */,
+				09EA9C0F24A68F9B0053F72A /* nes_ntsc.h */,
 				09C07AEC24A334630085848A /* peripheral.hpp */,
 				0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */,
 				09824A002488945700951FC0 /* td.cpp */,
@@ -301,12 +326,19 @@
 				0972D490249AED4C00B771EC /* nes003.hpp */,
 				09FADCA424847CBA0020B5D4 /* nes004.cpp */,
 				09FADCA324847CBA0020B5D4 /* nes004.hpp */,
+				09EA9C0A24A68F8F0053F72A /* renderer_ntsc.cpp */,
+				09EA9C0824A68F8E0053F72A /* renderer_palette.cpp */,
+				09EA9C0724A68F8E0053F72A /* renderer_palette.hpp */,
+				09EA9C0924A68F8E0053F72A /* renderer.hpp */,
 				09FADC9024847CB40020B5D4 /* audio.cpp */,
 				09FADC7F24847CB40020B5D4 /* audio.hpp */,
 				09FADC8F24847CB40020B5D4 /* bus.cpp */,
 				09FADC8724847CB40020B5D4 /* bus.hpp */,
 				09FADC8A24847CB40020B5D4 /* cpu6502.cpp */,
 				09FADC7C24847CB30020B5D4 /* cpu6502.hpp */,
+				09EA9C1624A68FDC0053F72A /* dev_null.cpp */,
+				09EA9C1524A68FDC0053F72A /* dev_null.hpp */,
+				09EA9C1824A68FE20053F72A /* family_basic_keyboard.hpp */,
 				09FADC8124847CB40020B5D4 /* header.cpp */,
 				09FADC8C24847CB40020B5D4 /* header.hpp */,
 				09FADC7524847CB30020B5D4 /* main.cpp */,
@@ -322,6 +354,7 @@
 				09FADC8424847CB40020B5D4 /* screen.cpp */,
 				09FADC7324847CB30020B5D4 /* screen.hpp */,
 				09FADC8B24847CB40020B5D4 /* sdl_input.hpp */,
+				09EA9C0624A68F850053F72A /* shifter.hpp */,
 				09FADC7A24847CB30020B5D4 /* Simple_Apu.cpp */,
 				09FADC7624847CB30020B5D4 /* Simple_Apu.h */,
 				09FADC8024847CB40020B5D4 /* Sound_Queue.cpp */,
@@ -563,8 +596,12 @@
 				0972D492249AED4C00B771EC /* nes003.cpp in Sources */,
 				09FADC9324847CB40020B5D4 /* ops.cpp in Sources */,
 				09FADC9A24847CB40020B5D4 /* utils.cpp in Sources */,
+				09EA9C1424A68FB50053F72A /* cloop.cpp in Sources */,
 				09FADCBF24847CC70020B5D4 /* apu_snapshot.cpp in Sources */,
+				09EA9C0C24A68F8F0053F72A /* renderer_ntsc.cpp in Sources */,
 				09FADCA624847CBA0020B5D4 /* nes001.cpp in Sources */,
+				09EA9C0B24A68F8F0053F72A /* renderer_palette.cpp in Sources */,
+				09EA9C1124A68F9B0053F72A /* nes_ntsc.c in Sources */,
 				09FADC9224847CB40020B5D4 /* tm.cpp in Sources */,
 				09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */,
 				09FADC9724847CB40020B5D4 /* header.cpp in Sources */,
@@ -575,6 +612,7 @@
 				0972D494249AED6900B771EC /* screen.hpp in Sources */,
 				09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */,
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
+				09EA9C1724A68FDC0053F72A /* dev_null.cpp in Sources */,
 				09FADCED24847F530020B5D4 /* util.cc in Sources */,
 				09824A022488945700951FC0 /* td.cpp in Sources */,
 				09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */,
