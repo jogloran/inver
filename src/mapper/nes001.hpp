@@ -15,7 +15,6 @@ public:
            ppu_1000_bank(0),
            prg_rom_bank(0),
            prg_ram_disabled(false) {
-    std::fill(chr.begin(), chr.end(), 0x0);
     std::fill(ram.begin(), ram.end(), 0x0);
   }
 

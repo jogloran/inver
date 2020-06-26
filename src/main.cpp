@@ -73,8 +73,11 @@ int main(int argc, char** argv) {
 
   std::ifstream f(argv[1], std::ios::in);
   if (!f) {
-    std::cerr << "Couldn't access ROM file." << std::endl;
-    std::exit(2);
+    f.open(std::string(argv[1]) + ".nes", std::ios::in);
+    if (!f) {
+      std::cerr << "Couldn't access ROM file." << std::endl;
+      std::exit(2);
+    }
   }
 
   std::vector<char> save_data;
