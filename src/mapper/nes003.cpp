@@ -3,13 +3,17 @@
 
 #include "mapper.hpp"
 #include "nes003.hpp"
+#include "header.hpp"
 
 Mapper::Mirroring CNROM::get_mirroring() {
   return mirroring;
 }
 
 byte CNROM::read(word addr) {
-  return rom[addr];
+  if (addr >= 0x8000 && addr <= 0xffff) {
+    return rom[addr - 0x8000];
+  }
+  return 0;
 }
 
 void CNROM::write(word addr, byte value) {}
@@ -21,6 +25,8 @@ CNROM::map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const 
 
   auto cur = flash((byte*) data.data(), 0x4000 * prg_banks, rom);
   flash(cur, 0x2000 * chr_banks, chr);
+
+  mirroring = read_mirroring(header);
 }
 
 byte CNROM::chr_read(word addr) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "mapper.hpp"
 
 struct NESHeader {
   byte header[4];
@@ -28,6 +29,10 @@ inline int mapper_no(const NESHeader* h) {
 
 inline bool is_nes20_header(const NESHeader* h) {
   return (h->system_flags >> 2) & 3;
+}
+
+inline Mapper::Mirroring read_mirroring(const NESHeader* h) {
+  return (h->flags6 & 1) ? Mapper::Mirroring::V : Mapper::Mirroring::H;
 }
 
 void inspect_header(const NESHeader* h);
