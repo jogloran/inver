@@ -33,14 +33,14 @@ class PPU {
 public:
   using Event = std::function<void(PPU&)>;
 
-  PPU() : scanline(0), ncycles(0),
-          fine_x(0), w(0),
+  PPU() : scanline(), ncycles(),
+          fine_x(), w(),
           loopy_t(), loopy_v(),
           ppuctrl(), ppustatus(), ppumask(),
           nt(), pal(), oam(), sprite_row(), bg_is_transparent(),
-          ppudata_byte(0),
-          nt_byte(0), at_byte_lsb(0), at_byte_msb(0),
-          pt_byte(0), bg_tile_msb(0), bg_tile_lsb(0),
+          ppudata_byte(),
+          nt_byte(), at_byte_lsb(), at_byte_msb(),
+          pt_byte(), bg_tile_msb(), bg_tile_lsb(),
           nmi_req(false), odd_frame(false),
           actions {
 //              {at_scanline_cycle(-1, 260), log_ppu_regs}
@@ -182,7 +182,7 @@ public:
     return unpack_bits(lsb, msb);
   }
 
-  byte ppu_read(word ppu_addr) {
+  byte ppu_read(word ppu_addr) const {
     ppu_addr &= 0x3fff;
 
     if (ppu_addr <= 0x1fff) {
@@ -298,7 +298,7 @@ public:
     cart = c;
   }
 
-  void dump_nt() {
+  void dump_nt() const {
     for (int row = 0; row < 30; ++row) {
       for (int col = 0; col < 32; ++col) {
         std::printf("%02x ", ppu_read(0x2000 + row * 32 + col));
@@ -308,7 +308,7 @@ public:
     std::printf("\n");
   }
 
-  void dump_pt() {
+  void dump_pt() const {
     std::printf("bg: %02x\n", pal[0]);
     for (int i = 0; i < 8; ++i) {
       std::printf("% 2d: %02x %02x %02x %02x\n", i % 4,
@@ -435,9 +435,9 @@ public:
 
   std::array<bool, 256> bg_is_transparent;
 
-  void dump_at();
+  void dump_at() const;
 
-  void dump_oam();
+  void dump_oam() const;
 
   void extra_nt_read();
 

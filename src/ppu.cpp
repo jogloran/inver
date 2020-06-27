@@ -295,9 +295,9 @@ PPU::next_cycle() {
   }
 }
 
-void PPU::dump_oam() {
+void PPU::dump_oam() const {
   int i = 0;
-  for (OAM& sprite : oam) {
+  for (const OAM& sprite : oam) {
     if (sprite.y >= 0xef) {
       continue;
     }
@@ -309,7 +309,7 @@ void PPU::dump_oam() {
   std::printf("\n");
 }
 
-void PPU::dump_at() {
+void PPU::dump_at() const {
   std::printf("Attribute table bytes:\n");
   for (int row = 0; row < 8; ++row) {
     for (int col = 0; col < 16; ++col) {

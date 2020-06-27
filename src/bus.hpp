@@ -36,25 +36,6 @@ public:
   void tick();
   
 public:
-  std::unique_ptr<CPU6502> cpu;
-  std::shared_ptr<PPU> ppu;
-  std::shared_ptr<Mapper> cart;
-  std::shared_ptr<Screen> screen;
-  std::shared_ptr<TD> td;
-  std::shared_ptr<TM> tm;
-  
-  std::array<byte, 0x0800> ram;
-  
-  long ncycles;
-
-  std::shared_ptr<Peripheral> io1;
-  std::shared_ptr<Peripheral> io2;
-
-  Simple_Apu apu;
-  std::unique_ptr<Sound_Queue> sound_queue;
-
-  bool paused;
-
   void dmi(byte value);
 
   void reset();
@@ -88,5 +69,23 @@ public:
   void connect1(std::shared_ptr<Peripheral> peripheral);
 
   void connect2(std::shared_ptr<Peripheral> peripheral);
-};
 
+  std::unique_ptr<CPU6502> cpu;
+  std::shared_ptr<PPU> ppu;
+  std::shared_ptr<Mapper> cart;
+  std::shared_ptr<Screen> screen;
+  std::shared_ptr<TD> td;
+  std::shared_ptr<TM> tm;
+
+  std::array<byte, 0x0800> ram;
+
+  long ncycles;
+
+  std::shared_ptr<Peripheral> io1;
+  std::shared_ptr<Peripheral> io2;
+
+  Simple_Apu apu;
+  std::unique_ptr<Sound_Queue> sound_queue;
+
+  bool paused;
+};
