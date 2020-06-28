@@ -11,6 +11,8 @@ DEFINE_string(path, "", "");
 DEFINE_int32(unzip, -1, "");
 DEFINE_int32(mapper, -1, "");
 DEFINE_string(out, "out.nes", "");
+DEFINE_bool(summary, false, "");
+DEFINE_int32(summary_limit, 15, "");
 
 class Zip {
 public:
@@ -92,14 +94,6 @@ int main(int argc, char** argv) {
 
   static char buf[17] = {};
 
-  fort::char_table tb;
-//  tb.set_border_style(FT_DOUBLE2_STYLE);
-  tb.column(2).set_cell_text_align(fort::text_align::right);
-  tb.column(3).set_cell_text_align(fort::text_align::right);
-  tb.column(4).set_cell_text_align(fort::text_align::right);
-  tb << fort::header
-     << "#" << "File" << "Mapper" << "PRG" << "CHR" << fort::endr;
-
   Zip z {FLAGS_path};
 
   if (FLAGS_unzip != -1) {
@@ -110,6 +104,49 @@ int main(int argc, char** argv) {
     }
     std::exit(0);
   }
+
+  if (FLAGS_summary) {
+    std::map<int, size_t> counts;
+    for (Zip::iterator::entry f : z) {
+      if (f.name.find("/nes/") == std::string::npos || f.name.rfind(".nes") == std::string::npos)
+        continue;
+
+      NESHeader h;
+      auto bytes_read = zip_fread(f.f, (void*) &h, 0x10);
+      if (bytes_read == 0x10) {
+        if (!is_valid_header(&h)) continue;
+
+        ++counts[mapper_no(&h)];
+      }
+    }
+
+    fort::char_table tb;
+    tb << fort::header << "Mapper" << "Count" << fort::endr;
+    tb.column(0).set_cell_text_align(fort::text_align::right);
+    tb.column(1).set_cell_text_align(fort::text_align::right);
+
+    std::multimap<size_t, int> by_counts;
+    for (const auto& [mapper, count] : counts) by_counts.emplace(count, mapper);
+
+    for (auto it = by_counts.rbegin(); it != by_counts.rend(); ++it) {
+      tb << it->second << it->first << fort::endr;
+      if (--FLAGS_summary_limit == 0) {
+        tb << "..." << "..." << fort::endr;
+        break;
+      }
+    }
+
+    std::cout << tb.to_string() << std::endl;
+    std::exit(0);
+  }
+
+  fort::char_table tb;
+//  tb.set_border_style(FT_DOUBLE2_STYLE);
+  tb.column(2).set_cell_text_align(fort::text_align::right);
+  tb.column(3).set_cell_text_align(fort::text_align::right);
+  tb.column(4).set_cell_text_align(fort::text_align::right);
+  tb << fort::header
+     << "#" << "File" << "Mapper" << "PRG" << "CHR" << fort::endr;
 
   for (Zip::iterator::entry f : z) {
     if (f.name.find("/nes/") == std::string::npos || f.name.rfind(".nes") == std::string::npos)
@@ -124,7 +161,8 @@ int main(int argc, char** argv) {
         std::string fn = f.name.substr(pos + 1);
         if (FLAGS_mapper == -1 || mapper_no(&h) == FLAGS_mapper) {
           tb << f.i
-             << fn << mapper_no(&h) << prg_rom_size(&h) * 0x4000 / 1024 << chr_rom_size(&h) * 0x2000 / 1024
+             << fn << mapper_no(&h) << prg_rom_size(&h) * 0x4000 / 1024
+             << chr_rom_size(&h) * 0x2000 / 1024
              << fort::endr;
         }
       }
