@@ -34,9 +34,9 @@ TD::show() {
 
   SDL_RenderPresent(renderer_);
 
-  SDL_UpdateTexture(texture_, NULL, buf.data(), TD_WIDTH * 4);
+  SDL_UpdateTexture(texture_, nullptr, buf.data(), TD_WIDTH * 4);
   SDL_RenderClear(renderer_);
-  SDL_RenderCopy(renderer_, texture_, NULL, NULL);
+  SDL_RenderCopy(renderer_, texture_, nullptr, nullptr);
 
   SDL_Rect rect {
       .x = (8*ppu->loopy_t.coarse_x + ppu->fine_x) * 2,
