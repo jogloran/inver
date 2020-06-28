@@ -180,8 +180,8 @@ private:
   bool irq_requested_;
 
   // TODO: not yet serialised
-  byte prg_pages = 0;
-  byte chr_pages = 0;
+  int prg_pages = 0;
+  int chr_pages = 0;
 
   void signal_scanline() override;
 
