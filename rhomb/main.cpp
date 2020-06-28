@@ -118,6 +118,8 @@ int main(int argc, char** argv) {
     NESHeader h;
     auto bytes_read = zip_fread(f.f, (void*) &h, 0x10);
     if (bytes_read == 0x10) {
+      if (!is_valid_header(&h)) continue;
+
       if (size_t pos = f.name.rfind('/'); pos != std::string::npos) {
         std::string fn = f.name.substr(pos + 1);
         if (FLAGS_mapper == -1 || mapper_no(&h) == FLAGS_mapper) {

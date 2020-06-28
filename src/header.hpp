@@ -15,6 +15,10 @@ struct NESHeader {
   byte padding[5];
 } __attribute__((packed, aligned(1)));
 
+inline bool is_valid_header(const NESHeader* h) {
+  return h->header[0] == 'N' && h->header[1] == 'E' && h->header[2] == 'S' && h->header[3] == 0x1a;
+}
+
 inline byte prg_rom_size(const NESHeader* h) {
   return (((h->prg_rom_size_msb & 0xf) << 8) | h->prg_rom_size_lsb);
 }

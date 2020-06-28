@@ -39,7 +39,7 @@ void MMC3::write(word addr, byte value) {
 //      if (bank_for_target[target_bank] != value && target_bank <= 5) {
 //        log("R%d -> %02x\n", target_bank, value);
 //      }
-      bank_for_target[target_bank] = value;
+      bank_for_target[target_bank] = value % (target_bank >= 6 ? prg_pages : chr_pages);
     } else { // target select
       target_bank = value & 0b111;
       rom_8000_fixed = value & (1 << 6);

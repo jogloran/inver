@@ -41,18 +41,23 @@ public:
   }
 
   void
-  map(const std::vector<char>& data, byte prg_banks, byte chr_banks, const NESHeader* header) override {
+  map(const std::vector<char>& data, byte prg_banks, byte chr_banks,
+      const NESHeader* header) override {
     rom.reserve(PRG_BANK_MULTIPLIER * prg_banks);
     if (chr_banks != 0) {
       chr.reserve(CHR_BANK_MULTIPLIER * chr_banks);
+      chr_pages = chr_banks * 8;
     } else {
       chr.resize(0x2000);
+      chr_pages = 8;
     }
 
     auto cur = flash((byte*) data.data(), PRG_BANK_MULTIPLIER * prg_banks, rom);
     if (chr_banks != 0) {
       flash(cur, CHR_BANK_MULTIPLIER * chr_banks, chr);
     }
+
+    prg_pages = prg_banks * 2;
   }
 
   inline byte* bank(int bank) {
@@ -173,6 +178,10 @@ private:
   byte irq_counter;
   bool irq_enabled;
   bool irq_requested_;
+
+  // TODO: not yet serialised
+  byte prg_pages = 0;
+  byte chr_pages = 0;
 
   void signal_scanline() override;
 
