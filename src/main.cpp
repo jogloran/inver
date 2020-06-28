@@ -7,6 +7,7 @@
 #include "mapper/nes002.hpp"
 #include "mapper/nes003.hpp"
 #include "mapper/nes004.hpp"
+#include "mapper/nes007.hpp"
 #include "types.h"
 #include "bus.hpp"
 #include "header.hpp"
@@ -121,6 +122,8 @@ std::shared_ptr<Mapper> mapper_for(byte no) {
       return std::make_shared<CNROM>();
     case 4:
       return std::make_shared<MMC3>();
+    case 7:
+      return std::make_shared<AxROM>();
   }
   throw std::runtime_error("Unimplemented mapper");
 }
