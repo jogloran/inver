@@ -80,7 +80,7 @@ public:
 
   void connect(std::shared_ptr<TM> t);
 
-  std::unique_ptr<CPU6502> cpu;
+  std::shared_ptr<CPU6502> cpu;
   std::shared_ptr<PPU> ppu;
   std::shared_ptr<Mapper> cart;
   std::shared_ptr<Output> screen;

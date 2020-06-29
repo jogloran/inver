@@ -21,7 +21,7 @@ Bus::Bus() : ncycles(0),
              io2(std::make_shared<DevNull>()),
              sound_queue(std::make_unique<Sound_Queue>()),
              paused(false) {
-  cpu = std::make_unique<CPU6502>();
+  cpu = std::make_shared<CPU6502>();
   ppu = std::make_shared<PPU>();
 
   cpu->connect(this);

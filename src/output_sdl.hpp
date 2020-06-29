@@ -19,7 +19,7 @@ class Bus;
 
 class SDLOutput : public Output {
 public:
-  SDLOutput();
+  SDLOutput(std::unique_ptr<Renderer> r);
 
   ~SDLOutput() {
     SDL_DestroyTexture(texture_);

@@ -176,7 +176,7 @@ void SDLOutput::set_paused(bool paused) {
   }
 }
 
-SDLOutput::SDLOutput() : renderer(std::make_unique<NTSCRenderer>()) {
+SDLOutput::SDLOutput(std::unique_ptr<Renderer> r) : renderer(std::move(r)) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
   TTF_Init();
   window_ = SDL_CreateWindow("Inver",

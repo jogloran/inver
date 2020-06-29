@@ -13,6 +13,8 @@
 #include "header.hpp"
 #include "op_names.hpp"
 #include "output_null.hpp"
+#include "renderer_ntsc.hpp"
+#include "renderer_palette.hpp"
 
 #include <gflags/gflags.h>
 
@@ -37,6 +39,7 @@ DEFINE_bool(dump_ops, false, "Dump op table");
 DEFINE_bool(kb, false, "Family Basic keyboard accessible over 0x4016");
 DEFINE_int32(pc, -1, "Override initial pc");
 DEFINE_bool(null_output, false, "Null output (implies no input devices)");
+DEFINE_string(filter, "ntsc", "");
 
 std::vector<char> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),
@@ -112,7 +115,12 @@ int main(int argc, char** argv) {
   if (FLAGS_null_output) {
     screen = std::make_shared<NullOutput>();
   } else {
-    screen = std::make_shared<SDLOutput>();
+    if (FLAGS_filter == "ntsc") {
+      screen = std::make_shared<SDLOutput>(std::make_unique<NTSCRenderer>());
+    } else {
+      screen = std::make_shared<SDLOutput>(std::make_unique<PaletteRenderer>());
+    }
+
     if (FLAGS_kb) {
       bus.connect2(std::make_shared<FamilyBasicKeyboard>());
     } else {
