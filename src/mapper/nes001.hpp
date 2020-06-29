@@ -8,13 +8,13 @@
 
 class MMC1 : public Mapper {
 public:
-  MMC1() : shift(0x10), mirroring(Mirroring::AAAA),
+  MMC1() : mirroring(Mirroring::AAAA),
            prg_mode(PRGMode::FinalBankAt0xC000),
            chr_mode(CHRMode::Switch8KBBank),
            ppu_0000_bank(0),
            ppu_1000_bank(0),
            prg_rom_bank(0),
-           prg_ram_disabled(false) {
+           prg_ram_disabled(false), shift(0x10) {
     std::fill(ram.begin(), ram.end(), 0x0);
   }
 

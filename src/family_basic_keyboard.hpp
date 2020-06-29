@@ -46,8 +46,8 @@ public:
     }
 
     byte result = 0;
-    int base = row * 8 + (col ? 4 : 0);
-    for (int i = 0; i < 4; ++i) {
+    size_t base = row * 8 + (col ? 4 : 0);
+    for (size_t i = 0; i < 4; ++i) {
       if (pressed(scancodes[base + i])) {
         result |= (1 << i);
       }

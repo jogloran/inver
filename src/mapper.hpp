@@ -12,7 +12,7 @@
 #include "types.h"
 
 class Bus;
-class NESHeader;
+struct NESHeader;
 
 class Mapper {
 public:

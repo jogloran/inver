@@ -33,15 +33,15 @@ class PPU {
 public:
   using Event = std::function<void(PPU&)>;
 
-  PPU() : scanline(), ncycles(),
-          fine_x(), w(),
-          loopy_t(), loopy_v(),
-          ppuctrl(), ppustatus(), ppumask(),
-          nt(), pal(), oam(), sprite_row(), bg_is_transparent(),
-          ppudata_byte(),
-          nt_byte(), at_byte_lsb(), at_byte_msb(),
+  PPU() : nt(), pal(), scanline(), ncycles(),
+          loopy_v(), loopy_t(), fine_x(), w(),
+          ppuctrl(), ppumask(), ppustatus(),
+          oam(), sprite_row(),
+          nt_byte(), at_byte_msb(), at_byte_lsb(),
           pt_byte(), bg_tile_msb(), bg_tile_lsb(),
+          ppudata_byte(),
           nmi_req(false), odd_frame(false),
+          bg_is_transparent(),
           actions {
 //              {at_scanline_cycle(-1, 260), log_ppu_regs}
 //              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
@@ -323,8 +323,6 @@ public:
   std::array<byte, 0x800> nt;
   std::array<byte, 0x20> pal;
 
-  std::vector<PPULogSpec> actions;
-
   union ppuctrl {
     struct {
       byte nt_base: 2;
@@ -434,6 +432,8 @@ public:
   std::chrono::high_resolution_clock::time_point frame_start;
 
   std::array<bool, 256> bg_is_transparent;
+
+  std::vector<PPULogSpec> actions;
 
   void dump_at() const;
 

@@ -8,7 +8,7 @@ find_package(gflags REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(benchmark REQUIRED)
 pkg_search_module(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
-pkg_search_module(zip REQUIRED zip>=1.7.1)
+#pkg_search_module(zip REQUIRED zip>=1.7.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -45,6 +45,7 @@ target_link_libraries(inver ntsc)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
 target_compile_options(inver PRIVATE -march=native)
+target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -Wreorder)
 
 add_executable(micro bench/micro.cpp src/utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
