@@ -13,10 +13,6 @@
 
 using namespace std::chrono_literals;
 
-class PPU;
-
-class Bus;
-
 class SDLOutput : public Output {
 public:
   SDLOutput(std::unique_ptr<Renderer> r);
@@ -50,8 +46,6 @@ public:
   SDL_Texture* text_texture_;
   SDL_Texture* raster_;
   std::chrono::high_resolution_clock::time_point text_timeout_;
-  PPU* ppu;
-  Bus* bus;
   std::unique_ptr<Renderer> renderer;
 
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);
