@@ -8,7 +8,7 @@
 #include "types.h"
 #include "tm.hpp"
 #include "td.hpp"
-#include "screen.hpp"
+#include "output_sdl.hpp"
 #include "utils.hpp"
 #include "mapper.hpp"
 #include "ppu_act.hpp"
@@ -394,7 +394,7 @@ public:
   std::array<byte, 256> sprite_row;
   std::shared_ptr<TM> tm;
   std::shared_ptr<TD> td;
-  Screen* screen;
+  Output* screen;
   int scanline; // -1 to 260
   int ncycles;
 

@@ -9,6 +9,7 @@
 #include "nes_ntsc.h"
 #include "types.h"
 #include "renderer.hpp"
+#include "output.hpp"
 
 using namespace std::chrono_literals;
 
@@ -16,11 +17,11 @@ class PPU;
 
 class Bus;
 
-class Screen {
+class SDLOutput : public Output {
 public:
-  Screen();
+  SDLOutput();
 
-  ~Screen() {
+  ~SDLOutput() {
     SDL_DestroyTexture(texture_);
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
@@ -40,7 +41,6 @@ public:
   static constexpr std::chrono::milliseconds TOAST_FADE_OUT_TIME = 500ms;
 
   // Each byte of fb is a palette index (0...0x40)
-  std::array<byte, BUF_WIDTH * BUF_HEIGHT> fb;
   std::array<byte, BUF_WIDTH * BUF_HEIGHT * 4> buf;
   SDL_Window* window_;
   SDL_Renderer* renderer_;
@@ -56,13 +56,9 @@ public:
 
   void dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> array);
 
-  inline byte& at(size_t index) {
-    return fb[index];
-  }
+  void set_paused(bool b) override;
 
-  void set_paused(bool b);
-
-  void frame_rendered(std::chrono::milliseconds ms);
+  void frame_rendered(std::chrono::milliseconds ms) override;
 
   void toast(std::string text, std::chrono::milliseconds delay);
 

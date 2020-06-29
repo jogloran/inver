@@ -65,7 +65,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/dt0/CLionProjects/asobitomo/cmake-build-debug/ark.nes"
+            argument = "/Users/dt0/CLionProjects/asobitomo/cmake-build-debug/ark.nes --null-output"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

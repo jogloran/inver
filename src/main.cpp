@@ -12,6 +12,7 @@
 #include "bus.hpp"
 #include "header.hpp"
 #include "op_names.hpp"
+#include "output_null.hpp"
 
 #include <gflags/gflags.h>
 
@@ -35,6 +36,7 @@ DEFINE_string(ppu_log_spec, "", "PPU log spec");
 DEFINE_bool(dump_ops, false, "Dump op table");
 DEFINE_bool(kb, false, "Family Basic keyboard accessible over 0x4016");
 DEFINE_int32(pc, -1, "Override initial pc");
+DEFINE_bool(null_output, false, "Null output (implies no input devices)");
 
 std::vector<char> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),
@@ -97,15 +99,29 @@ int main(int argc, char** argv) {
   std::shared_ptr<Mapper> mapper = read_mapper(data, save_data, &h);
 
   Bus bus;
-  auto screen = std::make_shared<Screen>();
+  if (FLAGS_td) {
+    auto td = std::make_shared<TD>();
+    bus.connect(td);
+  }
+  if (FLAGS_tm) {
+    auto tm = std::make_shared<TM>();
+    bus.connect(tm);
+  }
+
+  std::shared_ptr<Output> screen;
+  if (FLAGS_null_output) {
+    screen = std::make_shared<NullOutput>();
+  } else {
+    screen = std::make_shared<SDLOutput>();
+    if (FLAGS_kb) {
+      bus.connect2(std::make_shared<FamilyBasicKeyboard>());
+    } else {
+      bus.connect1(std::make_shared<SDLInput>());
+    }
+  }
+
   bus.attach_screen(screen);
   bus.attach_cart(mapper);
-
-  if (FLAGS_kb) {
-    bus.connect2(std::make_shared<FamilyBasicKeyboard>());
-  } else {
-    bus.connect1(std::make_shared<SDLInput>());
-  }
 
   bus.run();
 }

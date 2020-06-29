@@ -23,13 +23,9 @@ Bus::Bus() : ncycles(0),
              paused(false) {
   cpu = std::make_unique<CPU6502>();
   ppu = std::make_shared<PPU>();
-  td = std::make_shared<TD>();
-  tm = std::make_shared<TM>();
 
   cpu->connect(this);
   ppu->connect(this);
-  td->connect(this);
-  tm->connect(this);
 
   std::fill(ram.begin(), ram.end(), 0);
 
@@ -200,7 +196,7 @@ void Bus::unpickle(std::string filename) {
   tm->connect(this);
 }
 
-void Bus::attach_screen(std::shared_ptr<Screen> s) {
+void Bus::attach_screen(std::shared_ptr<Output> s) {
   screen = s;
   screen->ppu = ppu.get();
   screen->bus = this;
@@ -214,4 +210,16 @@ void Bus::attach_screen(std::shared_ptr<Screen> s) {
     if (FLAGS_cloop) cloop.observe(*cpu);
     tick();
   }
+}
+
+void Bus::connect(std::shared_ptr<TD> t) {
+  td = t;
+  td->connect(this);
+  ppu->connect(this);
+}
+
+void Bus::connect(std::shared_ptr<TM> t) {
+  tm = t;
+  td->connect(this);
+  ppu->connect(this);
 }

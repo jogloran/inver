@@ -1,4 +1,4 @@
-#include "screen.hpp"
+#include "output_sdl.hpp"
 #include "ppu.hpp"
 #include "renderer.hpp"
 #include "renderer_ntsc.hpp"
@@ -14,12 +14,12 @@ DECLARE_bool(fake_sprites);
 DECLARE_bool(kb);
 
 void
-Screen::toast(std::string text, std::chrono::milliseconds delay) {
+SDLOutput::toast(std::string text, std::chrono::milliseconds delay) {
   text_ = text;
   text_timeout_ = std::chrono::high_resolution_clock::now() + delay;
 }
 
-SDL_Texture* Screen::make_raster_texture(size_t dx, size_t dy) {
+SDL_Texture* SDLOutput::make_raster_texture(size_t dx, size_t dy) {
   SDL_Texture* raster = SDL_CreateTexture(renderer_, SDL_GetWindowPixelFormat(window_),
                                           SDL_TEXTUREACCESS_TARGET,
                                           BUF_WIDTH * SCALE, BUF_HEIGHT * SCALE);
@@ -45,7 +45,7 @@ SDL_Texture* Screen::make_raster_texture(size_t dx, size_t dy) {
 }
 
 void
-Screen::blit() {
+SDLOutput::blit() {
   int pitch;
   unsigned char* pixels;
   SDL_LockTexture(texture_, nullptr, (void**) &pixels, &pitch);
@@ -147,7 +147,7 @@ Screen::blit() {
   }
 }
 
-void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
+void SDLOutput::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
   for (int row = 0; row < BUF_WIDTH; ++row) {
     for (int col = 0; col < BUF_HEIGHT; ++col) {
       std::printf("%02x", sc[row * BUF_WIDTH + col]);
@@ -156,7 +156,7 @@ void Screen::dump_fb(std::array<byte, BUF_WIDTH * BUF_HEIGHT> sc) {
   }
 }
 
-void Screen::frame_rendered(std::chrono::milliseconds ms) {
+void SDLOutput::frame_rendered(std::chrono::milliseconds ms) {
   auto then = std::chrono::high_resolution_clock::now();
   blit();
   auto now = std::chrono::high_resolution_clock::now();
@@ -166,7 +166,7 @@ void Screen::frame_rendered(std::chrono::milliseconds ms) {
 //  SDL_Delay((MS_PER_FRAME - std::min<>(MS_PER_FRAME, frame_time)).count());
 }
 
-void Screen::set_paused(bool paused) {
+void SDLOutput::set_paused(bool paused) {
   if (paused) {
     SDL_SetTextureColorMod(texture_, 192, 192, 192);
     toast("Paused", 1000ms);
@@ -176,10 +176,10 @@ void Screen::set_paused(bool paused) {
   }
 }
 
-Screen::Screen() : renderer(std::make_unique<NTSCRenderer>()) {
+SDLOutput::SDLOutput() : renderer(std::make_unique<NTSCRenderer>()) {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
   TTF_Init();
-  window_ = SDL_CreateWindow("Game",
+  window_ = SDL_CreateWindow("Inver",
                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                              BUF_WIDTH * SCALE, BUF_HEIGHT * SCALE, SDL_WINDOW_HIDDEN);
   renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED

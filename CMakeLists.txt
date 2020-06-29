@@ -24,7 +24,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2TTF_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
         src/bus.cpp src/cpu6502.cpp
-        src/op_names.cpp src/ppu.cpp src/screen.cpp
+        src/op_names.cpp src/ppu.cpp src/output_sdl.cpp
         src/td.cpp src/tm.cpp
         src/utils.cpp
         src/ops.cpp src/mapper.hpp
@@ -35,7 +35,7 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/Sound_Queue.cpp src/Sound_Queue.h
         src/mapper/nes003.cpp src/ppu_act.hpp src/ppu_act.cpp src/braille_pix.cpp src/braille_pix.hpp src/mapper/nes002.cpp src/mapper/nes002.hpp src/shifter.hpp src/family_basic_keyboard.hpp src/dev_null.cpp src/dev_null.hpp src/cloop.hpp src/cloop.cpp
         src/renderer.hpp src/renderer_ntsc.hpp src/renderer_ntsc.cpp
-        src/renderer_palette.hpp src/renderer_palette.cpp src/mapper/nes007.hpp)
+        src/renderer_palette.hpp src/renderer_palette.cpp src/mapper/nes007.hpp src/output.hpp src/output_null.hpp)
 
 file(COPY res/mplus-2c-medium.ttf DESTINATION "${CMAKE_BINARY_DIR}")
 

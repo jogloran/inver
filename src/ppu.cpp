@@ -337,7 +337,7 @@ void
 PPU::tick() {
   events_for(scanline, ncycles);
 
-#ifndef NDEBUG
+#ifdef BUILD_WITH_DEBUG_ACTIONS
   for (const auto& action : actions) {
     if (action.pred(*this)) {
       action.action(*this);
