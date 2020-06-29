@@ -33,20 +33,7 @@ class PPU {
 public:
   using Event = std::function<void(PPU&)>;
 
-  PPU() : nt(), pal(), scanline(), ncycles(),
-          loopy_v(), loopy_t(), fine_x(), w(),
-          ppuctrl(), ppumask(), ppustatus(),
-          oam(), sprite_row(),
-          nt_byte(), at_byte_msb(), at_byte_lsb(),
-          pt_byte(), bg_tile_msb(), bg_tile_lsb(),
-          ppudata_byte(),
-          nmi_req(false), odd_frame(false),
-          bg_is_transparent(),
-          actions {
-//              {at_scanline_cycle(-1, 260), log_ppu_regs}
-//              {every(100, at_tile(67, Subcycle::NTRead)), log_ppu_regs},
-//              {at_tile(0, -1, Subcycle::NTRead), call({log_nt_addr, decode_nt_byte, log_ppu_regs})}
-          } {
+  PPU() {
     std::fill(shadow_oam.begin(), shadow_oam.end(), Sprite {{0xff, 0xff, 0xff, 0xff}, 64});
     std::fill(shadow_oam_indices.begin(), shadow_oam_indices.end(), 0xff);
     candidate_sprites.reserve(64);
@@ -320,8 +307,8 @@ public:
   Bus* bus;
   std::shared_ptr<Mapper> cart;
 
-  std::array<byte, 0x800> nt;
-  std::array<byte, 0x20> pal;
+  std::array<byte, 0x800> nt = {};
+  std::array<byte, 0x20> pal = {};
 
   union ppuctrl {
     struct {
@@ -385,16 +372,16 @@ public:
     template <typename Ar>
     void serialize(Ar& ar) { ar(oam, sprite_index); }
   };
-  std::array<OAM, 64> oam;
-  std::array<Sprite, 8> shadow_oam;
-  std::array<byte, 8> shadow_oam_indices;
+  std::array<OAM, 64> oam = {};
+  std::array<Sprite, 8> shadow_oam = {};
+  std::array<byte, 8> shadow_oam_indices = {};
   std::vector<Sprite> candidate_sprites;
-  std::array<byte, 256> sprite_row;
+  std::array<byte, 256> sprite_row = {};
   std::shared_ptr<TM> tm;
   std::shared_ptr<TD> td;
   Output* screen;
-  int scanline; // -1 to 260
-  int ncycles;
+  int scanline = 0; // -1 to 260
+  int ncycles = 0;
 
   union {
     struct {
@@ -409,29 +396,29 @@ public:
 
     template <typename Ar>
     void serialize(Ar& ar) { ar(reg); }
-  } loopy_v, loopy_t;
-  byte fine_x;
-  bool w;
+  } loopy_v = { .reg = 0 }, loopy_t = { .reg = 0 };
+  byte fine_x = 0;
+  bool w = false;
 
   // Contains the pattern bits for the next two tiles
   Shifter pt;
   // Contains the attribute bits for the next two tiles
   Shifter at;
 
-  byte nt_byte;
-  byte at_byte_msb;
-  byte at_byte_lsb;
-  word pt_byte;
-  byte bg_tile_msb;
-  byte bg_tile_lsb;
-  byte ppudata_byte;
+  byte nt_byte = 0;
+  byte at_byte_msb = 0;
+  byte at_byte_lsb = 0;
+  word pt_byte = 0;
+  byte bg_tile_msb = 0;
+  byte bg_tile_lsb = 0;
+  byte ppudata_byte = 0;
 
-  bool nmi_req;
-  bool odd_frame;
+  bool nmi_req = false;
+  bool odd_frame = false;
 
   std::chrono::high_resolution_clock::time_point frame_start;
 
-  std::array<bool, 256> bg_is_transparent;
+  std::array<bool, 256> bg_is_transparent = {};
 
   std::vector<PPULogSpec> actions;
 
