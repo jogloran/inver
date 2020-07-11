@@ -6,12 +6,12 @@
   return cpu.observe_crossed_page(); \
 }
 
-#define GEN_A(body_macro_name) [](CPU65C816& cpu) {\
+#define GEN_A(body_macro_name) [](CPU5A22& cpu) {\
   body_macro_name(cpu.a); \
   return cpu.observe_crossed_page(); \
 }
 
-#define GEN(body_macro_name, mode) [](CPU65C816& cpu) {\
+#define GEN(body_macro_name, mode) [](CPU5A22& cpu) {\
   word addr = cpu.addr_##mode(); \
   byte operand = cpu.read(addr); \
   body_macro_name(operand); \
@@ -19,7 +19,7 @@
   return cpu.observe_crossed_page(); \
 }
 
-#define ADC_GEN(mode, unary_op) [](CPU65C816& cpu) {\
+#define ADC_GEN(mode, unary_op) [](CPU5A22& cpu) {\
   byte operand = unary_op cpu.deref_##mode(); \
   byte acc = cpu.a; \
   int addend = static_cast<int>(operand) + cpu.p.C; \
@@ -95,7 +95,7 @@
   return cpu.observe_crossed_page(); \
 }
 
-#define CMP_GEN(target, mode, addt_cycles) [](CPU65C816& cpu) {\
+#define CMP_GEN(target, mode, addt_cycles) [](CPU5A22& cpu) {\
   byte val = cpu.deref_##mode(); \
   cpu.check_zn_flags(target - val); \
   cpu.p.C = target >= val; \
@@ -105,7 +105,7 @@
 #define CMP(mode) CMP_GEN(cpu.a, mode, cpu.observe_crossed_page())
 #define CP(reg, mode) CMP_GEN(cpu.reg, mode, 0)
 
-#define INC_GEN(mode, increment) [](CPU65C816& cpu) {\
+#define INC_GEN(mode, increment) [](CPU5A22& cpu) {\
   word addr = cpu.addr_##mode(); \
   byte result = cpu.check_zn_flags(cpu.read(addr) + increment); \
   cpu.write(addr, result); \
@@ -140,7 +140,7 @@
 }
 
 // TODO:
-#define JSL [](CPU65C816& cpu) {\
+#define JSL [](CPU5A22& cpu) {\
   return 0; \
 }
 
@@ -165,8 +165,8 @@
 }
 
 #define NOP        [](CPU5A22& cpu) {                             return 0; }
-#define XX(len, n) [](CPU65C816& cpu) { cpu.pc += len;              return n; }
-#define XXX        [](CPU65C816& cpu) {                             return 0; }
+#define XX(len, n) [](CPU5A22& cpu) { cpu.pc += len;              return n; }
+#define XXX        [](CPU5A22& cpu) {                             return 0; }
 
 #define BRK        [](CPU5A22& cpu) { cpu.brk();                  return 0; }
 #define JMP(mode)  [](CPU5A22& cpu) { cpu.pc.addr = cpu.addr_##mode(); return 0; }
@@ -207,11 +207,10 @@
 #define PLD [](CPU5A22& cpu) { return 0; }
 #define RTL [](CPU5A22& cpu) { return 0; }
 #define PLB [](CPU5A22& cpu) { return 0; }
-#define TYX [](CPU5A22& cpu) { return 0; }
 #define WAI [](CPU5A22& cpu) { return 0; }
 #define PEI [](CPU5A22& cpu) { return 0; }
 #define XBA [](CPU5A22& cpu) { return 0; }
-#define XCE [](CPU5A22& cpu) { return 0; }
+#define XCE [](CPU5A22& cpu) { bool tmp = cpu.p.C; cpu.p.C = cpu.native; cpu.native = tmp; return 0; }
 #define STP [](CPU5A22& cpu) { return 0; }
 #define SEP_N [](CPU5A22& cpu) { return 0; }
 #define REP_N [](CPU5A22& cpu) { return 0; }

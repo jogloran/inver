@@ -191,7 +191,7 @@ std::array<op_record, 256> ops_65c816 {
     SE(V, 0), 2,                         // 0xb8
     LD(a, abs_plus_y), 4,                // 0xb9
     T__(sp, x), 2,                       // 0xba
-    TYX, 0,                         // 0xbb TODO: +1
+    T__(y, x), 0,                         // 0xbb TODO: +1
     LD(y, abs_plus_x), 4,                // 0xbc
     LD(a, abs_plus_x), 4,                // 0xbd
     LD(x, abs_plus_y), 4,                // 0xbe

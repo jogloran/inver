@@ -10,5 +10,5 @@
 using op_t = cycle_count_t(*)(CPU5A22&);
 struct op_record { op_t f; cycle_count_t cyc; };
 
-extern std::array<op_record, 256> ops;
+extern std::array<op_record, 256> ops_65c816;
 

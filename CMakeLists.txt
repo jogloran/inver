@@ -50,6 +50,10 @@ target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -W
 add_executable(micro bench/micro.cpp src/utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
 
+add_executable(cpu5a22_test cpu5a22_test/catch.hpp src/cpu5a22.hpp src/cpu5a22.cpp
+        src/ops_5a22.hpp src/ops_5a22.cpp src/op_macros_5a22.hpp
+        cpu5a22_test/catch_main.cpp src/bus_snes.cpp src/bus_snes.hpp cpu5a22_test/tests.cpp cpu5a22_test/utils.hpp)
+
 include_directories(${ZIP_INCLUDE_DIRS})
 link_directories(${ZIP_LIBRARY_DIRS})
 add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)

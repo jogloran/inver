@@ -1,7 +1,8 @@
 #pragma once
 
 #include "types.h"
-#include "bus.hpp"
+
+class BusSNES;
 
 union dual {
   operator word() {
@@ -37,7 +38,7 @@ public:
 
   void rts() {}
 
-  dual check_zn_flags(byte operand) { return dual{0}; }
+  dual check_zn_flags(byte operand) { return {operand}; }
 
   byte pop() { return 0; }
 
@@ -55,9 +56,9 @@ public:
     if ((addr1 & 0xff00) != (addr2 & 0xff00)) crossed_page = true;
   }
 
-  inline void write(word address, byte value) { bus->write(address, value); }
+  void write(word address, byte value);
 
-  inline byte read(word address) { return bus->read(address); }
+  byte read(word address);
 
   inline byte read_byte() {
     return read(pc.addr++);
@@ -140,7 +141,7 @@ public:
   });
 
   byte deref_imm() {
-    return 0;
+    return read_byte();
   }
 
   byte deref_al() {
@@ -206,5 +207,7 @@ public:
   long ncycles {};
   word cycles_left {};
 
-  Bus* bus;
+  BusSNES* bus;
+
+  void connect(BusSNES* snes);
 };
