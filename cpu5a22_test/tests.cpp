@@ -40,3 +40,27 @@ TEST_CASE("65816 switch", "[65816]") {
     REQUIRE(bus->cpu.native);
   }
 }
+
+TEST_CASE("width", "[width]") {
+  auto bus = run(R"(
+    clc
+    xce
+    rep #$30
+  )");
+
+  SECTION("REP") {
+    REQUIRE(!bus->cpu.p.x);
+    REQUIRE(!bus->cpu.p.m);
+  }
+
+  auto bus2 = run(R"(
+    clc
+    xce
+    sep #$30
+  )");
+
+  SECTION("REP") {
+    REQUIRE(bus2->cpu.p.x);
+    REQUIRE(bus2->cpu.p.m);
+  }
+}

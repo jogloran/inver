@@ -12,7 +12,7 @@
 }
 
 #define GEN(body_macro_name, mode) [](CPU5A22& cpu) {\
-  word addr = cpu.addr_##mode(); \
+  dword addr = cpu.addr_##mode(); \
   byte operand = cpu.read(addr); \
   body_macro_name(operand); \
   cpu.write(addr, operand); \
@@ -77,15 +77,21 @@
 // Exceptionally, STA incurs the same number of cycles
 // regardless of whether the access crosses a page boundary.
 #define ST_NO_PAGE_CHECK(reg, mode) [](CPU5A22& cpu) {\
-  word addr = cpu.addr_##mode(); \
+  dword addr = cpu.addr_##mode(); \
   cpu.write(addr, cpu.reg); \
   cpu.reset_crossed_page(); \
   return 0; \
 }
 
 #define ST(reg, mode) [](CPU5A22& cpu) {\
-  word addr = cpu.addr_##mode(); \
+  dword addr = cpu.addr_##mode(); \
   cpu.write(addr, cpu.reg); \
+  return cpu.observe_crossed_page(); \
+}
+
+#define STZ(mode) [](CPU5A22& cpu) { \
+  dword addr = cpu.addr_##mode(); \
+  cpu.write(addr, 0x0); \
   return cpu.observe_crossed_page(); \
 }
 
@@ -106,7 +112,7 @@
 #define CP(reg, mode) CMP_GEN(cpu.reg, mode, 0)
 
 #define INC_GEN(mode, increment) [](CPU5A22& cpu) {\
-  word addr = cpu.addr_##mode(); \
+  dword addr = cpu.addr_##mode(); \
   byte result = cpu.check_zn_flags(cpu.read(addr) + increment); \
   cpu.write(addr, result); \
   return cpu.observe_crossed_page(); \
@@ -165,7 +171,7 @@
 }
 
 #define NOP        [](CPU5A22& cpu) {                             return 0; }
-#define XX(len, n) [](CPU5A22& cpu) { cpu.pc += len;              return n; }
+#define XX(len, n) [](CPU5A22& cpu) { cpu.pc.addr += len;              return n; }
 #define XXX        [](CPU5A22& cpu) {                             return 0; }
 
 #define BRK        [](CPU5A22& cpu) { cpu.brk();                  return 0; }
@@ -176,6 +182,10 @@
 
 #define PHA        [](CPU5A22& cpu) { cpu.push(cpu.a);            return 0; }
 #define PLA        [](CPU5A22& cpu) { cpu.a = cpu.check_zn_flags(cpu.pop()); return 0; }
+#define PHX [](CPU5A22& cpu) { cpu.push(cpu.x); return 0; }
+#define PLX [](CPU5A22& cpu) { cpu.x = cpu.check_zn_flags(cpu.pop()); return 0; }
+#define PHY [](CPU5A22& cpu) { cpu.push(cpu.y); return 0; }
+#define PLY [](CPU5A22& cpu) { cpu.y = cpu.check_zn_flags(cpu.pop()); return 0; }
 
 #define RTS        [](CPU5A22& cpu) { cpu.rts();                  return 0; }
 
@@ -183,37 +193,40 @@
 #define TXS        [](CPU5A22& cpu) { cpu.sp = cpu.x;             return 0; }
 
 #define COP [](CPU5A22& cpu) { return 0; }
-#define TCS [](CPU5A22& cpu) { return 0; }
-#define PER [](CPU5A22& cpu) { return 0; }
-#define BRA [](CPU5A22& cpu) { return 0; }
 #define BRL [](CPU5A22& cpu) { return 0; }
 #define PEA [](CPU5A22& cpu) { return 0; }
+#define PEI [](CPU5A22& cpu) { return 0; }
+#define PER [](CPU5A22& cpu) { return 0; }
 #define PHB [](CPU5A22& cpu) { return 0; }
 #define PHD [](CPU5A22& cpu) { return 0; }
 #define PHK [](CPU5A22& cpu) { return 0; }
-#define PHX [](CPU5A22& cpu) { return 0; }
-#define PHY [](CPU5A22& cpu) { return 0; }
-#define PLX [](CPU5A22& cpu) { return 0; }
-#define PLY [](CPU5A22& cpu) { return 0; }
+#define PLB [](CPU5A22& cpu) { return 0; }
+#define PLD [](CPU5A22& cpu) { return 0; }
+#define TCS [](CPU5A22& cpu) { return 0; }
 #define TSC [](CPU5A22& cpu) { return 0; }
 #define TCD [](CPU5A22& cpu) { return 0; }
 #define TDC [](CPU5A22& cpu) { return 0; }
-#define TXY [](CPU5A22& cpu) { return 0; }
-#define TSB(mode) [](CPU5A22& cpu) { return 0; }
-#define TRB(mode) [](CPU5A22& cpu) { return 0; }
-#define STZ(mode) [](CPU5A22& cpu) { return 0; }
-#define WDM [](CPU5A22& cpu) { return 0; }
+#define WDM XX(1, 2)
 #define MVP [](CPU5A22& cpu) { return 0; }
-#define PLD [](CPU5A22& cpu) { return 0; }
+#define MVN [](CPU5A22& cpu) { return 0; }
 #define RTL [](CPU5A22& cpu) { return 0; }
-#define PLB [](CPU5A22& cpu) { return 0; }
 #define WAI [](CPU5A22& cpu) { return 0; }
-#define PEI [](CPU5A22& cpu) { return 0; }
 #define XBA [](CPU5A22& cpu) { return 0; }
 #define XCE [](CPU5A22& cpu) { bool tmp = cpu.p.C; cpu.p.C = cpu.native; cpu.native = tmp; return 0; }
 #define STP [](CPU5A22& cpu) { return 0; }
-#define SEP_N [](CPU5A22& cpu) { return 0; }
-#define REP_N [](CPU5A22& cpu) { return 0; }
+#define SEP [](CPU5A22& cpu) { \
+  byte mask = cpu.read_byte(); \
+  cpu.p.reg |= mask; \
+  return 0; \
+}
+#define REP [](CPU5A22& cpu) { \
+  byte mask = cpu.read_byte(); \
+  cpu.p.reg &= ~mask; \
+  return 0; \
+}
+#define TSB(mode) [](CPU5A22& cpu) { return 0; }
+#define TRB(mode) [](CPU5A22& cpu) { return 0; }
+
 #define BIT_NUM [](CPU5A22& cpu) { return 0; }
 
 #define T__(src, dst) [](CPU5A22& cpu) {\

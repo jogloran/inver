@@ -14,7 +14,7 @@ public:
 
   void reset();
 
-  byte read(word address);
+  dual read(word address);
 
   void write(word address, byte value);
 

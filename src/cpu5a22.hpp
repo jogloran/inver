@@ -58,7 +58,7 @@ public:
 
   void write(word address, byte value);
 
-  byte read(word address);
+  dual read(word address);
 
   inline byte read_byte() {
     return read(pc.addr++);
@@ -70,8 +70,8 @@ public:
   }
 
 #define DEFINE_ADDR_MODE(mode, body) \
-  word addr_##mode() body \
-  byte deref_##mode() { \
+  dword addr_##mode() body \
+  dual deref_##mode() { \
     return read(addr_##mode()); \
   }
 
@@ -140,23 +140,23 @@ public:
     return 0;
   });
 
-  byte deref_imm() {
-    return read_byte();
+  dual deref_imm() {
+    return {read_byte()};
   }
 
-  byte deref_al() {
+  dual deref_al() {
+    return {0};
+  }
+
+  dual deref_al_x() {
+    return {0};
+  }
+
+  dword addr_indirect() {
     return 0;
   }
 
-  byte deref_al_x() {
-    return 0;
-  }
-
-  word addr_indirect() {
-    return 0;
-  }
-
-  word addr_indirect_far() {
+  dword addr_indirect_far() {
     return 0;
   }
 

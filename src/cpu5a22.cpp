@@ -35,6 +35,6 @@ void CPU5A22::write(word address, byte value) {
   bus->write(address, value);
 }
 
-byte CPU5A22::read(word address) {
+dual CPU5A22::read(word address) {
   return bus->read(address);
 }

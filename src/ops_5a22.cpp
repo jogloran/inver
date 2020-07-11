@@ -32,7 +32,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(|, abs_plus_y), 4,                // 0x19
     IN(a), 0,                         // 0x1b
     TCS, 0,                         // 0x1a
-    TRB(a), 0,                         // 0x1c TODO: cycle count can be +1
+    TRB(a), 0,                         // 0x1c
     OP(|, abs_plus_x), 4,                // 0x1d
     ASL(abs_plus_x), 7,                  // 0x1e
     OP(|, al_x), 0,                         // 0x1f
@@ -64,7 +64,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(&, abs_plus_y), 4,                // 0x39
     DE(a), 0,                         // 0x3a
     TSC, 0,                         // 0x3b
-    BIT(zpg_plus_x), 0,                         // 0x3c TODO: +1
+    BIT(zpg_plus_x), 0,                         // 0x3c
     OP(&, abs_plus_x), 4,                // 0x3d
     ROL(abs_plus_x), 7,                  // 0x3e
     OP(&, al_x), 0,                         // 0x3f
@@ -88,15 +88,15 @@ std::array<op_record, 256> ops_65c816 {
     OP(^, indirect_y), 5,                // 0x51
     OP(^, zpg_far), 0,                              // 0x52
     OP(^, stk_plus_imm_indirect_y), 0,                         // 0x53
-    STZ(d), 0,                         // 0x54
+    MVN, 0,                         // 0x54
     OP(^, zpg_plus_x), 4,                // 0x55
     LSR(zpg_plus_x), 6,                  // 0x56
-    OP(^, zpg_far_plus_y),0,
+    OP(^, zpg_far_plus_y), 0,
     SE(I, 0), 2,                         // 0x58
     OP(^, abs_plus_y), 4,                // 0x59
     PHY, 0,                         // 0x5a
     TCD, 0,                         // 0x5b
-    JMP(abs_dword), 0,                         // 0x5c TODO: +1
+    JMP(abs_dword), 0,                         // 0x5c
     OP(^, abs_plus_x), 4,                // 0x5d
     LSR(abs_plus_x), 7,                  // 0x5e
     OP(^, al_x), 0,                         // 0x5f
@@ -104,7 +104,7 @@ std::array<op_record, 256> ops_65c816 {
     ADC(x_indirect), 6,                  // 0x61
     PER, 0,                              // 0x62
     ADC(sp_plus_imm), 0,                         // 0x63
-    STZ(d), 0,                         // 0x64
+    STZ(zpg), 0,                         // 0x64
     ADC(zpg), 3,                         // 0x65
     ROR(zpg), 5,                         // 0x66
     ADC(zpg_far), 0,                         // 0x67
@@ -128,11 +128,11 @@ std::array<op_record, 256> ops_65c816 {
     ADC(abs_plus_y), 4,                  // 0x79
     PLY, 0,                         // 0x7a
     TDC, 0,                         // 0x7b
-    JMP(abs_plus_x_indirect), 0,                         // 0x7c TODO: +1
+    JMP(abs_plus_x_indirect), 0,                         // 0x7c
     ADC(abs_plus_x), 4,                  // 0x7d
     ROR(abs_plus_x), 7,                  // 0x7e
     ADC(al_x), 0,                         // 0x7f
-    BRA, 0,                         // 0x80
+    BRANCH((true)), 0,                         // 0x80
     ST(a, x_indirect), 6,                // 0x81
     BRL, 0,                         // 0x82
     ST(a, sp_plus_imm), 0,                         // 0x83
@@ -159,10 +159,10 @@ std::array<op_record, 256> ops_65c816 {
     T__(y, a), 2,                        // 0x98
     ST_NO_PAGE_CHECK(a, abs_plus_y), 5,  // 0x99
     TXS, 2,                              // 0x9a
-    TXY, 0,                         // 0x9b
-    STZ(a), 0,                         // 0x9c
+    T__(x, y), 0,                         // 0x9b
+    STZ(abs), 0,                         // 0x9c
     ST_NO_PAGE_CHECK(a, abs_plus_x), 5,  // 0x9d
-    STZ(a_X), 0,                         // 0x9e
+    STZ(abs_plus_x), 0,                         // 0x9e
     ST(a, abs_dword_plus_x), 0,                         // 0x9f
     LD(y, imm), 2,                       // 0xa0
     LD(a, x_indirect), 6,                // 0xa1
@@ -183,7 +183,7 @@ std::array<op_record, 256> ops_65c816 {
     BRANCH((cpu.p.C)), 2,                // 0xb0
     LD(a, indirect_y), 5,                // 0xb1
     LD(a, zpg_far), 0,                              // 0xb2
-    LD(a, stk_plus_imm_indirect_y), 0,                         // 0xb3 TODO: +1
+    LD(a, stk_plus_imm_indirect_y), 0,                         // 0xb3
     LD(y, zpg_plus_x), 4,                // 0xb4
     LD(a, zpg_plus_x), 4,                // 0xb5
     LD(x, zpg_plus_y), 4,                // 0xb6
@@ -191,14 +191,14 @@ std::array<op_record, 256> ops_65c816 {
     SE(V, 0), 2,                         // 0xb8
     LD(a, abs_plus_y), 4,                // 0xb9
     T__(sp, x), 2,                       // 0xba
-    T__(y, x), 0,                         // 0xbb TODO: +1
+    T__(y, x), 0,                         // 0xbb
     LD(y, abs_plus_x), 4,                // 0xbc
     LD(a, abs_plus_x), 4,                // 0xbd
     LD(x, abs_plus_y), 4,                // 0xbe
-    LD(a, al_x), 0,                         // 0xbf TODO: +1
+    LD(a, al_x), 0,                         // 0xbf
     CP(y, imm), 2,                       // 0xc0
     CMP(x_indirect), 6,                  // 0xc1
-    REP_N, 0,                         // 0xc2
+    REP, 0,                         // 0xc2
     CMP(sp_plus_imm), 0,                         // 0xc3
     CP(y, zpg), 3,                       // 0xc4
     CMP(zpg), 3,                         // 0xc5
@@ -224,13 +224,13 @@ std::array<op_record, 256> ops_65c816 {
     CMP(abs_plus_y), 4,                  // 0xd9
     PHX, 0,                         // 0xda
     STP, 0,                         // 0xdb
-    JMP(indirect_far), 0,                         // 0xdc TODO: +1
+    JMP(indirect_far), 0,                         // 0xdc
     CMP(abs_plus_x), 4,                  // 0xdd
     DEC(abs_plus_x), 7,                  // 0xde
     CMP(al_x), 0,                         // 0xdf
     CP(x, imm), 2,                       // 0xe0
     SBC(x_indirect), 6,                  // 0xe1
-    SEP_N, 0,                         // 0xe2
+    SEP, 0,                         // 0xe2
     SBC(sp_plus_imm), 0,                         // 0xe3
     CP(x, zpg), 3,                       // 0xe4
     SBC(zpg), 3,                         // 0xe5
@@ -256,7 +256,7 @@ std::array<op_record, 256> ops_65c816 {
     SBC(abs_plus_y), 4,                  // 0xf9
     PLX, 0,                         // 0xfa
     XCE, 0,                         // 0xfb
-    JSR_abs_plus_x_indirect, 0,                         // 0xfc TODO: +1
+    JSR_abs_plus_x_indirect, 0,                         // 0xfc
     SBC(abs_plus_x), 4,                  // 0xfd
     INC(abs_plus_x), 7,                  // 0xfe
     SBC(al_x), 0,                         // 0xff

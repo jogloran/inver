@@ -12,8 +12,8 @@ void BusSNES::reset() {
   cpu.reset();
 }
 
-byte BusSNES::read(word address) {
-  return ram[address];
+dual BusSNES::read(word address) {
+  return { ram[address] };
 }
 
 void BusSNES::write(word address, byte value) {
