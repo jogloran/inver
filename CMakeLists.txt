@@ -35,7 +35,7 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/Sound_Queue.cpp src/Sound_Queue.h
         src/mapper/nes003.cpp src/ppu_act.hpp src/ppu_act.cpp src/braille_pix.cpp src/braille_pix.hpp src/mapper/nes002.cpp src/mapper/nes002.hpp src/shifter.hpp src/family_basic_keyboard.hpp src/dev_null.cpp src/dev_null.hpp src/cloop.hpp src/cloop.cpp
         src/renderer.hpp src/renderer_ntsc.hpp src/renderer_ntsc.cpp
-        src/renderer_palette.hpp src/renderer_palette.cpp src/mapper/nes007.hpp src/output.hpp src/output_null.hpp src/cpu5a22.cpp src/cpu5a22.hpp src/ops_5a22.cpp src/ops_5a22.hpp src/op_macros_5a22.hpp)
+        src/renderer_palette.hpp src/renderer_palette.cpp src/mapper/nes007.hpp src/output.hpp src/output_null.hpp snes/cpu5a22.cpp snes/cpu5a22.hpp snes/ops_5a22.cpp snes/ops_5a22.hpp snes/op_macros_5a22.hpp)
 
 file(COPY res/mplus-2c-medium.ttf DESTINATION "${CMAKE_BINARY_DIR}")
 
@@ -50,11 +50,29 @@ target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -W
 add_executable(micro bench/micro.cpp src/utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
 
-add_executable(cpu5a22_test cpu5a22_test/catch.hpp src/cpu5a22.hpp src/cpu5a22.cpp
-        src/ops_5a22.hpp src/ops_5a22.cpp src/op_macros_5a22.hpp
-        cpu5a22_test/catch_main.cpp src/bus_snes.cpp src/bus_snes.hpp cpu5a22_test/tests.cpp cpu5a22_test/utils.hpp)
+add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
+        snes/ops_5a22.hpp snes/ops_5a22.cpp snes/op_macros_5a22.hpp
+        cpu5a22_test/catch_main.cpp snes/bus_snes.cpp snes/bus_snes.hpp cpu5a22_test/tests.cpp
+        cpu5a22_test/utils.hpp
+        snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
 
 include_directories(${ZIP_INCLUDE_DIRS})
 link_directories(${ZIP_LIBRARY_DIRS})
 add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)
 target_link_libraries(rhomb gflags -lzip)
+
+add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
+        snes/cpu5a22.hpp snes/cpu5a22.cpp snes/ops_5a22.hpp
+        snes/ops_5a22.cpp snes/op_macros_5a22.hpp
+        snes/op_names_5a22.hpp snes/op_names_5a22.cpp
+        snes/snes_spc/dsp.h snes/snes_spc/dsp.cpp
+        snes/snes_spc/blargg_source.h snes/snes_spc/blargg_common.h
+        snes/snes_spc/blargg_config.h snes/snes_spc/blargg_endian.h
+        snes/snes_spc/SNES_SPC.h snes/snes_spc/SNES_SPC.cpp
+        snes/snes_spc/SNES_SPC_misc.cpp snes/snes_spc/SNES_SPC_state.cpp
+        snes/snes_spc/spc.h snes/snes_spc/spc.cpp
+        snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
+        snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp)
+
+target_link_libraries(snes gflags)
+target_link_libraries(snes ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})

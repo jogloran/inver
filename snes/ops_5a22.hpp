@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "types.h"
-#include "bus.hpp"
 #include "cpu5a22.hpp"
 
 using op_t = cycle_count_t(*)(CPU5A22&);

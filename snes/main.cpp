@@ -1,0 +1,73 @@
+#include <memory>
+#include <iostream>
+#include <cstdlib>
+#include <vector>
+#include <iterator>
+#include <fstream>
+
+#include <gflags/gflags.h>
+
+#include "rang.hpp"
+
+#include "types.h"
+#include "bus_snes.hpp"
+
+std::vector<byte> read_bytes(std::ifstream& f) {
+  return {std::istreambuf_iterator<char>(f),
+          std::istreambuf_iterator<char>()};
+}
+
+word inspect(std::vector<byte> data) {
+  byte* name = &data[0x7fc0];
+  std::printf("%.*s\n", 21, name);
+  std::printf("Type: ");
+  byte rom_layout = data[0x7fd5];
+  if ((rom_layout & 0b110000) == 3) {
+    std::printf("FastROM\n");
+  } else {
+    if (rom_layout & 1) std::printf("HiROM\n");
+    else std::printf("LoROM\n");
+  }
+  std::printf("ROM: %02x\n", data[0x7fd6]);
+  std::printf("ROM size:  %d\n", 0x400 << data[0x7fd7]);
+  std::printf("SRAM size: %d\n", 0x400 << data[0x7fd8]);
+  std::printf("Creator:   %02x\n", byte(data[0x7fd9]));
+  std::printf("Version:   %02x\n", byte(data[0x7fdb]));
+  std::printf("Checksum:  %02x\n", byte(data[0x7fde]));
+  std::printf("~Checksum: %02x\n", byte(data[0x7fdc]));
+  std::printf("RST:       %04x\n", word(data[0x7ffc]) | word(data[0x7ffd] << 8));
+
+  return word(data[0x7ffc]) | word(data[0x7ffd] << 8);
+}
+
+int main(int argc, char* argv[]) {
+  gflags::SetUsageMessage("A SNES emulator");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  rang::setControlMode(rang::control::Force);
+
+  if (argc != 2) {
+    std::cerr << "Expecting a ROM filename." << std::endl;
+    std::exit(1);
+  }
+
+  std::ifstream f(argv[1], std::ios::in);
+  if (!f) {
+    f.open(std::string(argv[1]) + ".sfc", std::ios::in);
+    if (!f) {
+      std::cerr << "Couldn't access ROM file." << std::endl;
+      std::exit(2);
+    }
+  }
+
+  BusSNES bus;
+
+  std::vector<byte> data = read_bytes(f);
+  word rst = inspect(data);
+
+  bus.map(std::move(data));
+//  bus.cpu.pc.b = 0; bus.cpu.pc.c = rst;
+  bus.reset();
+  bus.cpu.pc.addr = rst;
+  bus.run();
+}

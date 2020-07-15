@@ -6,8 +6,8 @@
 #include <cstdlib>
 #include <iterator>
 
-#include "cpu5a22.hpp"
-#include "bus_snes.hpp"
+#include "../snes/cpu5a22.hpp"
+#include "../snes/bus_snes.hpp"
 #include "utils.hpp"
 
 using namespace std::literals;
@@ -39,23 +39,26 @@ std::vector<char> assemble(std::string text) {
   return result;
 }
 
+void dump(std::vector<char> bytes) {
+  for (byte b : bytes) {
+    std::printf("%02x ", byte(b));
+  }
+  std::printf("\n");
+}
+
 std::shared_ptr<BusSNES> run(std::string text) {
   auto bytes = assemble(text);
+  dump(bytes);
   auto bus = std::make_unique<BusSNES>();
   std::copy(bytes.begin(), bytes.end(), bus->ram.begin());
   auto eop = bytes.size();
 
   while (true) {
     bus->cpu.tick();
-    if (bus->cpu.pc.addr >= eop) break;
+    if (bus->cpu.pc.addr >= eop) {
+      break;
+    }
   }
 
   return bus;
-}
-
-void dump(std::vector<char> bytes) {
-  for (byte b : bytes) {
-    std::printf("%02x ", byte(b));
-  }
-  std::printf("\n");
 }
