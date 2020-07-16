@@ -6,6 +6,7 @@
 #include "types.h"
 #include "cpu5a22.hpp"
 #include "snes_spc/spc.h"
+#include "sppu.hpp"
 
 constexpr unsigned char spc_rom[] = {
     0xcd, 0xef, 0xbd, 0xe8, 0x00, 0xc6, 0x1d, 0xd0, 0xfc,
@@ -50,6 +51,7 @@ public:
   std::array<byte, 0x20000> ram {};
 
   CPU5A22 cpu;
+  SPPU ppu;
   SNES_SPC* spc;
   size_t spc_time {};
 

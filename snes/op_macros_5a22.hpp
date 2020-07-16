@@ -230,9 +230,9 @@
 
 #define BRK        [](CPU5A22& cpu) { cpu.brk();                  return int(cpu.native()); }
 #define JMP(mode)  [](CPU5A22& cpu) { cpu.pc.addr = cpu.addr_##mode(); return 0; }
-#define JMPS(mode)  [](CPU5A22& cpu) { cpu.pc.addr = cpu.addr_same_bank_##mode(); printf("jmp dest: %04x\n", cpu.pc.addr); return 0; }
+#define JMPS(mode)  [](CPU5A22& cpu) { cpu.pc.addr = cpu.addr_same_bank_##mode(); return 0; }
 
-#define PHP        [](CPU5A22& cpu) { cpu.push(cpu.p.reg | 0x30); return 0; }
+#define PHP        [](CPU5A22& cpu) { cpu.push(cpu.p.reg); return 0; }
 #define PLP        [](CPU5A22& cpu) { cpu.pop_flags();            return 0; }
 
 #define PHA        [](CPU5A22& cpu) { if (cpu.p.m) cpu.push(cpu.a); else cpu.push_word(cpu.a); return 0; }

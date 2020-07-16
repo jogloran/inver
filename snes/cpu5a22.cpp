@@ -94,9 +94,9 @@ void CPU5A22::tick() {
     byte opcode = bus->read(pc.addr);
 
 //    std::printf("pc:%04x %02x a:%02x x:%02x y:%02x\n", pc.addr, opcode, a,x,y);
-    dump_pc();
+//    dump_pc();
     ++pc.addr;
-    dump();
+//    dump();
 
     auto op = ops_65c816[opcode];
     cycle_count_t extra_cycles = op.f(*this);

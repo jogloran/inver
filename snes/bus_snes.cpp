@@ -37,6 +37,9 @@ byte BusSNES::read(dword address) {
 //      } else if (offs == 0x2141) {
 //        return 0xbb;
 //      }
+      if (offs >= 0x2134 && offs <= 0x213f) {
+        return ppu.read(offs);
+      }
       if (offs >= 0x2140 && offs <= 0x2143) {
         return spc_read_port(spc, spc_time++, (offs - 0x2140) % 4);
       }
@@ -112,10 +115,10 @@ void BusSNES::write(dword address, byte value) {
       // PPU1 (2100-213f), APU (2140-217f), WRAM (2180-2183),
       if (offs >= 0x2140 && offs <= 0x2147) {
         std::printf("spc %d <- %02x\n", (offs - 0x2140) % 4, value);
-        if (value == 0x25 && cpu.ncycles == 48034) {
-          ;
-        }
         spc_write_port(spc, spc_time++, (offs - 0x2140) % 4, value);
+      }
+      if (offs >= 0x2100 && offs <= 0x2133) {
+        ppu.write(offs, value);
       }
     } else if (offs <= 0x2fff) {
       // unused
