@@ -274,9 +274,22 @@
 #define SE(reg, v) [](CPU5A22& cpu) { cpu.p.reg = v;              return 0; }
 
 // TODO:
-#define PEA [](CPU5A22& cpu) { word operand = cpu.read_word(); return 0; }
-#define PEI [](CPU5A22& cpu) { byte operand = cpu.read_byte(); return 0; }
-#define PER [](CPU5A22& cpu) { word operand = cpu.read_word(); return 0; }
+#define PEA [](CPU5A22& cpu) { \
+  cpu.push_word(cpu.read_word()); \
+  return 0; \
+}
+#define PEI [](CPU5A22& cpu) { \
+  word word_addr = cpu.addr_zpg(); \
+  auto addr = cpu.read_word(word_addr); \
+  cpu.push_word(addr); \
+  return 0; \
+}
+
+#define PER [](CPU5A22& cpu) { \
+  sword offset = static_cast<sword>(cpu.read_word()); \
+  cpu.push_word(cpu.pc.addr + offset); \
+  return 0; \
+}
 
 #define PHB [](CPU5A22& cpu) { cpu.push(cpu.db); return 0; }
 #define PLB [](CPU5A22& cpu) { cpu.check_zn_flags(cpu.db = cpu.pop(), false); return 0; }

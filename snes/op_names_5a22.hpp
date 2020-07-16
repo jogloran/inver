@@ -11,7 +11,7 @@ enum Arg {
   AbsY, AbsX, Acc,
   Implied, Invalid, Rel, AbsDword, AbsDwordX,
   ZpFar, StkImm, StkImmIndY, RelFar, ZpFarY,
-  AbsXInd, BytePair, ImmDword, AbsFar, Ind,
+  AbsXInd, BytePair, ImmWord, AbsFar, Ind,
 };
 
 struct Op {

@@ -15,7 +15,7 @@ std::array<Op, 256> op_meta {{
                                  {0x09, "ORA", Imm},
                                  {0x0a, "ASL A", Implied},
                                  {0x0b, "PHD", Implied},
-                                 {0x0c, "TSB", ImmDword},
+                                 {0x0c, "TSB", ImmWord},
                                  {0x0d, "ORA", Abs},
                                  {0x0e, "ASL", Abs},
                                  {0x0f, "ORA", AbsDword},
@@ -31,7 +31,7 @@ std::array<Op, 256> op_meta {{
                                  {0x19, "ORA", AbsY},
                                  {0x1a, "INC", Acc},
                                  {0x1b, "TCS", Implied},
-                                 {0x1c, "TRB", ImmDword},
+                                 {0x1c, "TRB", ImmWord},
                                  {0x1d, "ORA", AbsX},
                                  {0x1e, "ASL", AbsX},
                                  {0x1f, "ORA", AbsDwordX},
@@ -101,7 +101,7 @@ std::array<Op, 256> op_meta {{
                                  {0x5f, "EOR", AbsDwordX},
                                  {0x60, "RTS", Implied},
                                  {0x61, "ADC", IndX},
-                                 {0x62, "PER", Implied},
+                                 {0x62, "PER", RelFar},
                                  {0x63, "ADC", StkImm},
                                  {0x64, "STZ", Zp},
                                  {0x65, "ADC", Zp},
@@ -215,7 +215,7 @@ std::array<Op, 256> op_meta {{
                                  {0xd1, "CMP", YInd},
                                  {0xd2, "CMP", Ind},
                                  {0xd3, "CMP", StkImmIndY},
-                                 {0xd4, "PEI", Implied},
+                                 {0xd4, "PEI", Imm},
                                  {0xd5, "CMP", ZpX},
                                  {0xd6, "DEC", ZpX},
                                  {0xd7, "CMP", ZpFarY},
@@ -247,7 +247,7 @@ std::array<Op, 256> op_meta {{
                                  {0xf1, "SBC", YInd},
                                  {0xf2, "SBC", Ind},
                                  {0xf3, "SBC", StkImmIndY},
-                                 {0xf4, "PEA", Implied},
+                                 {0xf4, "PEA", ImmWord},
                                  {0xf5, "SBC", ZpX},
                                  {0xf6, "INC", ZpX},
                                  {0xf7, "SBC", ZpFarY},
@@ -355,12 +355,12 @@ std::string instruction_at_pc(CPU5A22& cpu) {
     case RelFar: {
       word value = cpu.read_word(cpu.pc.addr + 1);
       sword signed_value = static_cast<sword>(value);
-      word pc_plus_offset = cpu.pc.addr + 2 + signed_value;
+      word pc_plus_offset = cpu.pc.addr + 3 + signed_value;
 
-      return formatted(meta.mnemonic + " " + addr_mode_templates[RelFar], pc_plus_offset);
+      return formatted(meta.mnemonic + " " + addr_mode_templates[AbsDword], pc_plus_offset);
     }
 
-    case ImmDword: {
+    case ImmWord: {
       byte lo = cpu.read(cpu.pc.addr + 1);
       byte hi = cpu.read(cpu.pc.addr + 2);
       return formatted(meta.mnemonic + " " + addr_mode_templates[meta.addr_mode],
