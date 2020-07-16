@@ -273,7 +273,6 @@
 
 #define SE(reg, v) [](CPU5A22& cpu) { cpu.p.reg = v;              return 0; }
 
-// TODO:
 #define PEA [](CPU5A22& cpu) { \
   cpu.push_word(cpu.read_word()); \
   return 0; \

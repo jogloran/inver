@@ -8,6 +8,11 @@
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
 
+#include <gflags/gflags.h>
+#include <SDL2/SDL.h>
+
+DECLARE_bool(audio);
+
 constexpr unsigned char spc_rom[] = {
     0xcd, 0xef, 0xbd, 0xe8, 0x00, 0xc6, 0x1d, 0xd0, 0xfc,
     0x8f, 0xaa, 0xf4, 0x8f, 0xbb, 0xf5,
@@ -32,6 +37,10 @@ public:
     spc = spc_new();
     spc_init_rom(spc, spc_rom);
     spc_reset(spc);
+
+    if (FLAGS_audio) {
+      SDL_InitSubSystem(SDL_INIT_AUDIO);
+    }
   }
 
   ~BusSNES() {

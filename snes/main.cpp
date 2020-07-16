@@ -15,6 +15,7 @@
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(xx, false, "Debug");
 DEFINE_bool(dump_stack, false, "Dump stack");
+DEFINE_bool(audio, false, "Enable audio");
 
 std::vector<byte> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),
