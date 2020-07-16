@@ -208,8 +208,10 @@
 // TODO:
 #define JSR_abs_plus_x_indirect [](CPU5A22& cpu) {\
   cpu.push_word(cpu.pc.addr + 1); \
-  dword addr = cpu.addr_same_bank_abs_plus_x_indirect(); \
-  cpu.pc.b = addr; \
+  auto zp_base = cpu.read_word(); \
+  dword ptr = (cpu.pc.b << 16) | (zp_base + cpu.x); \
+  dword addr = (cpu.pc.b << 16) | cpu.read_word(ptr); \
+  cpu.pc.c = addr; \
   return 0; \
 }
 

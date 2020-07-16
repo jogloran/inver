@@ -322,11 +322,11 @@ public:
   }
 
   dword addr_same_bank_indirect() {
-    return (pc.b << 16) | read_word();
+    return read_full_addr((pc.b << 16) | read_word());
   }
 
   dword addr_same_bank_abs_plus_x_indirect() {
-    return (pc.b << 16) | addr_abs_plus_x_indirect();
+    return read(pc.b << 16) | addr_abs_plus_x_indirect();
   }
 
   dword addr_abs() {
