@@ -129,6 +129,15 @@ void BusSNES::write(dword address, byte value) {
     } else if (offs <= 0x41ff) {
       // unused
     } else if (offs <= 0x44ff) {
+      if (offs == 0x420b) {
+        // MDMAEN
+        std::printf("MDMAEN %d\n", value);
+      }
+      if (offs == 0x420c) {
+        // HDMAEN
+        std::printf("HDMAEN %d\n", value);
+      }
+
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)
     } else if (offs <= 0x5fff) {
       // unused
