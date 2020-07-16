@@ -28,11 +28,13 @@
   return cpu.observe_crossed_page(); \
 }
 
+// CAUTION: Since we use a 16-bit variable _operand_ even if cpu.deref__##mode() results
+// in an 8-bit value, we need to mask after bitwise negating the entire thing.
 #define ADC_GEN(mode, unary_op) [](CPU5A22& cpu) {\
-  word operand = unary_op cpu.deref_##mode(!cpu.p.m); \
+  word operand = (unary_op cpu.deref_##mode(!cpu.p.m)) & (cpu.p.m ? 0xff : 0xffff); \
   word acc = cpu.a; \
   int addend = static_cast<int>(operand) + cpu.p.C; \
-  int result = cpu.a + addend; \
+  int result = (cpu.a & (cpu.p.m ? 0xff : 0xffff)) + addend; \
   cpu.p.C = result > (cpu.p.m ? 0xff : 0xffff); \
   cpu.store(cpu.a, cpu.check_zn_flags(static_cast<word>(result), !cpu.p.m), !cpu.p.m); \
   cpu.p.V = ((acc ^ cpu.a) & (operand ^ cpu.a) & (cpu.p.m ? 0x80 : 0x8000)) != 0; \
@@ -77,7 +79,11 @@
 #define LSR(mode) GEN(LSR_BODY, mode)
 #define LSR_A [](CPU5A22& cpu) {\
   bool lsb = cpu.a & 0b1; \
-  cpu.a.w = (cpu.a >> 1) & (cpu.p.m ? 0x7f : 0x7fff); \
+  if (cpu.p.m) { \
+    cpu.a.l = (cpu.a.l >> 1) & 0x7f; \
+  } else { \
+    cpu.a.w = (cpu.a.w >> 1) & 0x7fff; \
+  } \
   cpu.p.C = lsb; \
   cpu.p.Z = ((cpu.a & (cpu.p.m ? 0xff : 0xffff)) == 0); \
   cpu.p.N = 0; \
@@ -270,17 +276,27 @@
 #define PEI [](CPU5A22& cpu) { byte operand = cpu.read_byte(); return 0; }
 #define PER [](CPU5A22& cpu) { word operand = cpu.read_word(); return 0; }
 
-#define PHB [](CPU5A22& cpu) { cpu.push(cpu.pc.b); return 0; }
-#define PLB [](CPU5A22& cpu) { cpu.pc.b = cpu.pop(); return 0; }
+#define PHB [](CPU5A22& cpu) { cpu.push(cpu.db); return 0; }
+#define PLB [](CPU5A22& cpu) { cpu.check_zn_flags(cpu.db = cpu.pop(), false); return 0; }
 #define PHD [](CPU5A22& cpu) { cpu.push_word(cpu.dp); return 0; }
-#define PLD [](CPU5A22& cpu) { cpu.dp = cpu.pop_word(); return 0; }
-#define PHK [](CPU5A22& cpu) { cpu.push(cpu.db); return 0; }
+#define PLD [](CPU5A22& cpu) { cpu.check_zn_flags(cpu.dp = cpu.pop_word(), true); return 0; }
+#define PHK [](CPU5A22& cpu) { cpu.push(cpu.pc.b); return 0; }
 #define WDM XX(1, 2)
-#define MVP [](CPU5A22& cpu) { byte src = cpu.read_byte(); byte dst = cpu.read_byte(); return 0; }
-#define MVN [](CPU5A22& cpu) { byte src = cpu.read_byte(); byte dst = cpu.read_byte(); return 0; }
+#define MVP [](CPU5A22& cpu) { return cpu.mvp(); }
+#define MVN [](CPU5A22& cpu) { return cpu.mvn(); }
 #define WAI [](CPU5A22& cpu) { return 0; }
 #define XBA [](CPU5A22& cpu) { byte tmp = cpu.a.h; cpu.a.h = cpu.a.l; cpu.check_zn_flags(cpu.a.l = tmp, false); return 0; }
-#define XCE [](CPU5A22& cpu) { bool tmp = cpu.p.C; cpu.p.C = cpu.e; cpu.e = tmp; return 0; }
+#define XCE [](CPU5A22& cpu) { \
+  bool tmp = cpu.p.C; cpu.p.C = cpu.e; cpu.e = tmp; \
+  if (cpu.e) { \
+    cpu.p.m = 1; \
+    cpu.p.x = 1; \
+    cpu.x.h = 0x0; \
+    cpu.y.h = 0x0; \
+    cpu.sp.h = 0x1; \
+  } \
+  return 0; \
+}
 #define STP [](CPU5A22& cpu) { cpu.stp(); return 0; }
 #define COP [](CPU5A22& cpu) { cpu.cop(); return 0; }
 
@@ -289,17 +305,15 @@
   cpu.check_zn_flags(cpu.dp = cpu.a.w, true); \
   return 0; \
 }
-// TODO: handle flag changes
 #define TDC [](CPU5A22& cpu) { \
   cpu.check_zn_flags(cpu.a.w = cpu.dp, true); \
   return 0; \
 }
-// TODO: handle e flag
+// TCS does not set any flags, unlike TCD, TDC, TSC
 #define TCS [](CPU5A22& cpu) { \
-  cpu.check_zn_flags(cpu.sp.w = cpu.a.w, true); \
+  cpu.sp.w = cpu.a.w; \
   return 0; \
 }
-// TODO: handle flag changes
 #define TSC [](CPU5A22& cpu) { \
   cpu.check_zn_flags(cpu.a.w = cpu.sp.w, true); \
   return 0; \
@@ -322,25 +336,47 @@
 // TODO: no effect yet
 // Exceptionally, these take 8- or 16-bit data according to the opcode (and not any processor
 // flags such as e, x or m.)
-#define TSB(read16) [](CPU5A22& cpu) { \
-  if (read16) { \
-    cpu.read_word(); \
+#define TSB(mode) [](CPU5A22& cpu) { \
+  CPU5A22::pc_t pc = cpu.pc; \
+  dword addr = cpu.addr_##mode(); \
+  cpu.pc = pc; \
+  word operand = cpu.deref_##mode(!cpu.p.m); \
+  if (cpu.p.m) { \
+    cpu.p.Z = ((operand & cpu.a.l) & 0xff) == 0x0; \
+    operand |= cpu.a.l; \
+    cpu.write(addr, operand); \
   } else { \
-    cpu.read_byte(); \
+    cpu.p.Z = (operand & cpu.a.w) == 0x0; \
+    operand |= cpu.a.w; \
+    cpu.write(addr, operand & 0xff); \
+    cpu.write(addr + 1, operand >> 8); \
   } \
   return 0; \
 }
 
-#define TRB(read16) [](CPU5A22& cpu) { \
-  if (read16) { \
-    cpu.read_word(); \
+#define TRB(mode) [](CPU5A22& cpu) { \
+  CPU5A22::pc_t pc = cpu.pc; \
+  dword addr = cpu.addr_##mode(); \
+  cpu.pc = pc; \
+  word operand = cpu.deref_##mode(!cpu.p.m); \
+  if (cpu.p.m) { \
+    cpu.p.Z = ((operand & cpu.a.l) & 0xff) == 0x0; \
+    operand &= ~cpu.a.l; \
+    cpu.write(addr, operand); \
   } else { \
-    cpu.read_byte(); \
+    cpu.p.Z = (operand & cpu.a.w) == 0x0; \
+    operand &= ~cpu.a.w; \
+    cpu.write(addr, operand & 0xff); \
+    cpu.write(addr + 1, operand >> 8); \
   } \
   return 0; \
 }
 
-#define BIT_NUM [](CPU5A22& cpu) { byte imm = cpu.read_byte(); return 0; }
+#define BIT_NUM [](CPU5A22& cpu) { \
+  word operand = cpu.deref_imm(!cpu.p.m); \
+  cpu.check_zn_flags(cpu.a.w & operand, !cpu.p.m); \
+  return 0; \
+}
 
 // The size of the _dst_ register determines whether this is an 8- or 16-bit operation.
 // If the dest is 8 bits, then only 8 bits are transferred, etc.

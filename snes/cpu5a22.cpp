@@ -9,6 +9,12 @@
 #include "op_names_5a22.hpp"
 #include "rang.hpp"
 
+#include <gflags/gflags.h>
+
+DECLARE_bool(dis);
+DECLARE_bool(xx);
+DECLARE_bool(dump_stack);
+
 std::ostream& hex_byte(std::ostream& out) {
   return out << std::hex << std::setw(2) << std::setfill('0') << std::right;
 }
@@ -83,8 +89,11 @@ void CPU5A22::dump() {
             << hex_byte << static_cast<int>(read(0x0001)) << hex_byte
             << static_cast<int>(read(0x0002));
   std::cout << " cyc: " << std::dec << ncycles;
-  std::cout << " stk: ";
-  dump_stack(std::cout);
+
+  if (FLAGS_dump_stack) {
+    std::cout << " stk: ";
+    dump_stack(std::cout);
+  }
 
   std::cout << std::endl;
 }
@@ -94,9 +103,9 @@ void CPU5A22::tick() {
     byte opcode = bus->read(pc.addr);
 
 //    std::printf("pc:%04x %02x a:%02x x:%02x y:%02x\n", pc.addr, opcode, a,x,y);
-//    dump_pc();
+    if (FLAGS_dis) dump_pc();
     ++pc.addr;
-//    dump();
+    if (FLAGS_dis) dump();
 
     auto op = ops_65c816[opcode];
     cycle_count_t extra_cycles = op.f(*this);

@@ -20,6 +20,18 @@ union dual {
     return *this;
   }
 
+  dual operator++(int) {
+    dual copy(*this);
+    operator++();
+    return copy;
+  }
+
+  dual operator--(int) {
+    dual copy(*this);
+    operator--();
+    return copy;
+  }
+
   struct {
     byte l: 8;
     byte h: 8;
@@ -35,6 +47,50 @@ public:
 
   void brk() {
 
+  }
+
+  cycle_count_t mvp() {
+    word count = a + 1;
+    cycle_count_t ncycles {};
+    byte src_bank = read_byte();
+    byte dst_bank = read_byte();
+
+    while (count--) {
+      std::printf("iter %d\n", count);
+      dual& src = x;
+      dual& dst = y;
+
+      db = dst_bank;
+      std::printf("copied %06x <- %06x (%02x)\n",
+                  (dst_bank << 16) | dst, (src_bank << 16) | src, read((src_bank << 16) | src));
+      write((dst_bank << 16) | dst--, read((src_bank << 16) | src--));
+      --a;
+      ncycles += 7;
+    }
+
+    return ncycles;
+  }
+
+  cycle_count_t mvn() {
+    word count = a + 1;
+    cycle_count_t ncycles {};
+    byte src_bank = read_byte();
+    byte dst_bank = read_byte();
+
+    while (count--) {
+      std::printf("iter %d\n", count);
+      dual& src = x;
+      dual& dst = y;
+
+      db = dst_bank;
+      std::printf("copied %06x <- %06x (%02x)\n",
+                  (dst_bank << 16) | dst, (src_bank << 16) | src, read((src_bank << 16) | src));
+      write((dst_bank << 16) | dst++, read((src_bank << 16) | src++));
+      --a;
+      ncycles += 7;
+    }
+
+    return ncycles;
   }
 
   void jsl() {
@@ -193,6 +249,14 @@ public:
     }
   }
 
+  word deref_indirect(bool op16) {
+    if (op16) {
+      return read_word(addr_indirect());
+    } else {
+      return read(addr_indirect());
+    }
+  }
+
   word deref_x_indirect(bool op16) {
     if (op16) {
       return read_word(addr_x_indirect());
@@ -258,7 +322,7 @@ public:
   }
 
   dword addr_same_bank_indirect() {
-    return (pc.b << 16) | addr_indirect();
+    return (pc.b << 16) | read_word();
   }
 
   dword addr_same_bank_abs_plus_x_indirect() {
@@ -320,8 +384,8 @@ public:
   }
 
   dword addr_zpg_far() {
-    dword addr = read_full_addr();
-    return addr;
+    dword addr = dp + read_byte();
+    return read(addr);
   }
 
   dword addr_stk_plus_imm_indirect_y() {
@@ -397,7 +461,7 @@ public:
   }
 
   dword addr_indirect() {
-    return read_word();
+    return (db << 16) | read_word(dp + read_byte());
   }
 
   dword addr_abs_indirect() {

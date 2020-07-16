@@ -8,7 +8,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(|, x_indirect), 7,                // 0x01
     COP, 8,                              // 0x02
     OP(|, sp_plus_imm), 5,                        // 0x03
-    TSB(false), 7,                         // 0x04
+    TSB(zpg), 7,                         // 0x04
     OP(|, zpg), 4,                       // 0x05
     ASL(zpg), 7,                         // 0x06
     OP(|, zpg_far), 7,                         // 0x07
@@ -16,15 +16,15 @@ std::array<op_record, 256> ops_65c816 {
     OP(|, imm), 3,                       // 0x09
     ASL_A, 2,                            // 0x0a
     PHD, 4,                         // 0x0b
-    TSB(true), 8,                         // 0x0c
+    TSB(abs), 8,                         // 0x0c
     OP(|, abs), 5,                       // 0x0d
     ASL(abs), 8,                         // 0x0e
     OP(|, abs_dword), 6,                         // 0x0f
     BRANCH((!cpu.p.N)), 2,               // 0x10
     OP(|, indirect_y), 7,                // 0x11
-    OP(|, zpg_far), 6,                             // 0x12
+    OP(|, indirect), 6,                             // 0x12
     OP(|, stk_plus_imm_indirect_y), 8,                         // 0x13
-    TRB(false), 7,                         // 0x14
+    TRB(zpg), 7,                         // 0x14
     OP(|, zpg_plus_x), 5,                // 0x15
     ASL(zpg_plus_x), 8,                  // 0x16
     OP(|, zpg_far_plus_y), 7,                         // 0x17
@@ -32,7 +32,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(|, abs_plus_y), 6,                // 0x19
     IN_A, 2,                         // 0x1a
     TCS, 2,                         // 0x1b
-    TRB(true), 8,                         // 0x1c
+    TRB(abs), 8,                         // 0x1c
     OP(|, abs_plus_x), 6,                // 0x1d
     ASL(abs_plus_x), 9,                  // 0x1e
     OP(|, abs_dword_plus_x), 6,                         // 0x1f
@@ -54,7 +54,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(&, abs_dword), 6,                         // 0x2f
     BRANCH((cpu.p.N)), 2,                // 0x30
     OP(&, indirect_y), 7,                // 0x31
-    OP(&, zpg_far), 6,                              // 0x32
+    OP(&, indirect), 6,                              // 0x32
     OP(&, stk_plus_imm_indirect_y), 8,                         // 0x33
     BIT(zpg_plus_x), 5,                         // 0x34
     OP(&, zpg_plus_x), 5,                // 0x35
@@ -86,7 +86,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(^, abs_dword), 6,                         // 0x4f
     BRANCH((!cpu.p.V)), 2,               // 0x50
     OP(^, indirect_y), 7,                // 0x51
-    OP(^, zpg_far), 6,                              // 0x52
+    OP(^, indirect), 6,                              // 0x52
     OP(^, stk_plus_imm_indirect_y), 8,                         // 0x53
     MVN, 7,                         // 0x54
     OP(^, zpg_plus_x), 5,                // 0x55
@@ -118,7 +118,7 @@ std::array<op_record, 256> ops_65c816 {
     ADC(abs_dword), 6,                         // 0x6f
     BRANCH((cpu.p.V)), 2,                // 0x70
     ADC(indirect_y), 7,                  // 0x71
-    ADC(zpg_far), 6,                              // 0x72
+    ADC(indirect), 6,                              // 0x72
     ADC(stk_plus_imm_indirect_y), 8,                         // 0x73
     STZ(zpg_plus_x), 5,                         // 0x74
     ADC(zpg_plus_x), 5,                  // 0x75
@@ -150,7 +150,7 @@ std::array<op_record, 256> ops_65c816 {
     STA(abs_dword), 6,                         // 0x8f
     BRANCH((!cpu.p.C)), 2,               // 0x90
     STA(indirect_y), 7,  // 0x91
-    STA(zpg_far), 6,                              // 0x92
+    STA(indirect), 6,                              // 0x92
     STA(stk_plus_imm_indirect_y), 2,                         // 0x93
     ST(y, zpg_plus_x), 5,                // 0x94
     STA(zpg_plus_x), 5,                // 0x95
@@ -182,7 +182,7 @@ std::array<op_record, 256> ops_65c816 {
     LDA(abs_dword), 6,                         // 0xaf
     BRANCH((cpu.p.C)), 2,                // 0xb0
     LDA(indirect_y),7,                // 0xb1
-    LDA(zpg_far), 6,                              // 0xb2
+    LDA(indirect), 6,                              // 0xb2
     LDA(stk_plus_imm_indirect_y), 8,                         // 0xb3
     LD(y, zpg_plus_x), 5,                // 0xb4
     LDA(zpg_plus_x), 5,                // 0xb5
@@ -214,7 +214,7 @@ std::array<op_record, 256> ops_65c816 {
     CMP(abs_dword), 6,                         // 0xcf
     BRANCH((!cpu.p.Z)), 2,               // 0xd0
     CMP(indirect_y), 7,                  // 0xd1
-    CMP(zpg_far), 6,                              // 0xd2
+    CMP(indirect), 6,                              // 0xd2
     CMP(stk_plus_imm_indirect_y), 8,                         // 0xd3
     PEI, 6,                         // 0xd4
     CMP(zpg_plus_x), 5,                  // 0xd5
@@ -246,7 +246,7 @@ std::array<op_record, 256> ops_65c816 {
     SBC(abs_dword), 6,                         // 0xef
     BRANCH((cpu.p.Z)), 2,                // 0xf0
     SBC(indirect_y), 7,                  // 0xf1
-    SBC(zpg_far), 6,                              // 0xf2
+    SBC(indirect), 6,                              // 0xf2
     SBC(stk_plus_imm_indirect_y), 8,                         // 0xf3
     PEA, 5,                         // 0xf4
     SBC(zpg_plus_x), 5,                  // 0xf5

@@ -21,7 +21,7 @@ std::array<Op, 256> op_meta {{
                                  {0x0f, "ORA", AbsDword},
                                  {0x10, "BPL", Rel},
                                  {0x11, "ORA", YInd},
-                                 {0x12, "ORA", ZpFar},
+                                 {0x12, "ORA", Ind},
                                  {0x13, "ORA", StkImmIndY},
                                  {0x14, "TRB", Imm},
                                  {0x15, "ORA", ZpX},
@@ -53,7 +53,7 @@ std::array<Op, 256> op_meta {{
                                  {0x2f, "AND", AbsDword},
                                  {0x30, "BMI", Rel},
                                  {0x31, "AND", YInd},
-                                 {0x32, "AND", ZpFar},
+                                 {0x32, "AND", Ind},
                                  {0x33, "AND", StkImmIndY},
                                  {0x34, "BIT", ZpX},
                                  {0x35, "AND", ZpX},
@@ -85,7 +85,7 @@ std::array<Op, 256> op_meta {{
                                  {0x4f, "EOR", AbsDword},
                                  {0x50, "BVC", Rel},
                                  {0x51, "EOR", YInd},
-                                 {0x52, "EOR", ZpFar},
+                                 {0x52, "EOR", Ind},
                                  {0x53, "EOR", StkImmIndY},
                                  {0x54, "MVN", BytePair},
                                  {0x55, "EOR", ZpX},
@@ -117,7 +117,7 @@ std::array<Op, 256> op_meta {{
                                  {0x6f, "ADC", AbsDword},
                                  {0x70, "BVS", Rel},
                                  {0x71, "ADC", YInd},
-                                 {0x72, "ADC", ZpFar},
+                                 {0x72, "ADC", Ind},
                                  {0x73, "ADC", StkImmIndY},
                                  {0x74, "STZ", ZpX},
                                  {0x75, "ADC", ZpX},
@@ -149,7 +149,7 @@ std::array<Op, 256> op_meta {{
                                  {0x8f, "STA", AbsDword},
                                  {0x90, "BCC", Rel},
                                  {0x91, "STA", YInd},
-                                 {0x92, "STA", ZpFar},
+                                 {0x92, "STA", Ind},
                                  {0x93, "STA", StkImmIndY},
                                  {0x94, "STY", ZpX},
                                  {0x95, "STA", ZpX},
@@ -181,7 +181,7 @@ std::array<Op, 256> op_meta {{
                                  {0xaf, "LDA", AbsDword},
                                  {0xb0, "BCS", Rel},
                                  {0xb1, "LDA", YInd},
-                                 {0xb2, "LDA", ZpFar},
+                                 {0xb2, "LDA", Ind},
                                  {0xb3, "LDA", StkImmIndY},
                                  {0xb4, "LDY", ZpX},
                                  {0xb5, "LDA", ZpX},
@@ -213,7 +213,7 @@ std::array<Op, 256> op_meta {{
                                  {0xcf, "CMP", AbsDword},
                                  {0xd0, "BNE", Rel},
                                  {0xd1, "CMP", YInd},
-                                 {0xd2, "CMP", ZpFar},
+                                 {0xd2, "CMP", Ind},
                                  {0xd3, "CMP", StkImmIndY},
                                  {0xd4, "PEI", Implied},
                                  {0xd5, "CMP", ZpX},
@@ -245,7 +245,7 @@ std::array<Op, 256> op_meta {{
                                  {0xef, "SBC", AbsDword},
                                  {0xf0, "BEQ", Rel},
                                  {0xf1, "SBC", YInd},
-                                 {0xf2, "SBC", ZpFar},
+                                 {0xf2, "SBC", Ind},
                                  {0xf3, "SBC", StkImmIndY},
                                  {0xf4, "PEA", Implied},
                                  {0xf5, "SBC", ZpX},
@@ -265,7 +265,7 @@ const char* addr_mode_templates[] = {
     "(0x00%02x + X)", "0x00%02x", "$%02x", "0x%04x", "(0x00%02x) + Y", "0x00%02x + X", "0x%04x + Y",
     "0x%04x + X", "A", "", "invalid", "+%2x", "0x%06x", "0x%06x + X",
     "[0x00%02x]", "SP + %02x", "(SP + $%02x) + Y", "+%4x", "[0x00%02x] + Y",
-    "(0x%04x + X)", "$%02x, $%02x", "$%04x", "[0x00%02x]"
+    "(0x%04x + X)", "$%02x, $%02x", "$%04x", "[0x00%02x]", "(0x00%02x)"
 };
 
 const char* addr_mode_to_str[] = {
@@ -337,7 +337,8 @@ std::string instruction_at_pc(CPU5A22& cpu) {
     case ZpFar:
     case ZpFarY:
     case StkImm:
-    case StkImmIndY: {
+    case StkImmIndY:
+    case Ind: {
       // TODO: need to distinguish A access from X,Y access and check m,x flags respectively
       byte value = cpu.read(cpu.pc.addr + 1);
       return formatted(meta.mnemonic + " " + addr_mode_templates[meta.addr_mode], value);

@@ -53,7 +53,7 @@ byte BusSNES::read(dword address) {
       // unused
     } else if (offs <= 0x44ff) {
       if (offs == 0x4210) {
-        return 0x80;
+        return 0xc2;
       }
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)
     } else if (offs <= 0x5fff) {

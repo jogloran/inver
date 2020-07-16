@@ -104,7 +104,7 @@ public:
         if (!vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
 //          printf("incr to %04x\n", vram_addr.w & 0x7fff);
-printf("\033[2J\033[H");
+//printf("\033[2J\033[H");
           for (int i = 0x7c40; i < 0x7dff; ++i) {
             if (isprint(vram[i].l) || isspace(vram[i].l))
               printf("%c", int(vram[i].l));
