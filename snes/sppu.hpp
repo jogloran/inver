@@ -21,11 +21,14 @@ public:
         break;
 
       case 0x2138: // RDOAM   - PPU1 OAM Data Read            (read-twice)
-        break;
+        return oam[oamadd.addr++];
 
       case 0x2139: // RDVRAML - PPU1 VRAM Data Read           (lower 8bits)
+        return vram_prefetch.l;
+
       case 0x213A: // RDVRAMH - PPU1 VRAM Data Read           (upper 8bits)
-        break;
+        return vram_prefetch.h;
+
       case 0x213B: // RDCGRAM - PPU2 CGRAM Data Read (Palette)(read-twice)
         break;
 
@@ -50,15 +53,30 @@ public:
         break;
 
       case 0x2102: // OAMADDL - OAM Address (lower 8bit)
-        oamaddl = value;
+        oamadd.reg = (oamadd.reg & 0xff00) | value;
         break;
 
       case 0x2103: // OAMADDH - OAM Address (upper 1bit) and Priority Rotation
-        oamaddh = value;
+        oamadd.reg = (oamadd.reg & 0xff) | (value << 8);
         break;
 
       case 0x2104: // OAMDATA - OAM Data Write (write-twice)
+      {
+        word oam_addr = oamadd.addr;
+
+        if (oam_addr >= 0x200) {
+          oam[oam_addr] = value;
+        } else if ((oam_addr & 1) && oam_addr < 0x200) {
+          log("OAM[%04x] <- %04x\n", oam_addr-1, oam_lsb | (value << 8));
+          oam[oam_addr] = value;
+          oam[oam_addr - 1] = oam_lsb;
+        } else {
+          oam_lsb = value;
+        }
+        ++oamadd.addr;
+
         break;
+      }
 
       case 0x2105: // BGMODE  - BG Mode and BG Character Size
         bgmode.reg = value;
@@ -74,7 +92,7 @@ public:
       case 0x210A: // BG4SC   - BG4 Screen Base and Screen Size
       {
         bg_base_size[addr - 0x2107].reg = value;
-        // How many bytes/words is the tilemap? 32*32=0x400=1024 words
+        // How many bytes/words is the tilemap? 32*32=0x400=1024 words=2048 bytes
         // VRAM has 0x8000=32768 words=65536 bytes
         // each word has structure bg_map_tile_t:
         //   Bit 0-9   - Character Number (000h-3FFh)
@@ -113,7 +131,15 @@ public:
       case 0x2112: // BG3VOFS - BG3 Vertical Scroll (Y)   (write-twice)
       case 0x2113: // BG4HOFS - BG4 Horizontal Scroll (X) (write-twice)
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
+      {
+        auto reg = scr[(addr - 0x210d) / 2];
+        if (addr & 1) {
+          reg.y(value);
+        } else {
+          reg.x(value);
+        }
         break;
+      }
 
       case 0x2115: // VMAIN   - VRAM Address Increment Mode
         vram_addr_incr.reg = value;
@@ -121,10 +147,12 @@ public:
 
       case 0x2116: // VMADDL  - VRAM Address (lower 8bit)
         vram_addr.l = value;
+        vram_prefetch = vram[vram_addr.w];
         log("setting vram addr lo -> %04x\n", vram_addr);
         break;
       case 0x2117: // VMADDH  - VRAM Address (upper 8bit)
         vram_addr.h = value;
+        vram_prefetch = vram[vram_addr.w];
         log("setting vram addr hi -> %04x\n", vram_addr);
         break;
 
@@ -316,9 +344,16 @@ public:
     byte reg;
   } obsel {};
 
-  byte oamaddl {};
-  byte oamaddh {};
+  union oamadd_t {
+    struct {
+      word addr : 9;
+      byte unused : 6;
+      byte obj_prio_rotate : 1;
+    };
+    word reg;
+  } oamadd;
 
+  // each entry is 4 bytes
   struct OAM {
     byte x;
     byte y;
@@ -355,11 +390,42 @@ private:
     word w;
   };
 
+  struct BGScroll {
+    void x(byte val) {
+      if (bg_write_upper) {
+        x_reg = (x_reg & ~0x300) | ((val & 3) << 8);
+        bg_write_upper = false;
+      } else {
+        x_reg = (x_reg & ~0xff) | val;
+        bg_write_upper = true;
+      }
+    }
+
+    void y(byte val) {
+      if (bg_write_upper) {
+        y_reg = (y_reg & ~0x300) | ((val & 3) << 8);
+        bg_write_upper = false;
+      } else {
+        y_reg = (y_reg & ~0xff) | val;
+        bg_write_upper = true;
+      }
+    }
+
+    word x_reg {};
+    word y_reg {};
+    bool bg_write_upper = false;
+  };
+
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
-  std::array<OAM, 128> oam {};
-  std::array<OAM2, 32> oam2 {};
+  std::array<byte, 512 + 32> oam {};
+  std::array<BGScroll, 4> scr {};
+
+  bool oam_write_upper = false;
+  byte oam_lsb = 0;
+
+  dual vram_prefetch {};
 
   union vram_addr_t {
     struct {

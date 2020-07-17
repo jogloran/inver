@@ -1,7 +1,3 @@
-//
-// Created by Daniel Tse on 10/7/20.
-//
-
 #include "bus_snes.hpp"
 #include "snes_spc/spc.h"
 
@@ -39,15 +35,7 @@ byte BusSNES::read(dword address) {
     } else if (offs <= 0x20ff) {
       // unused
     } else if (offs <= 0x21ff) {
-      // PPU1 (2100-213f), APU (2140-217f), WRAM (2180-2183),
-//      if (cpu.ncycles >= 30542863) { return 0x1; }
-//      if (cpu.ncycles >= 18483715 && offs == 0x2140) { return 0x0; }
-//      if (cpu.ncycles >= 18090470) { return 0xcc; }
-//      if (offs == 0x2140) {
-//        return 0xaa;
-//      } else if (offs == 0x2141) {
-//        return 0xbb;
-//      }
+      // PPU1 (2100-213f), APU (2140-217f), WRAM (2180-2183)
       if (offs >= 0x2134 && offs <= 0x213f) {
         return ppu.read(offs);
       }
