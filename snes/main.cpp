@@ -4,6 +4,8 @@
 #include <vector>
 #include <iterator>
 #include <fstream>
+#include <sstream>
+#include <set>
 
 #include <gflags/gflags.h>
 
@@ -17,6 +19,24 @@ DEFINE_bool(xx, false, "Debug");
 DEFINE_bool(dump_stack, false, "Dump stack");
 DEFINE_bool(audio, false, "Enable audio");
 DEFINE_bool(test_rom_output, false, "Test ROM output hack");
+DEFINE_string(tags, "", "Log tags to print, separated by commas");
+
+std::set<std::string> active_tags;
+
+std::set<std::string> parse_tags(std::string tags_str) {
+  std::set<std::string> result;
+  if (tags_str == "") return result;
+
+  std::string tags(tags_str);
+  std::replace(tags.begin(), tags.end(), ',', ' ');
+
+  std::istringstream ss(tags);
+  std::copy(std::istream_iterator<std::string>(ss),
+            std::istream_iterator<std::string>(),
+            std::inserter(result, result.begin()));
+
+  return result;
+}
 
 std::vector<byte> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),
@@ -65,6 +85,8 @@ int main(int argc, char* argv[]) {
       std::exit(2);
     }
   }
+
+  active_tags = parse_tags(FLAGS_tags);
 
   BusSNES bus;
 

@@ -2,12 +2,13 @@
 
 #include <array>
 #include "types.h"
+#include "logger.hpp"
 
 #include <gflags/gflags.h>
 
 DECLARE_bool(test_rom_output);
 
-class SPPU {
+class SPPU : public Logger<SPPU> {
 public:
   byte read(word addr) {
     switch (addr) {
@@ -82,12 +83,12 @@ public:
         //   Bit 14    - X-Flip           (0=Normal, 1=Mirror horizontally)
         //   Bit 15    - Y-Flip           (0=Normal, 1=Mirror vertically)
 
-        std::printf("bg tilemap bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
+        log("bg tilemap bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
                     bg_base_size[0].base_addr * 0x400,
                     bg_base_size[1].base_addr * 0x400,
                     bg_base_size[2].base_addr * 0x400,
                     bg_base_size[3].base_addr * 0x400);
-        std::printf("bg tilemap size: 0: %02x 1: %02x 2: %02x 3: %02x\n",
+        log("bg tilemap size: 0: %02x 1: %02x 2: %02x 3: %02x\n",
                     bg_base_size[0].sc_size,
                     bg_base_size[1].sc_size,
                     bg_base_size[2].sc_size,
@@ -97,7 +98,7 @@ public:
       case 0x210B: // BG12NBA - BG Character Data Area Designation
       case 0x210C: // BG34NBA - BG Character Data Area Designation
         bg_char_data_addr[addr - 0x210b].reg = value;
-        std::printf("bg chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
+        log("bg chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
                     bg_char_data_addr[0].bg1_tile_base_addr << 12,
                     bg_char_data_addr[0].bg2_tile_base_addr << 12,
                     bg_char_data_addr[1].bg1_tile_base_addr << 12,
@@ -120,19 +121,19 @@ public:
 
       case 0x2116: // VMADDL  - VRAM Address (lower 8bit)
         vram_addr.l = value;
-        printf("setting vram addr lo -> %04x\n", vram_addr);
+        log("setting vram addr lo -> %04x\n", vram_addr);
         break;
       case 0x2117: // VMADDH  - VRAM Address (upper 8bit)
         vram_addr.h = value;
-        printf("setting vram addr hi -> %04x\n", vram_addr);
+        log("setting vram addr hi -> %04x\n", vram_addr);
         break;
 
       case 0x2118: // VMDATAL - VRAM Data Write (lower 8bit)
         vram[vram_addr.w & 0x7fff].l = value;
-//        printf("writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
+        log("writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
         if (!vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-//          printf("incr to %04x\n", vram_addr.w & 0x7fff);
+          log("incr to %04x\n", vram_addr.w & 0x7fff);
           if (FLAGS_test_rom_output) {
             printf("\033[2J\033[H");
             for (int i = 0x7c00; i < 0x7e00; ++i) {
@@ -370,4 +371,7 @@ private:
   word cgram_addr {};
 
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
+  constexpr static const char* TAG = "sppu";
+
+  friend class Logger<SPPU>;
 };

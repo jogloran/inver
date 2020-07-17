@@ -7,6 +7,17 @@
 
 void BusSNES::tick() {
   cpu.tick();
+  if (dma_state == DMAState::Next) {
+    dma_state = DMAState::Dma;
+  } else if (dma_state == DMAState::Dma) {
+    cycle_count_t dma_cycles {0};
+    std::for_each(dma.begin(), dma.end(), [&dma_cycles](auto& ch) {
+      // TODO: DMA can be interrupted by HDMA, i.e. run() may have to observe some state and
+      // finish early (to be restarted after)
+      dma_cycles += ch.run();
+    });
+    dma_state = DMAState::Idle;
+  }
 }
 
 void BusSNES::reset() {
@@ -55,7 +66,11 @@ byte BusSNES::read(dword address) {
       if (offs == 0x4210) {
         return 0xc2;
       }
+
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)
+      if (offs >= 0x4300 && offs <= 0x437f) {
+        return dma[(offs >> 4) & 7].read(offs & 0xf);
+      }
     } else if (offs <= 0x5fff) {
       // unused
     } else if (offs <= 0x7fff) {
@@ -114,7 +129,7 @@ void BusSNES::write(dword address, byte value) {
     } else if (offs <= 0x21ff) {
       // PPU1 (2100-213f), APU (2140-217f), WRAM (2180-2183),
       if (offs >= 0x2140 && offs <= 0x2147) {
-        std::printf("spc %d <- %02x\n", (offs - 0x2140) % 4, value);
+        log("spc %d <- %02x\n", (offs - 0x2140) % 4, value);
         spc_write_port(spc, spc_time++, (offs - 0x2140) % 4, value);
       }
       if (offs >= 0x2100 && offs <= 0x2133) {
@@ -131,11 +146,22 @@ void BusSNES::write(dword address, byte value) {
     } else if (offs <= 0x44ff) {
       if (offs == 0x420b) {
         // MDMAEN
-        std::printf("MDMAEN %d\n", value);
+        log("MDMAEN %d\n", value);
+        for (int i = 0; i < 8; ++i) {
+          if (value & (1 << i)) {
+            log("DMA start %d\n", i);
+          }
+          dma[i].on(value & (1 << i));
+        }
+        dma_state = DMAState::Next;
       }
       if (offs == 0x420c) {
         // HDMAEN
-        std::printf("HDMAEN %d\n", value);
+        log("HDMAEN %d\n", value);
+      }
+
+      if (offs >= 0x4300 && offs <= 0x437f) {
+        dma[(offs >> 4) & 7].write(offs & 0xf, value);
       }
 
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)

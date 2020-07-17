@@ -7,6 +7,8 @@
 #include "cpu5a22.hpp"
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
+#include "dma.hpp"
+#include "logger.hpp"
 
 #include <gflags/gflags.h>
 #include <SDL2/SDL.h>
@@ -29,10 +31,13 @@ constexpr unsigned char spc_rom[] = {
     0xff
 };
 
-class BusSNES {
+class BusSNES : public Logger<BusSNES> {
 public:
   BusSNES() {
     cpu.connect(this);
+    std::for_each(dma.begin(), dma.end(), [this](auto& ch) {
+      ch.connect(this);
+    });
 
     spc = spc_new();
     spc_init_rom(spc, spc_rom);
@@ -67,4 +72,9 @@ public:
   std::vector<byte> rom;
 
   [[noreturn]] void run();
+
+  std::array<DMA, 8> dma;
+  enum class DMAState { Idle, Next, Dma } dma_state = DMAState::Idle;
+
+  constexpr static const char* TAG = "bus";
 };

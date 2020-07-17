@@ -1,38 +1,83 @@
 #pragma once
 
-#include "types.h"
-#include "cpu5a22.hpp"
+#include <cstdio>
 
-class DMA {
+#include "types.h"
+#include "logger.hpp"
+
+class BusSNES;
+
+class DMA : public Logger<DMA> {
 public:
+  void connect(BusSNES* b) {
+    bus = b;
+  }
+
+  void on(bool state) {
+    enabled = state;
+  }
+
+  static constexpr sbyte A_step[] = { 1, 0, -1, 0 };
+
+  cycle_count_t run();
+
   byte read(byte port) {
+    auto value = 0;
     switch (port) {
       case 0x0:
-        return dma_params.reg;
+        value = dma_params.reg;
+        break;
 
       case 0x1:
-        return B_addr;
+        value = B_addr;
+        break;
 
       case 0x2:
       case 0x3:
       case 0x4:
-        return a1.addr >> (8 * (port - 2));
+        value = a1.addr >> (8 * (port - 2));
+        break;
 
       case 0x5:
       case 0x6:
       case 0x7:
+        value = das.addr >> (8 * (port - 5));
+        break;
+
       case 0x8:
+        value = hdma_ptr & 0xff;
+        break;
+
       case 0x9:
+        value = hdma_ptr >> 8;
+        break;
+
       case 0xa:
+        value = hdma_line_counter;
+        break;
+
       case 0xb:
+        value = unused;
+        break;
+
       case 0xc:
       case 0xd:
       case 0xe:
-      case 0xf: ;
+        value = 0; // open bus
+        break;
+
+      case 0xf:
+        value = unused;
+        break;
     }
+
+    log("DMA(%02x) -> %02x\n", port, value);
+
+    return value;
   }
 
   void write(byte port, byte value) {
+    log("DMA(%02x) <- %02x\n", port, value);
     switch (port) {
       case 0x0:
         dma_params.reg = value;
@@ -43,19 +88,46 @@ public:
         break;
 
       case 0x2:
+        a1.lo = value;
+        break;
       case 0x3:
+        a1.md = value;
+        break;
       case 0x4:
+        a1.hi = value;
+        break;
+
       case 0x5:
+        das.lo = value;
+        break;
       case 0x6:
+        das.md = value;
+        break;
       case 0x7:
+        das.hi = value;
+        break;
+
       case 0x8:
+        hdma_ptr = (hdma_ptr & 0xff00) | value;
+        break;
+
       case 0x9:
+        hdma_ptr = (hdma_ptr & 0x00ff) | (value << 8);
+        break;
+
       case 0xa:
+        hdma_line_counter = value;
+        break;
+
       case 0xb:
+      case 0xf:
+        unused = value;
+        break;
+
       case 0xc:
       case 0xd:
       case 0xe:
-      case 0xf: ;
+        break;
     }
   }
 
@@ -72,11 +144,27 @@ public:
 
   byte B_addr {};
 
-  CPU5A22::pc_t a1 {}; // 43x2,3,4
-  CPU5A22::pc_t das {}; // 43x5,6,7
+  union dword_bits_t {
+    struct {
+      byte lo: 8;
+      byte md: 8;
+      byte hi: 8; // Program Bank (aka K register)
+      byte padding: 8;
+    };
+    dword addr;
+  } pc {};
+
+  dword_bits_t a1 {}; // 43x2,3,4
+  dword_bits_t das {}; // 43x5,6,7
 
   word hdma_ptr {};
   byte hdma_line_counter {};
 
   byte unused {}; // 43xb,f
+
+  bool enabled = false;
+
+  BusSNES* bus;
+
+  static constexpr const char* TAG = "dma";
 };
