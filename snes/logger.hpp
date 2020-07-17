@@ -4,18 +4,25 @@
 #include <cstdio>
 #include <cstring>
 #include <set>
+#include <string>
 
 extern std::set<std::string> active_tags;
 
 template <typename T>
 class Logger {
 public:
+  void log_with_tag(const char* tag, const char* msg, va_list args) {
+    static char buf[1024];
+    std::snprintf(buf, 1024, "%17.17s | ", tag);
+    std::strcat(buf, msg);
+    std::vprintf(buf, args);
+  }
   void log(const char* msg, ...) {
     if (active_tags.find(T::TAG) == active_tags.end()) return;
 
     va_list args;
     static char buf[1024];
-    std::sprintf(buf, "%17.17s | ", T::TAG);
+    std::snprintf(buf, 1024, "%17.17s | ", T::TAG);
     std::strcat(buf, msg);
     va_start(args, msg);
     std::vprintf(buf, args);

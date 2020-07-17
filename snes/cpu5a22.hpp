@@ -57,13 +57,10 @@ public:
     byte dst_bank = read_byte();
 
     while (count--) {
-      std::printf("iter %d\n", count);
       dual& src = x;
       dual& dst = y;
 
       db = dst_bank;
-      std::printf("copied %06x <- %06x (%02x)\n",
-                  (dst_bank << 16) | dst, (src_bank << 16) | src, read((src_bank << 16) | src));
       write((dst_bank << 16) | dst--, read((src_bank << 16) | src--));
       --a;
       ncycles += 7;
@@ -79,13 +76,10 @@ public:
     byte dst_bank = read_byte();
 
     while (count--) {
-      std::printf("iter %d\n", count);
       dual& src = x;
       dual& dst = y;
 
       db = dst_bank;
-      std::printf("copied %06x <- %06x (%02x)\n",
-                  (dst_bank << 16) | dst, (src_bank << 16) | src, read((src_bank << 16) | src));
       write((dst_bank << 16) | dst++, read((src_bank << 16) | src++));
       --a;
       ncycles += 7;
@@ -300,13 +294,9 @@ public:
 
   word deref_zpg_far_plus_y(bool op16) {
     if (op16) {
-      auto val = read_word(addr_zpg_far_plus_y());
-      std::printf("zpg_far_plus_y -> %04x\n", val);
-      return val;
+      return read_word(addr_zpg_far_plus_y());
     } else {
-      auto val = read(addr_zpg_far_plus_y());
-      std::printf("zpg_far_plus_y -> %02x\n", val);
-      return val;
+      return read(addr_zpg_far_plus_y());
     }
   }
 
@@ -319,7 +309,7 @@ public:
   }
 
   dword addr_same_bank_abs() {
-    return (pc.b << 16) | addr_abs();
+    return (pc.b << 16) | read_word();
   }
 
   dword addr_same_bank_indirect() {
@@ -402,7 +392,6 @@ public:
   dword addr_zpg_far_plus_y() {
     dword base = dp + read_byte();
     dword addr = read_dword(base);
-    std::printf("zpg_far_plus_y reading from %06x+%02x=%06x\n", addr,y,addr+y);
     return addr + y;
   }
 

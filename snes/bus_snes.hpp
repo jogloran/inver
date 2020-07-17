@@ -9,6 +9,7 @@
 #include "sppu.hpp"
 #include "dma.hpp"
 #include "logger.hpp"
+#include "td.hpp"
 
 #include <gflags/gflags.h>
 #include <SDL2/SDL.h>
@@ -35,8 +36,12 @@ class BusSNES : public Logger<BusSNES> {
 public:
   BusSNES() {
     cpu.connect(this);
-    std::for_each(dma.begin(), dma.end(), [this](auto& ch) {
+    td2.connect(this);
+    td2.show();
+    byte dma_ch_no = 0;
+    std::for_each(dma.begin(), dma.end(), [this, &dma_ch_no](auto& ch) {
       ch.connect(this);
+      ch.set_ch(dma_ch_no++);
     });
 
     spc = spc_new();
@@ -66,6 +71,7 @@ public:
 
   CPU5A22 cpu;
   SPPU ppu;
+  TD2 td2;
   SNES_SPC* spc;
   size_t spc_time {};
 
@@ -75,6 +81,17 @@ public:
 
   std::array<DMA, 8> dma;
   enum class DMAState { Idle, Next, Dma } dma_state = DMAState::Idle;
+
+  union nmitimen_t {
+    struct {
+      byte joypad_enable : 1;
+      byte unused : 3;
+      byte hv_irq : 2;
+      byte unused2: 1;
+      byte vblank_nmi : 1;
+    };
+    byte reg;
+  } nmi;
 
   constexpr static const char* TAG = "bus";
 };

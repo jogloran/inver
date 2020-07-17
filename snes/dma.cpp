@@ -1,6 +1,13 @@
 #include "dma.hpp"
 #include "bus_snes.hpp"
 
+void DMA::log(const char *msg, ...) {
+  va_list args;
+  va_start(args, msg);
+  Logger<DMA>::log_with_tag(tag, msg, args);
+  va_end(args);
+}
+
 cycle_count_t DMA::run() {
   // while length counter > 0
   // transfer one unit from source to destination
@@ -18,7 +25,7 @@ cycle_count_t DMA::run() {
     dword skipped_since = 0;
 
     auto incr = A_step[dma_params.dma_A_step];
-    log("DMA transfer mode %d\n", dma_params.tx_type);
+    log(tag, "DMA transfer mode %d\n", dma_params.tx_type);
     while ((das.addr & 0xffff) > 0) { // TODO: what if addr < 4 and we transfer 4 bytes?
       byte value = bus->read(src);
 

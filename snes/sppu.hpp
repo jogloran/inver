@@ -440,4 +440,5 @@ private:
   constexpr static const char* TAG = "sppu";
 
   friend class Logger<SPPU>;
+  friend class TD2;
 };

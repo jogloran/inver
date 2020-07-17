@@ -1,6 +1,6 @@
 #include "bus_snes.hpp"
 #include "snes_spc/spc.h"
-
+static long n = 0;
 void BusSNES::tick() {
   cpu.tick();
   if (dma_state == DMAState::Next) {
@@ -13,6 +13,10 @@ void BusSNES::tick() {
       dma_cycles += ch.run();
     });
     dma_state = DMAState::Idle;
+  }
+
+  if (n++ % 10000 == 0) {
+    td2.show();
   }
 }
 
@@ -132,6 +136,10 @@ void BusSNES::write(dword address, byte value) {
     } else if (offs <= 0x41ff) {
       // unused
     } else if (offs <= 0x44ff) {
+      if (offs == 0x4200) {
+        // NMITIMEN - Interrupt Enable
+        nmi.reg = value;
+      }
       if (offs == 0x420b) {
         // MDMAEN
         log("MDMAEN %d\n", value);
