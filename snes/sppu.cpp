@@ -14,15 +14,12 @@ void SPPU::render_row() {
   // 1024 words after this addr correspond to the current tilemap
   byte cur_row = line / 8;
   byte tile_row = line % 8;
-  byte cur_col = 0;
 
   dword chr_base_addr = bg_char_data_addr[1].bg1_tile_base_addr << 12;
 
   std::array<word, 32> tile_ids;
-  dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32 + cur_col;
-  if (bus->read(0x100) == 0x4 && vram[0x5000].w == 0x582c) {
-    ;
-  }
+  dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32;
+
   std::transform(&vram[tilemap_offs_addr], &vram[tilemap_offs_addr + 32],
                  tile_ids.begin(),
                  [](dual w) {
@@ -30,16 +27,8 @@ void SPPU::render_row() {
                    return t->char_no;
                  });
 
-  std::printf("%06x\n", tilemap_offs_addr);
-  std::cout << line << ": ";
-  for (auto tile_id : tile_ids) {
-    std::cout << tile_id << " ";
-  }
-  std::cout << "\n";
-
   byte bpp = 2; // 2bpp means one pixel is encoded in one word
   bpp /= 2;
-
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
@@ -52,7 +41,7 @@ void SPPU::render_row() {
                   std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
                       chr_base_addr, tile_id, tile_row);
 
-                  // read 8*bpp bytes (4*bpp words)
+                  // read bpp bytes (bpp/2 words)
                   std::vector<word> data { vram[tile_chr_base].w };
 
                   // produce 8 byte values (palette indices)
