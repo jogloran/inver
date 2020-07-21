@@ -48,7 +48,7 @@ void SPPU::render_row() {
                   auto* fb_ptr = screen->fb[0].data() + line * 256 + col * 8;
 
                   // get tile chr data
-                  word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + tile_row;
+                  word tile_chr_base = chr_base_addr + (8 * bpp) * (tile_id * 2) + tile_row;
 //                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
 //                      chr_base_addr, tile_id, tile_row);
 
