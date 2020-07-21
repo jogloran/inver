@@ -16,7 +16,7 @@ void SPPU::render_row() {
   byte tile_row = line % 8;
   byte cur_col = 0;
 
-  dword chr_base_addr = bg_char_data_addr[0].bg1_tile_base_addr << 12;
+  dword chr_base_addr = bg_char_data_addr[1].bg1_tile_base_addr << 12;
 
   std::array<word, 32> tile_ids;
   dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32 + cur_col;
@@ -48,9 +48,9 @@ void SPPU::render_row() {
                   auto* fb_ptr = screen->fb[0].data() + line * 256 + col * 8;
 
                   // get tile chr data
-                  word tile_chr_base = chr_base_addr + (8 * bpp) * (tile_id * 2) + tile_row;
-//                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
-//                      chr_base_addr, tile_id, tile_row);
+                  word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + tile_row;
+                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
+                      chr_base_addr, tile_id, tile_row);
 
                   // read 8*bpp bytes (4*bpp words)
                   std::vector<word> data { vram[tile_chr_base].w };
