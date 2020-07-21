@@ -3,13 +3,26 @@
 #include <array>
 #include "types.h"
 #include "logger.hpp"
+#include "screen.hpp"
 
 #include <gflags/gflags.h>
 
 DECLARE_bool(test_rom_output);
 
+class BusSNES;
+
 class SPPU : public Logger<SPPU> {
 public:
+  void connect(BusSNES* b) {
+    bus = b;
+  }
+
+  void connect(std::shared_ptr<Screen> s) {
+    screen = s;
+  }
+
+  void tick(byte master_cycles = 1);
+
   byte read(word addr) {
     switch (addr) {
       case 0x2134: // MPYL    - PPU1 Signed Multiply Result   (lower 8bit)
@@ -158,30 +171,20 @@ public:
 
       case 0x2118: // VMDATAL - VRAM Data Write (lower 8bit)
         vram[vram_addr.w & 0x7fff].l = value;
-        log("writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
+//        printf("2118 writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
+//        printf("2118 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (!vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-          log("incr to %04x\n", vram_addr.w & 0x7fff);
-          if (FLAGS_test_rom_output) {
-            printf("\033[2J\033[H");
-            for (int i = 0x7c00; i < 0x7e00; ++i) {
-              bg_map_tile_t* t = (bg_map_tile_t*)&vram[i];
-              if (isprint(vram[i].l) || isspace(vram[i].l))
-                printf("%c", t->char_no);
-              else
-                printf(" ");
-              if (i % 32 == 0) printf("\n");
-            }
-            printf("\n\n");
-          }
+//          printf("2118 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
       case 0x2119: // VMDATAH - VRAM Data Write (upper 8bit)
         vram[vram_addr.w & 0x7fff].h = value;
-//        printf("writing to %04x hi <- %02x\n", vram_addr.w & 0x7fff, value);
+//        printf("2119 writing to %04x hi <- %02x\n", vram_addr.w & 0x7fff, value);
+//        printf("2119 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-//          printf("incr to %04x\n", vram_addr.w & 0x7fff);
+//          printf("2119 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
 
@@ -195,6 +198,7 @@ public:
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
+        break;
       case 0x2122: // CGDATA  - Palette CGRAM Data Write             (write-twice)
         break;
 
@@ -304,10 +308,10 @@ public:
 
   union vram_addr_incr_t {
     struct {
-      byte after_accessing_high: 2;
+      byte step_mode: 2;
       byte addr_trans: 2;
       byte unused: 3;
-      byte step_mode: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
+      byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
     };
     byte reg;
   } vram_addr_incr {};
@@ -381,15 +385,44 @@ public:
     byte obj3_sz: 1;
   };
 
-private:
   union dual {
+    struct {
+      byte l : 8;
+      byte h : 8;
+    };
+    word w;
+  };
+
+  union hvtime_t {
+    struct {
+      byte l;
+      byte h;
+    };
+    struct {
+      word v : 9;
+      byte unused : 7;
+    };
+    word reg;
+  };
+  hvtime_t htime {};
+  hvtime_t vtime {};
+
+  enum class State {
+    VISIBLE, HBLANK, VBLANK
+  } state;
+
+
+  union vram_addr_t {
     struct {
       byte l;
       byte h;
     };
     word w;
-  };
+  } vram_addr;
 
+  word cgadd {0xface};
+
+private:
   struct BGScroll {
     void x(byte val) {
       if (bg_write_upper) {
@@ -427,18 +460,20 @@ private:
 
   dual vram_prefetch {};
 
-  union vram_addr_t {
-    struct {
-      byte l;
-      byte h;
-    };
-    word w;
-  } vram_addr;
   word cgram_addr {};
 
-  constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
+  constexpr static byte vram_incr_step[] = {1, 1, 128, 128};
   constexpr static const char* TAG = "sppu";
+
+  long ncycles {};
+  long line {};
+  long x {};
+
+  BusSNES* bus;
+  std::shared_ptr<Screen> screen;
 
   friend class Logger<SPPU>;
   friend class TD2;
+
+  void render_row();
 };

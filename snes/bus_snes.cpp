@@ -1,8 +1,12 @@
 #include "bus_snes.hpp"
 #include "snes_spc/spc.h"
+#include "cpu5a22.hpp"
+
 static long n = 0;
 void BusSNES::tick() {
-  cpu.tick();
+  cpu->tick();
+  ppu.tick();
+  ppu.tick();ppu.tick();ppu.tick();ppu.tick();ppu.tick();
   if (dma_state == DMAState::Next) {
     dma_state = DMAState::Dma;
   } else if (dma_state == DMAState::Dma) {
@@ -14,14 +18,15 @@ void BusSNES::tick() {
     });
     dma_state = DMAState::Idle;
   }
-
-  if (n++ % 10000 == 0) {
-    td2.show();
-  }
+  // whyyyyyyy.
+  spc_read_port(spc, spc_time++, 0);
+  spc_read_port(spc, spc_time++, 1);
+  spc_read_port(spc, spc_time++, 2);
+  spc_read_port(spc, spc_time++, 3);
 }
 
 void BusSNES::reset() {
-  cpu.reset();
+  cpu->reset();
 }
 
 byte BusSNES::read(dword address) {
@@ -46,6 +51,10 @@ byte BusSNES::read(dword address) {
       if (offs >= 0x2140 && offs <= 0x2143) {
         return spc_read_port(spc, spc_time++, (offs - 0x2140) % 4);
       }
+      if (offs == 0x2180) {
+        // WRAM read/write
+        return ram[wmadd.addr++];
+      }
     } else if (offs <= 0x2fff) {
       // unused
     } else if (offs <= 0x3fff) {
@@ -56,7 +65,21 @@ byte BusSNES::read(dword address) {
       // unused
     } else if (offs <= 0x44ff) {
       if (offs == 0x4210) {
-        return 0xc2;
+        auto value = 0x2 | (in_nmi ? 0x80 : 0x0);
+        in_nmi = false;
+        return value;
+      }
+      if (offs == 0x4211) {
+        // TIMEUP
+        auto value = timeup;
+        timeup = 0;
+        return value << 7;
+      }
+      if (offs == 0x4212) {
+        bool vblank = ppu.state == SPPU::State::VBLANK;
+        bool hblank = ppu.state == SPPU::State::HBLANK;
+        bool auto_joypad_read_busy = false;
+        return (vblank << 7) | (hblank << 6) | auto_joypad_read_busy;
       }
 
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)
@@ -127,6 +150,16 @@ void BusSNES::write(dword address, byte value) {
       if (offs >= 0x2100 && offs <= 0x2133) {
         ppu.write(offs, value);
       }
+      if (offs == 0x2180) {
+        // WRAM read/write
+        ram[wmadd.addr++] = value;
+      } else if (offs == 0x2181) {
+        wmadd.l = value;
+      } else if (offs == 0x2182) {
+        wmadd.m = value;
+      } else if (offs == 0x2183) {
+        wmadd.h = value;
+      }
     } else if (offs <= 0x2fff) {
       // unused
     } else if (offs <= 0x3fff) {
@@ -140,6 +173,19 @@ void BusSNES::write(dword address, byte value) {
         // NMITIMEN - Interrupt Enable
         nmi.reg = value;
       }
+      // HTIMEL/HTIMEH
+      if (offs == 0x4207) {
+        ppu.htime.l = value;
+      } else if (offs == 0x4208) {
+        ppu.htime.h = value;
+      }
+      // VTIMEL/VTIMEH
+      if (offs == 0x4209) {
+        ppu.vtime.l = value;
+      } else if (offs == 0x420a) {
+        ppu.vtime.h = value;
+      }
+
       if (offs == 0x420b) {
         // MDMAEN
         log("MDMAEN %d\n", value);
@@ -209,4 +255,47 @@ void BusSNES::map(std::vector<byte>&& data) {
   while (true) {
     tick();
   }
+}
+
+void BusSNES::vblank_nmi() {
+  in_nmi = true;
+  if (nmi.vblank_nmi)
+    cpu->irq<NMI>();
+//  std::printf("show\n");
+}
+
+void BusSNES::vblank_end() {
+  in_nmi = false;
+  td2.show();
+}
+
+BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()) {
+  cpu->connect(this);
+  ppu.connect(this);
+  td2.connect(this);
+  td2.show();
+  byte dma_ch_no = 0;
+  std::for_each(dma.begin(), dma.end(), [this, &dma_ch_no](auto& ch) {
+    ch.connect(this);
+    ch.set_ch(dma_ch_no++);
+  });
+
+  spc = spc_new();
+  spc_init_rom(spc, spc_rom);
+  spc_reset(spc);
+
+  if (FLAGS_audio) {
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
+  }
+}
+
+BusSNES::~BusSNES() {
+  spc_delete(spc);
+}
+
+void BusSNES::raise_timeup() {
+  if (!cpu->p.I) {
+    cpu->irq<IRQ>();
+  }
+  timeup = true; // should this be delayed, per the docs?
 }

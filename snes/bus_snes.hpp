@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "types.h"
-#include "cpu5a22.hpp"
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
 #include "dma.hpp"
@@ -32,30 +31,17 @@ constexpr unsigned char spc_rom[] = {
     0xff
 };
 
+class CPU5A22;
+
 class BusSNES : public Logger<BusSNES> {
 public:
-  BusSNES() {
-    cpu.connect(this);
-    td2.connect(this);
-    td2.show();
-    byte dma_ch_no = 0;
-    std::for_each(dma.begin(), dma.end(), [this, &dma_ch_no](auto& ch) {
-      ch.connect(this);
-      ch.set_ch(dma_ch_no++);
-    });
+  BusSNES();
 
-    spc = spc_new();
-    spc_init_rom(spc, spc_rom);
-    spc_reset(spc);
+  ~BusSNES();
 
-    if (FLAGS_audio) {
-      SDL_InitSubSystem(SDL_INIT_AUDIO);
-    }
-  }
-
-  ~BusSNES() {
-    spc_delete(spc);
-  }
+  enum Interrupt {
+    NMI, IRQ, BRK, COP
+  };
 
   void tick();
 
@@ -69,7 +55,7 @@ public:
 
   std::array<byte, 0x20000> ram {};
 
-  CPU5A22 cpu;
+  std::shared_ptr<CPU5A22> cpu;
   SPPU ppu;
   TD2 td2;
   SNES_SPC* spc;
@@ -82,6 +68,19 @@ public:
   std::array<DMA, 8> dma;
   enum class DMAState { Idle, Next, Dma } dma_state = DMAState::Idle;
 
+  union wmadd_t {
+    struct {
+      byte l : 8;
+      byte m : 8;
+      byte h : 1;
+    };
+    struct {
+      dword addr : 17;
+      word unused : 15;
+    };
+    dword reg;
+  } wmadd {};
+
   union nmitimen_t {
     struct {
       byte joypad_enable : 1;
@@ -93,5 +92,21 @@ public:
     byte reg;
   } nmi;
 
+  bool in_nmi = false;
+
+  bool timeup = false;
+
   constexpr static const char* TAG = "bus";
+
+  void vblank_nmi();
+
+  void vblank_end();
+
+  template <BusSNES::Interrupt rupt>
+  word read_vector() {
+    constexpr word table[] = {0xffea, 0xffee, 0xffe6, 0xffe4};
+    return read(table[rupt]) | (read(table[rupt] + 1) << 8);
+  }
+
+  void raise_timeup();
 };

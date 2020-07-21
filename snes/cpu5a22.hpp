@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <iostream>
 #include "types.h"
-
-class BusSNES;
+#include "bus_snes.hpp"
+#include "logger.hpp"
 
 union dual {
   operator word() {
@@ -40,7 +40,7 @@ union dual {
   word w;
 };
 
-class CPU5A22 {
+class CPU5A22 : public Logger<CPU5A22> {
 public:
   void tick();
 
@@ -48,6 +48,19 @@ public:
 
   void brk() {
 
+  }
+
+  template <BusSNES::Interrupt rupt>
+  void irq() {
+    if (rupt == BusSNES::NMI) {
+      log("NMI\n");
+      push(pc.b);
+      push_word(pc.addr);
+      push(p.reg);
+      p.I = 1;
+      pc.b = 0x0;
+      pc.c = bus->read_vector<rupt>();
+    }
   }
 
   cycle_count_t mvp() {
@@ -376,7 +389,7 @@ public:
 
   dword addr_zpg_far() {
     dword addr = dp + read_byte();
-    return read(addr);
+    return read_full_addr(addr);
   }
 
   dword addr_stk_plus_imm_indirect_y() {
@@ -508,4 +521,6 @@ public:
   void dump();
 
   std::ostream& dump_stack(std::ostream& out);
+
+  static constexpr const char* TAG = "cpu";
 };

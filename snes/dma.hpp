@@ -75,13 +75,13 @@ public:
         break;
     }
 
-    log("DMA(%02x) [%-5s] -> %02x\n", port, command_string[port], value);
+//    log("DMA(%02x) [%-5s] -> %02x\n", port, command_string[port], value);
 
     return value;
   }
 
   void write(byte port, byte value) {
-    log("DMA(%02x) [%-5s] <- %02x\n", port, command_string[port], value);
+//    log("DMA(%02x) [%-5s] <- %02x\n", port, command_string[port], value);
     switch (port) {
       case 0x0:
         dma_params.reg = value;

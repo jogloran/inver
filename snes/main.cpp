@@ -12,6 +12,7 @@
 #include "rang.hpp"
 
 #include "types.h"
+#include "cpu5a22.hpp"
 #include "bus_snes.hpp"
 
 DEFINE_bool(dis, false, "Dump disassembly");
@@ -62,6 +63,7 @@ word inspect(std::vector<byte> data) {
   std::printf("Checksum:  %02x\n", byte(data[0x7fde]));
   std::printf("~Checksum: %02x\n", byte(data[0x7fdc]));
   std::printf("RST:       %04x\n", word(data[0x7ffc]) | word(data[0x7ffd] << 8));
+  std::printf("NMI:       %04x\n", word(data[0x7fea]) | word(data[0x7feb] << 8));
 
   return word(data[0x7ffc]) | word(data[0x7ffd] << 8);
 }
@@ -89,13 +91,14 @@ int main(int argc, char* argv[]) {
   active_tags = parse_tags(FLAGS_tags);
 
   BusSNES bus;
+  auto s = std::make_shared<Screen>();
+  bus.ppu.connect(s);
 
   std::vector<byte> data = read_bytes(f);
   word rst = inspect(data);
 
   bus.map(std::move(data));
-//  bus.cpu.pc.b = 0; bus.cpu.pc.c = rst;
   bus.reset();
-  bus.cpu.pc.addr = rst;
+  bus.cpu->pc.addr = rst;
   bus.run();
 }

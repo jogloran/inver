@@ -12,6 +12,12 @@ template <typename T>
 class Logger {
 public:
   void log_with_tag(const char* tag, const char* msg, va_list args) {
+    if (std::none_of(active_tags.begin(), active_tags.end(), [tag](const auto& active_tag) {
+      return active_tag.rfind(tag, 0) != 0;
+    })) {
+      return;
+    }
+
     static char buf[1024];
     std::snprintf(buf, 1024, "%17.17s | ", tag);
     std::strcat(buf, msg);

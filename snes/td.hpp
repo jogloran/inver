@@ -19,12 +19,16 @@ public:
     TTF_Init();
 
     window_ = SDL_CreateWindow("TD2", 500, 0, TD2_WIDTH * SCALE, TD2_HEIGHT * SCALE, SDL_WINDOW_HIDDEN);
-    renderer_ = SDL_CreateRenderer(window_, -1, 0);
+    renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED
+                                                | SDL_RENDERER_PRESENTVSYNC
+                                                | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, TD2_WIDTH * SCALE, TD2_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, TD2_WIDTH, TD2_HEIGHT);
 
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 12);
+
+    SDL_ShowWindow(window_);
   }
 
   ~TD2() {

@@ -52,6 +52,8 @@ std::ostream& CPU5A22::dump_stack(std::ostream& out) {
   return out << "】";
 }
 
+byte last_mode = 0xff;
+
 void CPU5A22::dump() {
   using std::hex;
   using std::dec;
@@ -81,13 +83,16 @@ void CPU5A22::dump() {
     std::cout << " x: " << hex_word << static_cast<int>(x)
               << " y: " << hex_word << static_cast<int>(y);
   }
-  std::cout << " APU: " << hex_byte << static_cast<int>(read(0x2140))
-            << static_cast<int>(read(0x2141))
-            << static_cast<int>(read(0x2142))
-            << static_cast<int>(read(0x2143));
+//  std::cout << " APU: " << hex_byte << static_cast<int>(read(0x2140))
+//            << static_cast<int>(read(0x2141))
+//            << static_cast<int>(read(0x2142))
+//            << static_cast<int>(read(0x2143));
   std::cout << " 0000:" << hex_byte << static_cast<int>(read(0x0000))
-            << hex_byte << static_cast<int>(read(0x0001)) << hex_byte
-            << static_cast<int>(read(0x0002));
+            << hex_byte << static_cast<int>(read(0x0001))
+            << hex_byte << static_cast<int>(read(0x0002));
+  std::cout << " mode:" << hex_byte << static_cast<int>(read(0x7e0100));
+//  std::cout << " 1df5:" << hex_byte << static_cast<int>(read(0x1df5));
+  std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 
   if (FLAGS_dump_stack) {
@@ -102,10 +107,16 @@ void CPU5A22::tick() {
   if (cycles_left == 0) {
     byte opcode = bus->read(pc.addr);
 
-//    std::printf("pc:%04x %02x a:%02x x:%02x y:%02x\n", pc.addr, opcode, a,x,y);
     if (FLAGS_dis) dump_pc();
     ++pc.addr;
     if (FLAGS_dis) dump();
+
+    auto mode = bus->read(0x100);
+//    std::printf("mode: %02x %02x\n", mode, last_mode);
+    if (mode != last_mode) {
+      last_mode = mode;
+      std::printf("mode: %02x\n", last_mode);
+    }
 
     auto op = ops_65c816[opcode];
     cycle_count_t extra_cycles = op.f(*this);
