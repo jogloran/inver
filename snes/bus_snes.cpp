@@ -2,6 +2,10 @@
 #include "snes_spc/spc.h"
 #include "cpu5a22.hpp"
 
+#include <gflags/gflags.h>
+
+DECLARE_bool(td);
+
 static long n = 0;
 void BusSNES::tick() {
   cpu->tick();
@@ -266,7 +270,7 @@ void BusSNES::vblank_nmi() {
 
 void BusSNES::vblank_end() {
   in_nmi = false;
-  td2.show();
+  if (FLAGS_td) td2.show();
 }
 
 BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()) {

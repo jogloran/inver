@@ -92,14 +92,6 @@ void SPPU::render_row() {
                   // read bpp bytes (bpp/2 words)
                   std::vector<word> data { vram[tile_chr_base].w, vram[tile_chr_base+1].w };
 
-                  if (vram[tile_chr_base+1].w == 0x6898) {
-                    ;
-                  }
-
-                  if (t->char_no == 152 && t->reg == 0x6898) {
-                    ;
-                  }
-
                   // decode planar data
                   // produce 8 byte values (palette indices)
                   std::vector<word> pal_data;
@@ -108,18 +100,11 @@ void SPPU::render_row() {
                     // take lsb and msb and merge them together
                     byte lsb = data[0] & 0xff;
                     byte msb = data[0] >> 8;
-                    pal_data.emplace_back( !!(lsb & (1 << bit_select)) + 2 * !!(msb & (1 << bit_select)) );
-                  }
+                    byte pal_byte = ( !!(lsb & (1 << bit_select)) + 2 * !!(msb & (1 << bit_select)) );
 
-                  // decode bpp subsequent bytes into a single value
-
-                  for (int i = 0; i < 8; ++i) {
-                    // fill in 8 words from fb_ptr with colour values for one tile (tile_id)
-                    fb_ptr->r = pal_data[i];
-                    fb_ptr->g = pal_data[i];
-                    fb_ptr->b = pal_data[i];
-//                    std::printf("wrote pal_data %x into fb_ptr %02x %02x %02x\n", pal_data[i], fb_ptr->r, fb_ptr->g ,fb_ptr->b);
-
+                    fb_ptr->r = pal_byte;
+                    fb_ptr->g = pal_byte;
+                    fb_ptr->b = pal_byte;
                     ++fb_ptr;
                   }
 
