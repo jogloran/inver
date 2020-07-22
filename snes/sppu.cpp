@@ -1,10 +1,12 @@
+#include <array>
+
 #include "sppu.hpp"
 #include "bus_snes.hpp"
 #include "ppu_utils.hpp"
 
 // table of (mode, layer) -> bpp?
 
-std::array<byte, 3> bpps = { {4, 4, 2} };
+std::array<byte, 3> bpps = {{4, 4, 2}};
 
 void SPPU::dump_bg() {
   dword tilemap_base_addr = bg_base_size[2].base_addr * 0x400;
@@ -91,13 +93,13 @@ void SPPU::render_row() {
 //                      chr_base_addr, tile_id, tile_row);
 
                   // read bpp bytes (bpp/2 words)
-                  std::vector<word> data { vram[tile_chr_base].w, vram[tile_chr_base+1].w };
+                  std::vector<word> data {vram[tile_chr_base].w, vram[tile_chr_base + 1].w};
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
+                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], bpp, t->flip_x);
                   for (int i = 0; i < 8; ++i) {
-                    byte pal_byte = decode_planar(&vram[tile_chr_base], bpp, t->flip_x);
-                    colour_t rgb = lookup(pal_byte);
+                    Screen::colour_t rgb = lookup(pal_bytes[i]);
 
                     fb_ptr->r = rgb.r;
                     fb_ptr->g = rgb.g;
@@ -116,15 +118,17 @@ void SPPU::render_row() {
   // write row of 256 to screen->fb[0]
 }
 
-colour_t SPPU::lookup(byte i) {
+Screen::colour_t SPPU::lookup(byte i) {
   word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
-  return { .r = rgb & 0x1f, .g = (rgb >> 5) & 0x1f, .b = (rgb >> 10) & 0x1f };
+  return {
+      .r = static_cast<byte>(rgb & 0x1f),
+      .g = static_cast<byte>(rgb >> 5 & 0x1f),
+      .b = static_cast<byte>(rgb >> 10 & 0x1f)};
 }
 
 void SPPU::tick(byte master_cycles) {
   if (vram[0x50b3].w == 0x3898) {
-    std::cout << ">><<\n";
-    ;
+    std::cout << ">><<\n";;
   }
   ncycles += master_cycles;
 

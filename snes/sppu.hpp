@@ -71,11 +71,13 @@ public:
         // TODO: set sprite overflow flags
         return 0x1;
       case 0x213F: // STAT78  - PPU2 Status and PPU2 Version Number
+      {
         // TODO: interlacing bit
         hloc_read_upper = vloc_read_upper = false;
         auto value = 0b0011 | (hv_latched << 6);
         hv_latched = false;
         return value;
+      }
       default:;
     }
 
@@ -230,8 +232,8 @@ public:
         break;
       case 0x2122: // CGDATA  - Palette CGRAM Data Write             (write-twice)
         if (cgram_addr & 1) {
-          cgram[2 * cgram_addr + 1] = value & 0x7f;
-          cgram[2 * cgram_addr] = cgram_lsb;
+          pal[2 * cgram_addr + 1] = value & 0x7f;
+          pal[2 * cgram_addr] = cgram_lsb;
         } else {
           cgram_lsb = value;
         }
@@ -435,14 +437,6 @@ public:
     byte obj3_sz: 1;
   };
 
-  union dual {
-    struct {
-      byte l : 8;
-      byte h : 8;
-    };
-    word w;
-  };
-
   union hvtime_t {
     struct {
       byte l;
@@ -536,4 +530,6 @@ private:
   friend class TD2;
 
   void render_row();
+
+  Screen::colour_t lookup(byte);
 };

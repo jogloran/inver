@@ -6,40 +6,6 @@
 #include "bus_snes.hpp"
 #include "logger.hpp"
 
-union dual {
-  operator word() {
-    return w;
-  }
-
-  dual operator++() {
-    ++w;
-    return *this;
-  }
-
-  dual operator--() {
-    --w;
-    return *this;
-  }
-
-  dual operator++(int) {
-    dual copy(*this);
-    operator++();
-    return copy;
-  }
-
-  dual operator--(int) {
-    dual copy(*this);
-    operator--();
-    return copy;
-  }
-
-  struct {
-    byte l: 8;
-    byte h: 8;
-  };
-  word w;
-};
-
 class CPU5A22 : public Logger<CPU5A22> {
 public:
   void tick();

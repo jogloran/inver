@@ -8,3 +8,37 @@ using word = uint16_t;
 using dword = uint32_t;
 
 using cycle_count_t = int;
+
+union dual {
+  operator word() {
+    return w;
+  }
+
+  dual operator++() {
+    ++w;
+    return *this;
+  }
+
+  dual operator--() {
+    --w;
+    return *this;
+  }
+
+  dual operator++(int) {
+    dual copy(*this);
+    operator++();
+    return copy;
+  }
+
+  dual operator--(int) {
+    dual copy(*this);
+    operator--();
+    return copy;
+  }
+
+  struct {
+    byte l: 8;
+    byte h: 8;
+  };
+  word w;
+};
