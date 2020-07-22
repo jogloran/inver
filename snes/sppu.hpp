@@ -31,7 +31,10 @@ public:
         break;
 
       case 0x2137: // SLHV    - PPU1 Latch H/V-Counter by Software (Read=Strobe)
-        break;
+        hv_latched = true;
+        hloc = x;
+        vloc = line;
+        return 0x21;
 
       case 0x2138: // RDOAM   - PPU1 OAM Data Read            (read-twice)
         return oam[oamadd.addr++];
@@ -43,12 +46,36 @@ public:
         return vram_prefetch.h;
 
       case 0x213B: // RDCGRAM - PPU2 CGRAM Data Read (Palette)(read-twice)
-        break;
+        byte value;
+        if (cgram_rw_upper) {
+          value = pal[cgram_addr * 2 + 1];
+        } else {
+          value = pal[cgram_addr * 2];
+        }
+        cgram_rw_upper = !cgram_rw_upper;
+        return value;
 
       case 0x213C: // OPHCT   - PPU2 Horizontal Counter Latch (read-twice)
+        if (hloc_read_upper) {
+          return hloc & 0xff;
+        } else {
+          return hloc >> 8;
+        }
       case 0x213D: // OPVCT   - PPU2 Vertical Counter Latch   (read-twice)
+        if (vloc_read_upper) {
+          return vloc & 0xff;
+        } else {
+          return vloc >> 8;
+        }
       case 0x213E: // STAT77  - PPU1 Status and PPU1 Version Number
+        // TODO: set sprite overflow flags
+        return 0x1;
       case 0x213F: // STAT78  - PPU2 Status and PPU2 Version Number
+        // TODO: interlacing bit
+        hloc_read_upper = vloc_read_upper = false;
+        auto value = 0b0011 | (hv_latched << 6);
+        hv_latched = false;
+        return value;
       default:;
     }
 
@@ -198,8 +225,17 @@ public:
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
+        cgram_addr = value;
+        cgram_rw_upper = false;
         break;
       case 0x2122: // CGDATA  - Palette CGRAM Data Write             (write-twice)
+        if (cgram_addr & 1) {
+          cgram[2 * cgram_addr + 1] = value & 0x7f;
+          cgram[2 * cgram_addr] = cgram_lsb;
+        } else {
+          cgram_lsb = value;
+        }
+        ++cgram_addr;
         break;
 
       case 0x2123: // W12SEL  - Window BG1/BG2 Mask Settings
@@ -476,7 +512,15 @@ private:
 
   dual vram_prefetch {};
 
-  word cgram_addr {};
+  byte cgram_addr {};
+  bool cgram_rw_upper = false;
+  byte cgram_lsb = 0;
+
+  bool hv_latched = false;
+  word hloc {};
+  bool hloc_read_upper = false;
+  word vloc {};
+  bool vloc_read_upper = false;
 
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";

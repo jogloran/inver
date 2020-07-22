@@ -8,9 +8,9 @@ void Screen::blit() {
 //  for (auto& layer: fb) {
   auto& layer = fb[0];
   for (const colour_t& b: layer) {
-    buf[i++] = b.r > 0 ? 255 : 0;
-    buf[i++] = b.g > 0 ? 255 : 0;
-    buf[i++] = b.b > 0 ? 255 : 0;
+    buf[i++] = b.r * 8;
+    buf[i++] = b.g * 8;
+    buf[i++] = b.b * 8;
     buf[i++] = 255;
   }
 //  }

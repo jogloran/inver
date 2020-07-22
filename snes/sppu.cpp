@@ -1,5 +1,6 @@
 #include "sppu.hpp"
 #include "bus_snes.hpp"
+#include "ppu_utils.hpp"
 
 // table of (mode, layer) -> bpp?
 
@@ -94,17 +95,13 @@ void SPPU::render_row() {
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
-                  std::vector<word> pal_data;
                   for (int i = 0; i < 8; ++i) {
-                    byte bit_select = t->flip_x ? i : 7 - i;
-                    // take lsb and msb and merge them together
-                    byte lsb = data[0] & 0xff;
-                    byte msb = data[0] >> 8;
-                    byte pal_byte = ( !!(lsb & (1 << bit_select)) + 2 * !!(msb & (1 << bit_select)) );
+                    byte pal_byte = decode_planar(&vram[tile_chr_base], bpp, t->flip_x);
+                    colour_t rgb = lookup(pal_byte);
 
-                    fb_ptr->r = pal_byte;
-                    fb_ptr->g = pal_byte;
-                    fb_ptr->b = pal_byte;
+                    fb_ptr->r = rgb.r;
+                    fb_ptr->g = rgb.g;
+                    fb_ptr->b = rgb.b;
                     ++fb_ptr;
                   }
 
@@ -117,6 +114,11 @@ void SPPU::render_row() {
   // for each layer:
   // lookup bpp for mode and layer
   // write row of 256 to screen->fb[0]
+}
+
+colour_t SPPU::lookup(byte i) {
+  word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
+  return { .r = rgb & 0x1f, .g = (rgb >> 5) & 0x1f, .b = (rgb >> 10) & 0x1f };
 }
 
 void SPPU::tick(byte master_cycles) {
