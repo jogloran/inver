@@ -306,6 +306,20 @@ public:
     byte reg;
   } bg_char_data_addr[2] {};
 
+  word bg_chr_base_addr_for_bg(byte bg_no) {
+    switch (bg_no) {
+      case 0:
+        return bg_char_data_addr[0].bg1_tile_base_addr << 12;
+      case 1:
+        return bg_char_data_addr[0].bg2_tile_base_addr << 12;
+      case 2:
+        return bg_char_data_addr[1].bg1_tile_base_addr << 12;
+      case 3:
+        return bg_char_data_addr[1].bg2_tile_base_addr << 12;
+    }
+    return 0;
+  }
+
   union vram_addr_incr_t {
     struct {
       byte step_mode: 2;
@@ -422,6 +436,8 @@ public:
 
   word cgadd {0xface};
 
+  void dump_bg();
+
 private:
   struct BGScroll {
     void x(byte val) {
@@ -462,7 +478,7 @@ private:
 
   word cgram_addr {};
 
-  constexpr static byte vram_incr_step[] = {1, 1, 128, 128};
+  constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";
 
   long ncycles {};

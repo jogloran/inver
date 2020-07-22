@@ -1,4 +1,5 @@
 #include "screen.hpp"
+#include "sppu.hpp"
 
 void Screen::blit() {
   SDL_ShowWindow(window_);
@@ -17,12 +18,23 @@ void Screen::blit() {
   SDL_UpdateTexture(texture_, nullptr, buf.data(), SCREEN_WIDTH * 4);
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, texture_, nullptr, nullptr);
+
+  raster_ = make_raster_texture(16, 16);
+  SDL_RenderCopy(renderer_, raster_, nullptr, nullptr);
+  SDL_DestroyTexture(raster_);
+
   SDL_RenderPresent(renderer_);
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       std::exit(0);
+    } else if (event.type == SDL_KEYDOWN) {
+      switch (event.key.keysym.sym) {
+        case SDLK_d:
+          ppu->dump_bg();
+          break;
+      }
     }
   }
 }

@@ -26,7 +26,7 @@ add_executable(inver src/main.cpp asobitomo/util.cc
         src/bus.cpp src/cpu6502.cpp
         src/op_names.cpp src/ppu.cpp src/output_sdl.cpp
         src/td.cpp src/tm.cpp
-        src/utils.cpp
+        src/ppu_utils.cpp
         src/ops.cpp src/mapper.hpp
         src/mapper/nes003.hpp src/mapper/nes003.cpp
         src/mapper/nes004.cpp src/mapper/nes004.hpp src/header.hpp src/header.cpp
@@ -47,7 +47,7 @@ target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_L
 target_compile_options(inver PRIVATE -march=native)
 target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -Wreorder)
 
-add_executable(micro bench/micro.cpp src/utils.cpp)
+add_executable(micro bench/micro.cpp src/ppu_utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
 
 add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
@@ -73,7 +73,7 @@ add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/snes_spc/spc.h snes/snes_spc/spc.cpp
         snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
         snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp snes/sppu.cpp snes/sppu.hpp snes/dma.cpp snes/dma.hpp snes/logger.hpp
-        snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp)
+        snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp snes/ppu_utils.hpp)
 
 target_link_libraries(snes gflags)
 target_link_libraries(snes ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})

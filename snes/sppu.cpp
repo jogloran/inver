@@ -3,54 +3,112 @@
 
 // table of (mode, layer) -> bpp?
 
+std::array<byte, 3> bpps = { {4, 4, 2} };
+
+void SPPU::dump_bg() {
+  dword tilemap_base_addr = bg_base_size[2].base_addr * 0x400;
+  for (int cur_row = 0; cur_row < 32; ++cur_row) {
+    dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
+
+    std::printf("%06x ", tilemap_offs_addr);
+
+    for (dual* ptr = &vram[tilemap_offs_addr]; ptr != &vram[tilemap_offs_addr + 32]; ++ptr) {
+      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) ptr;
+      if (t->char_no == 0xfc) {
+        std::printf("     ");
+      } else {
+        std::printf("%-3x%c ", t->char_no, t->flip_x ? '*' : ' ');
+      }
+    }
+
+    std::printf("\n");
+
+    std::printf("%06x ", tilemap_offs_addr);
+    for (dual* ptr = &vram[tilemap_offs_addr]; ptr != &vram[tilemap_offs_addr + 32]; ++ptr) {
+      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) ptr;
+      std::printf("%-4x ", t->reg);
+    }
+
+    std::printf("\n");
+  }
+}
+
+
 void SPPU::render_row() {
   // get bg mode
   byte mode = bgmode.mode;
+  byte bg = 2;
+
+  byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
+  bpp /= 2;
 
   // assume we're looking at 4bpp layer 0
   // get base address for this layer
-  dword tilemap_base_addr = bg_base_size[2].base_addr * 0x400;
+  dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
 
   // 1024 words after this addr correspond to the current tilemap
   byte cur_row = line / 8;
   byte tile_row = line % 8;
 
-  dword chr_base_addr = bg_char_data_addr[1].bg1_tile_base_addr << 12;
+  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  std::array<word, 32> tile_ids;
-  dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32;
-
-  std::transform(&vram[tilemap_offs_addr], &vram[tilemap_offs_addr + 32],
-                 tile_ids.begin(),
-                 [](dual w) {
-                   SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &w;
-                   return t->char_no;
-                 });
-
-  byte bpp = 2; // 2bpp means one pixel is encoded in one word
-  bpp /= 2;
+  dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
+//
+//
+////  std::printf("%06x\n", tilemap_offs_addr);
+////  std::cout << line << ": ";
+////  for (auto tile_id : tile_ids) {
+////    std::cout << tile_id << " ";
+////  }
+////  std::cout << "\n";
+//bool ok=false;
+//  std::printf("%06x %3d ", tilemap_offs_addr, line);
+//  for (auto tile_id : tile_ids) {
+//    std::printf("%-3x ", tile_id);
+//    if (tile_id == 0x13a) ok =true;
+//  }
+//  std::printf("\n");
+//  if (vram[0x13b1].w != 0 && ok) {
+//    ;
+//  }
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
-  std::for_each(tile_ids.begin(), tile_ids.end(),
-                [&](auto tile_id) {
+  std::for_each(&vram[tilemap_offs_addr], &vram[tilemap_offs_addr + 32],
+                [&](dual bg_tile_data) {
+                  SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &bg_tile_data;
+                  auto tile_id = t->char_no;
                   auto* fb_ptr = screen->fb[0].data() + line * 256 + col * 8;
 
+                  auto row_to_access = tile_row;
+                  if (t->flip_y)
+                    row_to_access = 7 - row_to_access;
+
                   // get tile chr data
-                  word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + tile_row;
-                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
-                      chr_base_addr, tile_id, tile_row);
+                  word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + row_to_access;
+//                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
+//                      chr_base_addr, tile_id, tile_row);
 
                   // read bpp bytes (bpp/2 words)
-                  std::vector<word> data { vram[tile_chr_base].w };
+                  std::vector<word> data { vram[tile_chr_base].w, vram[tile_chr_base+1].w };
 
+                  if (vram[tile_chr_base+1].w == 0x6898) {
+                    ;
+                  }
+
+                  if (t->char_no == 152 && t->reg == 0x6898) {
+                    ;
+                  }
+
+                  // decode planar data
                   // produce 8 byte values (palette indices)
                   std::vector<word> pal_data;
-                  for (int i = 0; i < 8*bpp; i += bpp) {
+                  for (int i = 0; i < 8; ++i) {
+                    byte bit_select = t->flip_x ? i : 7 - i;
                     // take lsb and msb and merge them together
                     byte lsb = data[0] & 0xff;
                     byte msb = data[0] >> 8;
-                    pal_data.emplace_back( !!(lsb & (1 << (7 - i))) + 2 * !!(msb & (1 << (7 - i))) );
+                    pal_data.emplace_back( !!(lsb & (1 << bit_select)) + 2 * !!(msb & (1 << bit_select)) );
                   }
 
                   // decode bpp subsequent bytes into a single value
@@ -77,6 +135,10 @@ void SPPU::render_row() {
 }
 
 void SPPU::tick(byte master_cycles) {
+  if (vram[0x50b3].w == 0x3898) {
+    std::cout << ">><<\n";
+    ;
+  }
   ncycles += master_cycles;
 
   switch (state) {

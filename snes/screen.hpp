@@ -19,6 +19,31 @@ public:
     byte unused: 1;
   };
 
+  SDL_Texture* make_raster_texture(size_t dx, size_t dy) {
+    SDL_Texture* raster = SDL_CreateTexture(renderer_, SDL_GetWindowPixelFormat(window_),
+                                            SDL_TEXTUREACCESS_TARGET,
+                                            SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE);
+    SDL_SetRenderTarget(renderer_, raster);
+    SDL_SetTextureBlendMode(raster, SDL_BLENDMODE_BLEND);
+
+    SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 0);
+    SDL_RenderClear(renderer_);
+
+    SDL_SetRenderDrawColor(renderer_, 0, 255, 0, 255);
+
+    for (int x = 0; x < OUTPUT_WIDTH; x += dx * SCALE / 2) {
+      SDL_RenderDrawLine(renderer_, x, 0, x, OUTPUT_HEIGHT);
+    }
+
+    for (int y = 0; y < OUTPUT_HEIGHT; y += dy * SCALE / 2) {
+      SDL_RenderDrawLine(renderer_, 0, y, OUTPUT_WIDTH, y);
+    }
+
+    SDL_SetRenderTarget(renderer_, nullptr);
+
+    return raster;
+  }
+
   Screen() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -32,6 +57,7 @@ public:
     SDL_RenderSetLogicalSize(renderer_, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, SCREEN_WIDTH,
                                  SCREEN_HEIGHT);
+    raster_ = make_raster_texture(8, 8);
 
     font_ = TTF_OpenFont("mplus-2c-medium.ttf", 12);
 
@@ -54,6 +80,8 @@ public:
   constexpr static int SCREEN_WIDTH = 256;
   constexpr static int SCREEN_HEIGHT = 224;
   constexpr static int SCALE = 2;
+  static constexpr int OUTPUT_WIDTH = SCREEN_WIDTH * SCALE;
+  static constexpr int OUTPUT_HEIGHT = SCREEN_HEIGHT * SCALE;
 
   std::array<byte, (SCREEN_WIDTH * SCREEN_HEIGHT) * 4> buf {};
   std::array<
@@ -64,6 +92,7 @@ public:
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
   TTF_Font* font_;
+  SDL_Texture* raster_;
 
   SPPU* ppu;
 };
