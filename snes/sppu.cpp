@@ -51,7 +51,7 @@ void SPPU::dump_bg() {
 void SPPU::render_row() {
   // get bg mode
   byte mode = bgmode.mode;
-  byte bg = 1;
+  byte bg = 2;
 
   byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
   bpp /= 2;
@@ -67,24 +67,6 @@ void SPPU::render_row() {
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
   dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
-//
-//
-////  std::printf("%06x\n", tilemap_offs_addr);
-////  std::cout << line << ": ";
-////  for (auto tile_id : tile_ids) {
-////    std::cout << tile_id << " ";
-////  }
-////  std::cout << "\n";
-//bool ok=false;
-//  std::printf("%06x %3d ", tilemap_offs_addr, line);
-//  for (auto tile_id : tile_ids) {
-//    std::printf("%-3x ", tile_id);
-//    if (tile_id == 0x13a) ok =true;
-//  }
-//  std::printf("\n");
-//  if (vram[0x13b1].w != 0 && ok) {
-//    ;
-//  }
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
@@ -109,7 +91,6 @@ void SPPU::render_row() {
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-                    byte pal_no = t->pal_no;
                     Screen::colour_t rgb = lookup((1 << 2*bpp)*t->pal_no + pal_bytes[i]);
 
                     fb_ptr->r = rgb.r;
