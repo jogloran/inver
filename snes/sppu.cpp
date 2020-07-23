@@ -111,8 +111,6 @@ void SPPU::render_row() {
                     // into the palette
                     byte pal_no = t->pal_no;
                     Screen::colour_t rgb = lookup((1 << 2*bpp)*t->pal_no + pal_bytes[i]);
-                    if (pal_bytes[i]!=0)
-//                    std::printf("%02x -> %02x %02x %02x\n", pal_bytes[i], rgb.r, rgb.g, rgb.b);
 
                     fb_ptr->r = rgb.r;
                     fb_ptr->g = rgb.g;
