@@ -22,6 +22,11 @@ void BusSNES::tick() {
     });
     dma_state = DMAState::Idle;
   }
+
+  if (cpu->pc.addr == 0x8468) {
+//    ppu.dump_pal();
+//    std::exit(0);
+  }
   // whyyyyyyy.
   spc_read_port(spc, spc_time++, 0);
   spc_read_port(spc, spc_time++, 1);

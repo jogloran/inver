@@ -22,6 +22,7 @@ DEFINE_bool(audio, false, "Enable audio");
 DEFINE_bool(test_rom_output, false, "Test ROM output hack");
 DEFINE_string(tags, "", "Log tags to print, separated by commas");
 DEFINE_bool(td, false, "Show tile debugger (nametable)");
+DEFINE_bool(show_raster, false, "Show raster");
 
 std::set<std::string> active_tags;
 

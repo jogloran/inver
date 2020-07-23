@@ -8,6 +8,17 @@
 
 std::array<byte, 3> bpps = {{4, 4, 2}};
 
+void SPPU::dump_pal() {
+  for (auto it = pal.begin(); it != pal.end(); it += 2) {
+    if (std::distance(pal.begin(), it) % 32 == 0) {
+      std::printf("\n%04x | ", std::distance(pal.begin(), it));
+    }
+
+    std::printf("%02x %02x ", *it, *(it + 1));
+  }
+  std::printf("\n");
+}
+
 void SPPU::dump_bg() {
   dword tilemap_base_addr = bg_base_size[2].base_addr * 0x400;
   for (int cur_row = 0; cur_row < 32; ++cur_row) {
@@ -40,7 +51,7 @@ void SPPU::dump_bg() {
 void SPPU::render_row() {
   // get bg mode
   byte mode = bgmode.mode;
-  byte bg = 2;
+  byte bg = 1;
 
   byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
   bpp /= 2;
@@ -92,14 +103,16 @@ void SPPU::render_row() {
 //                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
 //                      chr_base_addr, tile_id, tile_row);
 
-                  // read bpp bytes (bpp/2 words)
-                  std::vector<word> data {vram[tile_chr_base].w, vram[tile_chr_base + 1].w};
-
                   // decode planar data
                   // produce 8 byte values (palette indices)
                   std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], bpp, t->flip_x);
                   for (int i = 0; i < 8; ++i) {
-                    Screen::colour_t rgb = lookup(pal_bytes[i]);
+                    // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
+                    // into the palette
+                    byte pal_no = t->pal_no;
+                    Screen::colour_t rgb = lookup((1 << 2*bpp)*t->pal_no + pal_bytes[i]);
+                    if (pal_bytes[i]!=0)
+//                    std::printf("%02x -> %02x %02x %02x\n", pal_bytes[i], rgb.r, rgb.g, rgb.b);
 
                     fb_ptr->r = rgb.r;
                     fb_ptr->g = rgb.g;
@@ -122,8 +135,8 @@ Screen::colour_t SPPU::lookup(byte i) {
   word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
   return {
       .r = static_cast<byte>(rgb & 0x1f),
-      .g = static_cast<byte>(rgb >> 5 & 0x1f),
-      .b = static_cast<byte>(rgb >> 10 & 0x1f)};
+      .g = static_cast<byte>((rgb >> 5) & 0x1f),
+      .b = static_cast<byte>((rgb >> 10) & 0x1f)};
 }
 
 void SPPU::tick(byte master_cycles) {

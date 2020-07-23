@@ -14,8 +14,7 @@ std::array<byte, 8> decode(word w, bool flip_x) {
   byte msb = w >> 8;
   for (int i = 0; i < 8; ++i) {
     auto bit_select = flip_x ? i : 7 - i;
-    result[7 - i] = (((msb & (1 << bit_select)) != 0) << 1)
-                    + ((lsb & (1 << bit_select)) != 0);
+    result[i] = !!(lsb & (1 << bit_select)) + 2 * !!(msb & (1 << bit_select));
   }
   return result;
 }
@@ -28,12 +27,11 @@ std::array<byte, 8> decode(word w1, word w2, bool flip_x) {
   byte b4 = w2 >> 8;
   for (int i = 0; i < 8; ++i) {
     auto bit_select = flip_x ? i : 7 - i;
-    result[7 - i] =
-        (((b4 & (1 << bit_select)) != 0) << 4)
-        + (((b3 & (1 << bit_select)) != 0) << 2)
-        + (((b2 & (1
-            << bit_select)) != 0) << 1)
-        + (b1 & (1 << bit_select)) != 0;
+    result[i] =
+        !!(b1 & (1 << bit_select))
+        + 2 * !!(b2 & (1 << bit_select))
+        + 4 * !!(b3 & (1 << bit_select))
+        + 8 * !!(b4 & (1 << bit_select));
   }
   return result;
 }

@@ -48,9 +48,9 @@ public:
       case 0x213B: // RDCGRAM - PPU2 CGRAM Data Read (Palette)(read-twice)
         byte value;
         if (cgram_rw_upper) {
-          value = pal[cgram_addr * 2 + 1];
+          value = pal[2 * cgram_addr + 1];
         } else {
-          value = pal[cgram_addr * 2];
+          value = pal[2 * cgram_addr];
         }
         cgram_rw_upper = !cgram_rw_upper;
         return value;
@@ -109,7 +109,7 @@ public:
         if (oam_addr >= 0x200) {
           oam[oam_addr] = value;
         } else if ((oam_addr & 1) && oam_addr < 0x200) {
-          log("OAM[%04x] <- %04x\n", oam_addr-1, oam_lsb | (value << 8));
+          log("OAM[%04x] <- %04x\n", oam_addr - 1, oam_lsb | (value << 8));
           oam[oam_addr] = value;
           oam[oam_addr - 1] = oam_lsb;
         } else {
@@ -144,25 +144,25 @@ public:
         //   Bit 15    - Y-Flip           (0=Normal, 1=Mirror vertically)
 
         log("bg tilemap bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
-                    bg_base_size[0].base_addr * 0x400,
-                    bg_base_size[1].base_addr * 0x400,
-                    bg_base_size[2].base_addr * 0x400,
-                    bg_base_size[3].base_addr * 0x400);
+            bg_base_size[0].base_addr * 0x400,
+            bg_base_size[1].base_addr * 0x400,
+            bg_base_size[2].base_addr * 0x400,
+            bg_base_size[3].base_addr * 0x400);
         log("bg tilemap size: 0: %02x 1: %02x 2: %02x 3: %02x\n",
-                    bg_base_size[0].sc_size,
-                    bg_base_size[1].sc_size,
-                    bg_base_size[2].sc_size,
-                    bg_base_size[3].sc_size);
+            bg_base_size[0].sc_size,
+            bg_base_size[1].sc_size,
+            bg_base_size[2].sc_size,
+            bg_base_size[3].sc_size);
         break;
       }
       case 0x210B: // BG12NBA - BG Character Data Area Designation
       case 0x210C: // BG34NBA - BG Character Data Area Designation
         bg_char_data_addr[addr - 0x210b].reg = value;
         log("bg chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
-                    bg_char_data_addr[0].bg1_tile_base_addr << 12,
-                    bg_char_data_addr[0].bg2_tile_base_addr << 12,
-                    bg_char_data_addr[1].bg1_tile_base_addr << 12,
-                    bg_char_data_addr[1].bg2_tile_base_addr << 12);
+            bg_char_data_addr[0].bg1_tile_base_addr << 12,
+            bg_char_data_addr[0].bg2_tile_base_addr << 12,
+            bg_char_data_addr[1].bg1_tile_base_addr << 12,
+            bg_char_data_addr[1].bg2_tile_base_addr << 12);
         break;
 
       case 0x210D: // BG1HOFS - BG1 Horizontal Scroll (X) (write-twice) / M7HOFS
@@ -227,17 +227,21 @@ public:
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
+        log("2121 <- %02x\n", value);
         cgram_addr = value;
         cgram_rw_upper = false;
         break;
       case 0x2122: // CGDATA  - Palette CGRAM Data Write             (write-twice)
-        if (cgram_addr & 1) {
-          pal[2 * cgram_addr + 1] = value & 0x7f;
+        log("2122 <- %02x\n", value);
+        if (cgram_rw_upper) {
+          log("pal write %02d <- %04x\n", cgram_addr, cgram_lsb + ((value & 0x7f) << 8));
           pal[2 * cgram_addr] = cgram_lsb;
+          pal[2 * cgram_addr + 1] = value & 0x7f;
+          ++cgram_addr;
         } else {
           cgram_lsb = value;
         }
-        ++cgram_addr;
+        cgram_rw_upper = !cgram_rw_upper;
         break;
 
       case 0x2123: // W12SEL  - Window BG1/BG2 Mask Settings
@@ -402,9 +406,9 @@ public:
 
   union oamadd_t {
     struct {
-      word addr : 9;
-      byte unused : 6;
-      byte obj_prio_rotate : 1;
+      word addr: 9;
+      byte unused: 6;
+      byte obj_prio_rotate: 1;
     };
     word reg;
   } oamadd;
@@ -443,8 +447,8 @@ public:
       byte h;
     };
     struct {
-      word v : 9;
-      byte unused : 7;
+      word v: 9;
+      byte unused: 7;
     };
     word reg;
   };
@@ -464,9 +468,13 @@ public:
     word w;
   } vram_addr;
 
-  word cgadd {0xface};
-
   void dump_bg();
+
+  void dump_pal();
+
+  byte cgram_addr {};
+  bool cgram_rw_upper = false;
+  byte cgram_lsb = 0;
 
 private:
   struct BGScroll {
@@ -506,9 +514,6 @@ private:
 
   dual vram_prefetch {};
 
-  byte cgram_addr {};
-  bool cgram_rw_upper = false;
-  byte cgram_lsb = 0;
 
   bool hv_latched = false;
   word hloc {};
@@ -527,6 +532,7 @@ private:
   std::shared_ptr<Screen> screen;
 
   friend class Logger<SPPU>;
+
   friend class TD2;
 
   void render_row();
