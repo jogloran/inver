@@ -68,9 +68,19 @@ void SPPU::render_row() {
 
   dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
 
+  std::array<dual, 32> tilemap_indices;
+  // starting x index = (scr[bg].x_reg / 8)
+  word start_x_index = (scr[bg].x_reg / 8);
+  // number of entries in first half = 64 - (scr[bg].x_reg / 8)
+  size_t first_half_entries = 32 - start_x_index;
+  auto cur = std::copy_n(&vram[tilemap_offs_addr + start_x_index], first_half_entries, tilemap_indices.begin());
+  // number of entries in second half = 32 - number of entries in first half
+  size_t second_half_entries = 32 - first_half_entries;
+  std::copy_n(&vram[tilemap_offs_addr], second_half_entries, cur);
+
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
-  std::for_each(&vram[tilemap_offs_addr], &vram[tilemap_offs_addr + 32],
+  std::for_each(tilemap_indices.begin(), tilemap_indices.end(),
                 [&](dual bg_tile_data) {
                   SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &bg_tile_data;
                   auto tile_id = t->char_no;

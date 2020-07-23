@@ -177,8 +177,10 @@ public:
         auto reg = scr[(addr - 0x210d) / 2];
         if (addr & 1) {
           reg.y(value);
+          if (reg.y_reg != 0) log_with_tag("scr", "bg%d y = %04x\n", (addr - 0x210d) / 2, reg.y_reg);
         } else {
           reg.x(value);
+          if (reg.x_reg != 0) log_with_tag("scr", "bg%d x = %04x\n", (addr - 0x210d) / 2, reg.x_reg);
         }
         break;
       }
