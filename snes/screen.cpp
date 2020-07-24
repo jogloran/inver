@@ -8,21 +8,10 @@ void Screen::blit() {
 
   int i = 0;
 //  for (auto& layer: fb) {
-  auto& layer = fb[0];
+  auto& layer = fb[2];
   for (const colour_t& b: layer) {
     buf[i++] = b.b * 8;
     buf[i++] = b.g * 8;
-    buf[i++] = b.r * 8;
-    buf[i++] = 255;
-  }
-  i = 0;
-  layer = fb[1];
-  for (const colour_t& b: layer) {
-    if (buf[i] == 0)
-      buf[i++] = b.b * 8;
-    if (buf[i] == 0)
-    buf[i++] = b.g * 8;
-    if (buf[i] == 0)
     buf[i++] = b.r * 8;
     buf[i++] = 255;
   }
