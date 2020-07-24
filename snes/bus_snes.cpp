@@ -1,8 +1,10 @@
 #include "bus_snes.hpp"
 #include "snes_spc/spc.h"
 #include "cpu5a22.hpp"
+#include "sdl_snes_input.hpp"
 
 #include <gflags/gflags.h>
+#include <sdl_input.hpp>
 
 DECLARE_bool(td);
 
@@ -70,6 +72,9 @@ byte BusSNES::read(dword address) {
       // DSP, SuperFX, hardware registers
     } else if (offs <= 0x40ff) {
       // Old Style Joypad Registers (4016-4017)
+      if (offs == 0x4016) {
+        return io1->read(offs);
+      }
     } else if (offs <= 0x41ff) {
       // unused
     } else if (offs <= 0x44ff) {
@@ -87,8 +92,14 @@ byte BusSNES::read(dword address) {
       if (offs == 0x4212) {
         bool vblank = ppu.state == SPPU::State::VBLANK;
         bool hblank = ppu.state == SPPU::State::HBLANK;
-        bool auto_joypad_read_busy = false;
         return (vblank << 7) | (hblank << 6) | auto_joypad_read_busy;
+      }
+      if (offs == 0x4218) {
+        log_with_tag("ctrl", "sample lo %02x\n", joypad_sample_lo);
+        return joypad_sample_lo;
+      } else if (offs == 0x4219) {
+        log_with_tag("ctrl", "sample hi %02x\n", joypad_sample_hi);
+        return joypad_sample_hi;
       }
 
       // DMA (4300-437f), PPU2, hardware registers (4200-420d; 4210-421f)
@@ -175,12 +186,18 @@ void BusSNES::write(dword address, byte value) {
       // DSP, SuperFX, hardware registers
     } else if (offs <= 0x40ff) {
       // Old Style Joypad Registers (4016-4017)
+      if (offs == 0x4016) {
+        io1->write(offs, value);
+      }
     } else if (offs <= 0x41ff) {
       // unused
     } else if (offs <= 0x44ff) {
       if (offs == 0x4200) {
         // NMITIMEN - Interrupt Enable
         nmi.reg = value;
+        if (nmi.joypad_enable) {
+          log("joypad\n");
+        }
       }
       // HTIMEL/HTIMEH
       if (offs == 0x4207) {
@@ -267,6 +284,7 @@ void BusSNES::map(std::vector<byte>&& data) {
 }
 
 void BusSNES::vblank_nmi() {
+  auto_joypad_read_start();
   in_nmi = true;
   if (nmi.vblank_nmi)
     cpu->irq<NMI>();
@@ -278,7 +296,7 @@ void BusSNES::vblank_end() {
   if (FLAGS_td) td2.show();
 }
 
-BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()) {
+BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()), io1(std::make_unique<SDLSNESController>()) {
   cpu->connect(this);
   ppu.connect(this);
   td2.connect(this);
@@ -307,4 +325,11 @@ void BusSNES::raise_timeup() {
     cpu->irq<IRQ>();
   }
   timeup = true; // should this be delayed, per the docs?
+}
+
+void BusSNES::auto_joypad_read_start() {
+  auto_joypad_read_busy = false;
+  word input = static_cast<SDLSNESController*>(io1.get())->sample_input();
+  joypad_sample_hi = input >> 8;
+  joypad_sample_lo = input & 0xff;
 }

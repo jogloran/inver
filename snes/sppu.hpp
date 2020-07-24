@@ -494,6 +494,8 @@ public:
   bool cgram_rw_upper = false;
   byte cgram_lsb = 0;
 
+  std::array<byte, 512 + 32> oam {};
+
 private:
   struct BGScroll {
     void x(byte val) {
@@ -524,7 +526,6 @@ private:
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
-  std::array<byte, 512 + 32> oam {};
   std::array<BGScroll, 4> scr {};
 
   bool oam_write_upper = false;

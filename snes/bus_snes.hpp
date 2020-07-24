@@ -12,6 +12,7 @@
 
 #include <gflags/gflags.h>
 #include <SDL2/SDL.h>
+#include "peripheral.hpp"
 
 DECLARE_bool(audio);
 
@@ -61,6 +62,8 @@ public:
   SNES_SPC* spc;
   size_t spc_time {};
 
+  std::shared_ptr<Peripheral> io1;
+
   std::vector<byte> rom;
 
   [[noreturn]] void run();
@@ -109,4 +112,10 @@ public:
   }
 
   void raise_timeup();
+
+  void auto_joypad_read_start();
+
+  byte auto_joypad_read_busy = 0;
+  byte joypad_sample_hi = 0;
+  byte joypad_sample_lo = 0;
 };

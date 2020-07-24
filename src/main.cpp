@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
     if (FLAGS_kb) {
       bus.connect2(std::make_shared<FamilyBasicKeyboard>());
     } else {
-      bus.connect1(std::make_shared<SDLInput>());
+      bus.connect1(std::make_shared<SDLSNESController>());
     }
   }
 

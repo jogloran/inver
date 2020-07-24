@@ -22,6 +22,21 @@ void Screen::blit() {
     buf[i++] = b.r * scale;
     buf[i++] = 255;
   }
+
+  auto ptr = (SPPU::OAM*) ppu->oam.data();
+  for (int i = 0; i < 128; ++i) {
+    SPPU::OAM oam = ptr[i];
+    SPPU::OAM2* oam2 = (SPPU::OAM2*) ppu->oam.data() + 512 + (i / 4);
+    word oam_x = compute_oam_x(oam, oam2, i);
+    for (int j = oam.x; j < oam.x + 8; ++j) {
+      buf[4 * (oam.y * SCREEN_WIDTH + j) + 2] = 255;
+      buf[4 * ((oam.y + 7) * SCREEN_WIDTH + j) + 2] = 255;
+    }
+    for (int k = oam.y; k < oam.y + 8; ++k) {
+      buf[4 * (k * SCREEN_WIDTH + oam.x) + 2] = 255;
+      buf[4 * (k * SCREEN_WIDTH + oam.x + 7) + 2] = 255;
+    }
+  }
 //  i = 0;
 //  layer = fb[2];
 //  for (const colour_t& b: layer) {
@@ -72,4 +87,17 @@ void Screen::blit() {
 
 void Screen::connect(SPPU* p) {
   ppu = p;
+}
+
+word Screen::compute_oam_x(SPPU::OAM oam, SPPU::OAM2* oam2, int i) {
+  switch (i % 4) {
+    case 0:
+      return oam.x + (oam2->obj0_sz << 8);
+    case 1:
+      return oam.x + (oam2->obj1_sz << 8);
+    case 2:
+      return oam.x + (oam2->obj2_sz << 8);
+    case 3:
+      return oam.x + (oam2->obj3_sz << 8);
+  }
 }
