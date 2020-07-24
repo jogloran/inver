@@ -8,6 +8,21 @@
 
 std::array<byte, 3> bpps = {{4, 4, 2}};
 
+void SPPU::dump_sprite() {
+  word addr = 0x27c0/2;
+  for (int i = 0; i < 32; ++i) {
+    std::printf("%04x ", vram[addr + i].w);
+  }
+  std::printf("\n");
+  for (int i = 0; i < 8; ++i) {
+    auto row = decode_planar(&vram[addr + i], 2, false);
+    for (byte b : row) {
+      std::printf("%-2x ", static_cast<int>(b));
+    }
+    std::printf("\n");
+  }
+}
+
 void SPPU::dump_pal() {
   for (auto it = pal.begin(); it != pal.end(); it += 2) {
     if (std::distance(pal.begin(), it) % 32 == 0) {
@@ -20,38 +35,73 @@ void SPPU::dump_pal() {
 }
 
 void SPPU::dump_bg() {
-  dword tilemap_base_addr = bg_base_size[2].base_addr * 0x400;
-  for (int cur_row = 0; cur_row < 32; ++cur_row) {
-    dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
+  dword tilemap_base_addr = bg_base_size[0].base_addr * 0x400;
+  for (int cur_row = 0; cur_row < 64; ++cur_row) {
+//    dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
+    std::printf("%04x ", addr(tilemap_base_addr, 0, cur_row, true, true));
 
-    std::printf("%06x ", tilemap_offs_addr);
+    for (int cur_col = 0; cur_col < 64; ++cur_col) {
+      word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
+      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
 
-    for (dual* ptr = &vram[tilemap_offs_addr]; ptr != &vram[tilemap_offs_addr + 32]; ++ptr) {
-      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) ptr;
-      if (t->char_no == 0xfc) {
-        std::printf("     ");
+      if (t->char_no == 0xfc || t->char_no == 0xf8 || t->char_no == 0) {
+        std::printf("        ");
       } else {
-        std::printf("%-3x%c ", t->char_no, t->flip_x ? '*' : ' ');
+        std::printf("%3x%c(%1d) ", t->char_no, t->flip_x ? '*' : ' ', t->pal_no);
       }
     }
-
     std::printf("\n");
 
-    std::printf("%06x ", tilemap_offs_addr);
-    for (dual* ptr = &vram[tilemap_offs_addr]; ptr != &vram[tilemap_offs_addr + 32]; ++ptr) {
-      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) ptr;
-      std::printf("%-4x ", t->reg);
-    }
-
-    std::printf("\n");
+//    std::printf("     ");
+//    for (int cur_col = 0; cur_col < 64; ++cur_col) {
+//      word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
+//      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
+//
+//      if (t->reg != 0) {
+//        std::printf("%-4x ", t->reg);
+//      } else {
+//        std::printf("     ");
+//      }
+//    }
+//    std::printf("\n");
+//
+//    std::printf("     ");
+//    for (int cur_col = 0; cur_col < 64; ++cur_col) {
+//      word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
+//      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
+//
+//      if (t->pal_no != 0) {
+//        std::printf("%-4x ", t->pal_no);
+//      } else {
+//        std::printf("     ");
+//      }
+//    }
+//
+//    std::printf("\n");
   }
 }
 
+word SPPU::addr(word base, word x, word y, bool sx, bool sy) {
+  return (base
+          + ((y & 0x1f) << 5)
+          + (x & 0x1f)
+          + (sy ? ((y & 0x20) << (sx ? 6 : 5)) : 0)
+          + (sy ? ((x & 0x20) << 5) : 0));
+}
+
+std::array<word, 32> SPPU::addrs_for_row(word base, word start_x, word start_y) {
+  std::array<word, 32> result;
+  auto it = result.begin();
+  for (int i = 0; i < 32; ++i) {
+    *it++ = addr(base, (start_x + i) % 64, start_y, true, true);
+  }
+  return result;
+}
 
 void SPPU::render_row() {
   // get bg mode
   byte mode = bgmode.mode;
-  byte bg = 2;
+  byte bg = 0;
 
   byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
   bpp /= 2;
@@ -61,30 +111,30 @@ void SPPU::render_row() {
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
 
   // 1024 words after this addr correspond to the current tilemap
-  byte cur_row = line / 8;
-  byte tile_row = line % 8;
+  byte cur_row = ((line + scr[bg].y_reg) % 512) / 8;
+  byte tile_row = ((line + scr[bg].y_reg) % 512) % 8;
 
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
-
-  std::array<dual, 32> tilemap_indices;
   // starting x index = (scr[bg].x_reg / 8)
   word start_x_index = (scr[bg].x_reg / 8);
-  // number of entries in first half = 64 - (scr[bg].x_reg / 8)
-  size_t first_half_entries = 32 - start_x_index;
-  auto cur = std::copy_n(&vram[tilemap_offs_addr + start_x_index], first_half_entries, tilemap_indices.begin());
-  // number of entries in second half = 32 - number of entries in first half
-  size_t second_half_entries = 32 - first_half_entries;
-  std::copy_n(&vram[tilemap_offs_addr], second_half_entries, cur);
+//  std::cout << start_x_index << ' ' << scr[bg].x_reg << '\n';
+  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row);
+  std::array<SPPU::bg_map_tile_t*, 32> tiles;
+  std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
+    return (SPPU::bg_map_tile_t*) &vram[addr];
+  });
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
-  std::for_each(tilemap_indices.begin(), tilemap_indices.end(),
-                [&](dual bg_tile_data) {
-                  SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &bg_tile_data;
+  std::for_each(tiles.begin(), tiles.end(),
+                [&](SPPU::bg_map_tile_t* t) {
                   auto tile_id = t->char_no;
                   auto* fb_ptr = screen->fb[0].data() + line * 256 + col * 8;
+
+                  if (tile_id == 96 && t->pal_no == 6) {
+                    ;
+                  }
 
                   auto row_to_access = tile_row;
                   if (t->flip_y)
@@ -97,11 +147,14 @@ void SPPU::render_row() {
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
-                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], bpp, t->flip_x);
+                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], bpp,
+                                                                t->flip_x);
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-                    Screen::colour_t rgb = lookup((1 << 2*bpp)*t->pal_no + pal_bytes[i]);
+//                    if (t->pal_no!=0)
+//                    std::printf("%02x\n", t->pal_no);
+                    Screen::colour_t rgb = lookup((1 << (2 * bpp)) * t->pal_no + pal_bytes[i]);
 
                     fb_ptr->r = rgb.r;
                     fb_ptr->g = rgb.g;
@@ -129,9 +182,6 @@ Screen::colour_t SPPU::lookup(byte i) {
 }
 
 void SPPU::tick(byte master_cycles) {
-  if (vram[0x50b3].w == 0x3898) {
-    std::cout << ">><<\n";;
-  }
   ncycles += master_cycles;
 
   switch (state) {

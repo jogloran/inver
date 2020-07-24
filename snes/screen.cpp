@@ -41,6 +41,9 @@ void Screen::blit() {
         case SDLK_p:
           ppu->dump_pal();
           break;
+        case SDLK_s:
+          ppu->dump_sprite();
+          break;
       }
     }
   }

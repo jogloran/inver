@@ -21,17 +21,10 @@ std::array<byte, 8> decode(word w, bool flip_x) {
 
 std::array<byte, 8> decode(word w1, word w2, bool flip_x) {
   std::array<byte, 8> result;
-  byte b1 = w1 & 0xff;
-  byte b2 = w1 >> 8;
-  byte b3 = w2 & 0xff;
-  byte b4 = w2 >> 8;
+  auto plane1 = decode(w1, flip_x);
+  auto plane2 = decode(w2, flip_x);
   for (int i = 0; i < 8; ++i) {
-    auto bit_select = flip_x ? i : 7 - i;
-    result[i] =
-        !!(b1 & (1 << bit_select))
-        + 2 * !!(b2 & (1 << bit_select))
-        + 4 * !!(b3 & (1 << bit_select))
-        + 8 * !!(b4 & (1 << bit_select));
+    result[i] = plane1[i] + (plane2[i] << 2);
   }
   return result;
 }
@@ -40,6 +33,6 @@ std::array<byte, 8> decode_planar(dual* ptr, byte bpp, bool flip_x) {
   if (bpp == 1) {
     return decode((*ptr).w, flip_x);
   } else {
-    return decode((*ptr).w, (*(ptr + 1)).w, flip_x);
+    return decode((*ptr).w, (*(ptr + 8)).w, flip_x);
   }
 }

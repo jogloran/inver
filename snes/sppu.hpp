@@ -174,13 +174,17 @@ public:
       case 0x2113: // BG4HOFS - BG4 Horizontal Scroll (X) (write-twice)
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
       {
-        auto reg = scr[(addr - 0x210d) / 2];
+        auto& reg = scr[(addr - 0x210d) / 2];
         if (addr & 1) {
-          reg.y(value);
-          if (reg.y_reg != 0) log_with_tag("scr", "bg%d y = %04x\n", (addr - 0x210d) / 2, reg.y_reg);
-        } else {
           reg.x(value);
-          if (reg.x_reg != 0) log_with_tag("scr", "bg%d x = %04x\n", (addr - 0x210d) / 2, reg.x_reg);
+          if (reg.x_reg != 0)
+          log_with_tag("scr", "%d %04x bg%d y = %04x\n", reg.bg_write_upper, addr, (addr - 0x210d) / 2,
+                       reg.x_reg);
+        } else {
+          reg.y(value);
+          if (reg.y_reg != 0)
+          log_with_tag("scr", "%d %04x bg%d x = %04x\n", reg.bg_write_upper, addr, (addr - 0x210d) / 2,
+                       reg.y_reg);
         }
         break;
       }
@@ -470,6 +474,8 @@ public:
     word w;
   } vram_addr;
 
+  void dump_sprite();
+
   void dump_bg();
 
   void dump_pal();
@@ -540,4 +546,8 @@ private:
   void render_row();
 
   Screen::colour_t lookup(byte);
+
+  std::array<word, 32> addrs_for_row(word base, word start_x, word start_y);
+
+  word addr(word base, word x, word y, bool sx, bool sy);
 };
