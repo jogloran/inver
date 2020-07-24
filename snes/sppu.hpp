@@ -88,6 +88,7 @@ public:
     switch (addr) {
       case 0x2100: // INIDISP - Display Control 1
         inidisp.reg = value;
+        screen->set_brightness(inidisp.brightness);
         break;
 
       case 0x2101: // OBSEL   - Object Size and Object Base

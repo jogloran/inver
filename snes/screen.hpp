@@ -95,4 +95,8 @@ public:
   SDL_Texture* raster_;
 
   SPPU* ppu;
+
+  void set_brightness(byte b);
+
+  byte brightness;
 };

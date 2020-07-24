@@ -3,16 +3,23 @@
 
 DECLARE_bool(show_raster);
 
+void Screen::set_brightness(byte b) {
+  // require: b >= 0 && b <= 15
+  brightness = b;
+}
+
 void Screen::blit() {
   SDL_ShowWindow(window_);
+
+  float scale = static_cast<float>(brightness) / 2.0;
 
   int i = 0;
 //  for (auto& layer: fb) {
   auto& layer = fb[0];
   for (const colour_t& b: layer) {
-    buf[i++] = b.b * 8;
-    buf[i++] = b.g * 8;
-    buf[i++] = b.r * 8;
+    buf[i++] = b.b * scale;
+    buf[i++] = b.g * scale;
+    buf[i++] = b.r * scale;
     buf[i++] = 255;
   }
 //  i = 0;
