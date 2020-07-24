@@ -1,4 +1,5 @@
 #include <array>
+#include <numeric>
 
 #include "sppu.hpp"
 #include "bus_snes.hpp"
@@ -34,8 +35,8 @@ void SPPU::dump_pal() {
   std::printf("\n");
 }
 
-void SPPU::dump_bg() {
-  dword tilemap_base_addr = bg_base_size[0].base_addr * 0x400;
+void SPPU::dump_bg(byte layer) {
+  dword tilemap_base_addr = bg_base_size[layer].base_addr * 0x400;
   for (int cur_row = 0; cur_row < 64; ++cur_row) {
 //    dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
     std::printf("%04x ", addr(tilemap_base_addr, 0, cur_row, true, true));
@@ -98,13 +99,47 @@ std::array<word, 33> SPPU::addrs_for_row(word base, word start_x, word start_y) 
   return result;
 }
 
-void SPPU::render_row() {
-  render_row(0);
-  render_row(1);
-  render_row(2);
+std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
+  std::array<byte, 256> result = layers[0];
+  for (auto it = layers.begin() + 1; it != layers.end(); ++it) {
+    auto& layer = *it;
+    for (int i = 0; i < 256; ++i) {
+      auto& buf = result[i];
+      auto& next = layer[i];
+
+      if (buf % 8 == 0 && next % 8 != 0) {
+        buf = next;
+      }
+    }
+  }
+  return result;
 }
 
-void SPPU::render_row(byte bg) {
+void SPPU::render_row() {
+  auto bg1 = render_row(0);
+  auto bg2 = render_row(1);
+  auto bg3 = render_row(2);
+
+  std::vector bgs { bg3, bg1, bg2 };
+  auto pals = composite(bgs);
+  auto fb_ptr = screen->fb[0].data() + line * 256;
+
+  for (byte pal_idx : pals) {
+    Screen::colour_t rgb;
+    if (pal_idx % 8 == 0) {
+      rgb = backdrop_colour;
+    } else {
+      rgb = lookup(pal_idx);
+    }
+
+    fb_ptr->r = rgb.r;
+    fb_ptr->g = rgb.g;
+    fb_ptr->b = rgb.b;
+    ++fb_ptr;
+  }
+}
+
+std::array<byte, 256> SPPU::render_row(byte bg) {
   // get bg mode
   byte mode = bgmode.mode;
 
@@ -132,7 +167,7 @@ void SPPU::render_row(byte bg) {
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
-  std::array<Screen::colour_t, 256 + 8> row;
+  std::array<byte, 256 + 8> row;
   auto ptr = row.begin();
   std::for_each(tiles.begin(), tiles.end(),
                 [&](SPPU::bg_map_tile_t* t) {
@@ -154,8 +189,7 @@ void SPPU::render_row(byte bg) {
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-                    Screen::colour_t rgb = lookup((1 << (2 * bpp)) * t->pal_no + pal_bytes[i]);
-                    *ptr++ = rgb;
+                    *ptr++ = (1 << (2 * bpp)) * t->pal_no + pal_bytes[i];
                   }
 
                   ++col;
@@ -163,13 +197,14 @@ void SPPU::render_row(byte bg) {
 
   // output row starting at scr[bg].x_reg % 8
   byte fine_offset = scr[bg].x_reg % 8;
-  auto* fb_ptr = screen->fb[bg].data() + line * 256;// + col * 8;
-  for (int i = fine_offset; i <= 256 + fine_offset; ++i) {
-    fb_ptr->r = row[i].r;
-    fb_ptr->g = row[i].g;
-    fb_ptr->b = row[i].b;
-    ++fb_ptr;
+//  auto* fb_ptr = screen->fb[bg].data() + line * 256;
+  std::array<byte, 256> result;
+  auto result_ptr = result.begin();
+  for (int i = fine_offset; i < 256 + fine_offset; ++i) {
+    *result_ptr++ = row[i];
   }
+
+  return result;
 
   // determine which tiles are in viewport
   // 0...32

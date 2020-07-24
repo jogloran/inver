@@ -276,7 +276,16 @@ public:
       case 0x212F: // TSW     - Window Area Sub Screen Disable
       case 0x2130: // CGWSEL  - Color Math Control Register A
       case 0x2131: // CGADSUB - Color Math Control Register B
+        break;
+
       case 0x2132: // COLDATA - Color Math Sub Screen Backdrop Color
+        if (value & (1 << 7)) {
+          backdrop_colour.b = value & 0x1f;
+        } else if (value & (1 << 6)) {
+          backdrop_colour.g = value & 0x1f;
+        } else if (value & (1 << 5)) {
+          backdrop_colour.r = value & 0x1f;
+        }
         break;
 
       case 0x2133: // SETINI  - Display Control 2
@@ -476,7 +485,7 @@ public:
 
   void dump_sprite();
 
-  void dump_bg();
+  void dump_bg(byte layer);
 
   void dump_pal();
 
@@ -529,6 +538,8 @@ private:
   word vloc {};
   bool vloc_read_upper = false;
 
+  Screen::colour_t backdrop_colour {};
+
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";
 
@@ -544,7 +555,7 @@ private:
   friend class TD2;
 
   void render_row();
-  void render_row(byte bg);
+  std::array<byte, 256> render_row(byte bg);
 
   Screen::colour_t lookup(byte);
 

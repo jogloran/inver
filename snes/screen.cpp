@@ -8,7 +8,7 @@ void Screen::blit() {
 
   int i = 0;
 //  for (auto& layer: fb) {
-  auto& layer = fb[2];
+  auto& layer = fb[0];
   for (const colour_t& b: layer) {
     buf[i++] = b.b * 8;
     buf[i++] = b.g * 8;
@@ -44,7 +44,13 @@ void Screen::blit() {
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
-          ppu->dump_bg();
+          ppu->dump_bg(0);
+          std::printf("\n");
+          ppu->dump_bg(1);
+          std::printf("\n");
+          ppu->dump_bg(2);
+          std::printf("\n");
+          std::exit(0);
           break;
         case SDLK_p:
           ppu->dump_pal();
