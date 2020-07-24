@@ -7,7 +7,6 @@
 #include <array>
 
 #include "types.h"
-#include "sppu.hpp"
 
 class SPPU;
 
@@ -100,6 +99,4 @@ public:
   void set_brightness(byte b);
 
   byte brightness;
-
-  word compute_oam_x(SPPU::OAM oam, SPPU::OAM2* oam2, int i);
 };

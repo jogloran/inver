@@ -10,6 +10,7 @@
 DECLARE_bool(test_rom_output);
 
 class BusSNES;
+class Screen;
 
 class SPPU : public Logger<SPPU> {
 public:

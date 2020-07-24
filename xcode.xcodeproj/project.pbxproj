@@ -27,10 +27,10 @@
 		092ED215248CAC0500869007 /* types.h in Sources */ = {isa = PBXBuildFile; fileRef = 09FADCC524847CD30020B5D4 /* types.h */; };
 		0972D492249AED4C00B771EC /* nes003.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0972D48F249AED4B00B771EC /* nes003.cpp */; };
 		0972D493249AED4C00B771EC /* nes002.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0972D491249AED4C00B771EC /* nes002.cpp */; };
-		0972D494249AED6900B771EC /* screen.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7324847CB30020B5D4 /* screen.hpp */; };
 		0972D496249AEE8C00B771EC /* mplus-2c-medium.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0972D495249AEE8B00B771EC /* mplus-2c-medium.ttf */; };
 		09824A022488945700951FC0 /* td.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09824A002488945700951FC0 /* td.cpp */; };
 		09C07AED24A334890085848A /* peripheral.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 09C07AEC24A334630085848A /* peripheral.hpp */; };
+		09C07AF224AAC4910085848A /* output_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09C07AEF24AAC4900085848A /* output_sdl.cpp */; };
 		09E3BF872478F60B00496742 /* libgflags.2.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */; };
 		09E3BF8B2478F62200496742 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */; };
 		09EA9C0B24A68F8F0053F72A /* renderer_palette.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09EA9C0824A68F8E0053F72A /* renderer_palette.cpp */; };
@@ -44,7 +44,6 @@
 		09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC7E24847CB30020B5D4 /* op_names.cpp */; };
 		09FADC9624847CB40020B5D4 /* Sound_Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8024847CB40020B5D4 /* Sound_Queue.cpp */; };
 		09FADC9724847CB40020B5D4 /* header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8124847CB40020B5D4 /* header.cpp */; };
-		09FADC9824847CB40020B5D4 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8424847CB40020B5D4 /* screen.cpp */; };
 		09FADC9A24847CB40020B5D4 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8924847CB40020B5D4 /* utils.cpp */; };
 		09FADC9B24847CB40020B5D4 /* cpu6502.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8A24847CB40020B5D4 /* cpu6502.cpp */; };
 		09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09FADC8D24847CB40020B5D4 /* ppu.cpp */; };
@@ -154,6 +153,10 @@
 		09A2C0362478E38A00CFB287 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		09A2C03D2478F37900CFB287 /* inver */ = {isa = PBXFileReference; lastKnownFileType = folder; path = inver; sourceTree = "<group>"; };
 		09C07AEC24A334630085848A /* peripheral.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = peripheral.hpp; sourceTree = "<group>"; };
+		09C07AEE24AAC4900085848A /* output.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = output.hpp; path = src/output.hpp; sourceTree = "<group>"; };
+		09C07AEF24AAC4900085848A /* output_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = output_sdl.cpp; path = src/output_sdl.cpp; sourceTree = "<group>"; };
+		09C07AF024AAC4910085848A /* output_sdl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = output_sdl.hpp; path = src/output_sdl.hpp; sourceTree = "<group>"; };
+		09C07AF124AAC4910085848A /* output_null.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = output_null.hpp; path = src/output_null.hpp; sourceTree = "<group>"; };
 		09E3BF862478F60B00496742 /* libgflags.2.2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgflags.2.2.2.dylib; path = ../../../../usr/local/Cellar/gflags/2.2.2/lib/libgflags.2.2.2.dylib; sourceTree = "<group>"; };
 		09E3BF882478F61400496742 /* sdl2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sdl2; path = ../../../../usr/local/Cellar/sdl2; sourceTree = "<group>"; };
 		09E3BF8A2478F62200496742 /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL2-2.0.0.dylib"; path = "../../../../usr/local/Cellar/sdl2/2.0.12/lib/libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
@@ -171,7 +174,6 @@
 		09EA9C1524A68FDC0053F72A /* dev_null.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dev_null.hpp; path = src/dev_null.hpp; sourceTree = "<group>"; };
 		09EA9C1624A68FDC0053F72A /* dev_null.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dev_null.cpp; path = src/dev_null.cpp; sourceTree = "<group>"; };
 		09EA9C1824A68FE20053F72A /* family_basic_keyboard.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = family_basic_keyboard.hpp; path = src/family_basic_keyboard.hpp; sourceTree = "<group>"; };
-		09FADC7324847CB30020B5D4 /* screen.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = screen.hpp; path = src/screen.hpp; sourceTree = "<group>"; };
 		09FADC7424847CB30020B5D4 /* mapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = mapper.hpp; path = src/mapper.hpp; sourceTree = "<group>"; };
 		09FADC7524847CB30020B5D4 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = "<group>"; };
 		09FADC7624847CB30020B5D4 /* Simple_Apu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Simple_Apu.h; path = src/Simple_Apu.h; sourceTree = "<group>"; };
@@ -188,7 +190,6 @@
 		09FADC8124847CB40020B5D4 /* header.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = header.cpp; path = src/header.cpp; sourceTree = "<group>"; };
 		09FADC8224847CB40020B5D4 /* ops.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ops.hpp; path = src/ops.hpp; sourceTree = "<group>"; };
 		09FADC8324847CB40020B5D4 /* Sound_Queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sound_Queue.h; path = src/Sound_Queue.h; sourceTree = "<group>"; };
-		09FADC8424847CB40020B5D4 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = screen.cpp; path = src/screen.cpp; sourceTree = "<group>"; };
 		09FADC8524847CB40020B5D4 /* op_names.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = op_names.hpp; path = src/op_names.hpp; sourceTree = "<group>"; };
 		09FADC8624847CB40020B5D4 /* nestest.nes */ = {isa = PBXFileReference; lastKnownFileType = file; name = nestest.nes; path = src/nestest.nes; sourceTree = "<group>"; };
 		09FADC8724847CB40020B5D4 /* bus.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = bus.hpp; path = src/bus.hpp; sourceTree = "<group>"; };
@@ -347,12 +348,14 @@
 				09FADC8E24847CB40020B5D4 /* op_macros.hpp */,
 				09FADC7E24847CB30020B5D4 /* op_names.cpp */,
 				09FADC8524847CB40020B5D4 /* op_names.hpp */,
+				09C07AF124AAC4910085848A /* output_null.hpp */,
+				09C07AEF24AAC4900085848A /* output_sdl.cpp */,
+				09C07AF024AAC4910085848A /* output_sdl.hpp */,
+				09C07AEE24AAC4900085848A /* output.hpp */,
 				09FADC7824847CB30020B5D4 /* ops.cpp */,
 				09FADC8224847CB40020B5D4 /* ops.hpp */,
 				09FADC8D24847CB40020B5D4 /* ppu.cpp */,
 				09FADC7924847CB30020B5D4 /* ppu.hpp */,
-				09FADC8424847CB40020B5D4 /* screen.cpp */,
-				09FADC7324847CB30020B5D4 /* screen.hpp */,
 				09FADC8B24847CB40020B5D4 /* sdl_input.hpp */,
 				09EA9C0624A68F850053F72A /* shifter.hpp */,
 				09FADC7A24847CB30020B5D4 /* Simple_Apu.cpp */,
@@ -607,9 +610,8 @@
 				09FADC9724847CB40020B5D4 /* header.cpp in Sources */,
 				0972D493249AED4C00B771EC /* nes002.cpp in Sources */,
 				09FADCA724847CBA0020B5D4 /* nes004.cpp in Sources */,
-				09FADC9824847CB40020B5D4 /* screen.cpp in Sources */,
 				09FADC9124847CB40020B5D4 /* main.cpp in Sources */,
-				0972D494249AED6900B771EC /* screen.hpp in Sources */,
+				09C07AF224AAC4910085848A /* output_sdl.cpp in Sources */,
 				09FADC9C24847CB40020B5D4 /* ppu.cpp in Sources */,
 				09FADC9524847CB40020B5D4 /* op_names.cpp in Sources */,
 				09EA9C1724A68FDC0053F72A /* dev_null.cpp in Sources */,

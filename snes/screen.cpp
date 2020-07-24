@@ -8,6 +8,20 @@ void Screen::set_brightness(byte b) {
   brightness = b;
 }
 
+word compute_oam_x(SPPU::OAM oam, SPPU::OAM2 *oam2, int i) {
+  switch (i % 4) {
+    case 0:
+      return oam.x + (oam2->obj0_sz << 8);
+    case 1:
+      return oam.x + (oam2->obj1_sz << 8);
+    case 2:
+      return oam.x + (oam2->obj2_sz << 8);
+    case 3:
+      return oam.x + (oam2->obj3_sz << 8);
+  }
+}
+
+
 void Screen::blit() {
   SDL_ShowWindow(window_);
 
@@ -15,18 +29,18 @@ void Screen::blit() {
 
   int i = 0;
 //  for (auto& layer: fb) {
-  auto& layer = fb[0];
-  for (const colour_t& b: layer) {
+  auto &layer = fb[0];
+  for (const colour_t &b: layer) {
     buf[i++] = b.b * scale;
     buf[i++] = b.g * scale;
     buf[i++] = b.r * scale;
     buf[i++] = 255;
   }
 
-  auto ptr = (SPPU::OAM*) ppu->oam.data();
+  auto ptr = (SPPU::OAM *) ppu->oam.data();
   for (int i = 0; i < 128; ++i) {
     SPPU::OAM oam = ptr[i];
-    SPPU::OAM2* oam2 = (SPPU::OAM2*) ppu->oam.data() + 512 + (i / 4);
+    SPPU::OAM2 *oam2 = (SPPU::OAM2 *) ppu->oam.data() + 512 + (i / 4);
     word oam_x = compute_oam_x(oam, oam2, i);
     for (int j = oam.x; j < oam.x + 8; ++j) {
       buf[4 * (oam.y * SCREEN_WIDTH + j) + 2] = 255;
@@ -85,19 +99,6 @@ void Screen::blit() {
   }
 }
 
-void Screen::connect(SPPU* p) {
+void Screen::connect(SPPU *p) {
   ppu = p;
-}
-
-word Screen::compute_oam_x(SPPU::OAM oam, SPPU::OAM2* oam2, int i) {
-  switch (i % 4) {
-    case 0:
-      return oam.x + (oam2->obj0_sz << 8);
-    case 1:
-      return oam.x + (oam2->obj1_sz << 8);
-    case 2:
-      return oam.x + (oam2->obj2_sz << 8);
-    case 3:
-      return oam.x + (oam2->obj3_sz << 8);
-  }
 }

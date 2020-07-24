@@ -56,10 +56,10 @@ add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22
         cpu5a22_test/utils.hpp
         snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
 
-include_directories(${ZIP_INCLUDE_DIRS})
-link_directories(${ZIP_LIBRARY_DIRS})
-add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)
-target_link_libraries(rhomb gflags -lzip)
+#include_directories(${ZIP_INCLUDE_DIRS})
+#link_directories(${ZIP_LIBRARY_DIRS})
+#add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)
+#target_link_libraries(rhomb gflags -lzip)
 
 add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/cpu5a22.hpp snes/cpu5a22.cpp snes/ops_5a22.hpp
