@@ -547,7 +547,7 @@ private:
 
   Screen::colour_t lookup(byte);
 
-  std::array<word, 32> addrs_for_row(word base, word start_x, word start_y);
+  std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
 
   word addr(word base, word x, word y, bool sx, bool sy);
 };
