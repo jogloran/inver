@@ -544,6 +544,7 @@ private:
   friend class TD2;
 
   void render_row();
+  void render_row(byte bg);
 
   Screen::colour_t lookup(byte);
 

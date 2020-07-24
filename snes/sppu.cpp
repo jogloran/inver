@@ -99,9 +99,14 @@ std::array<word, 33> SPPU::addrs_for_row(word base, word start_x, word start_y) 
 }
 
 void SPPU::render_row() {
+  render_row(0);
+  render_row(1);
+  render_row(2);
+}
+
+void SPPU::render_row(byte bg) {
   // get bg mode
   byte mode = bgmode.mode;
-  byte bg = 1;
 
   byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
   bpp /= 2;
@@ -158,7 +163,7 @@ void SPPU::render_row() {
 
   // output row starting at scr[bg].x_reg % 8
   byte fine_offset = scr[bg].x_reg % 8;
-  auto* fb_ptr = screen->fb[0].data() + line * 256;// + col * 8;
+  auto* fb_ptr = screen->fb[bg].data() + line * 256;// + col * 8;
   for (int i = fine_offset; i <= 256 + fine_offset; ++i) {
     fb_ptr->r = row[i].r;
     fb_ptr->g = row[i].g;

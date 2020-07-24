@@ -15,6 +15,25 @@ void Screen::blit() {
     buf[i++] = b.r * 8;
     buf[i++] = 255;
   }
+  i = 0;
+  layer = fb[1];
+  for (const colour_t& b: layer) {
+    if (buf[i] == 0)
+      buf[i++] = b.b * 8;
+    if (buf[i] == 0)
+    buf[i++] = b.g * 8;
+    if (buf[i] == 0)
+    buf[i++] = b.r * 8;
+    buf[i++] = 255;
+  }
+//  i = 0;
+//  layer = fb[2];
+//  for (const colour_t& b: layer) {
+//    buf[i++] = b.b * 8;
+//    buf[i++] = b.g * 8;
+//    buf[i++] = b.r * 8;
+//    buf[i++] = 255;
+//  }
 //  }
 
   SDL_UpdateTexture(texture_, nullptr, buf.data(), SCREEN_WIDTH * 4);
