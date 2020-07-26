@@ -118,4 +118,6 @@ public:
   byte auto_joypad_read_busy = 0;
   byte joypad_sample_hi = 0;
   byte joypad_sample_lo = 0;
+
+  void dump_mem();
 };

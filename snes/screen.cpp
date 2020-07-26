@@ -1,7 +1,9 @@
 #include "screen.hpp"
 #include "sppu.hpp"
+#include "bus_snes.hpp"
 
 DECLARE_bool(show_raster);
+DECLARE_bool(dis);
 
 void Screen::set_brightness(byte b) {
   // require: b >= 0 && b <= 15
@@ -19,6 +21,7 @@ word compute_oam_x(SPPU::OAM oam, SPPU::OAM2 *oam2, int i) {
     case 3:
       return oam.x + (oam2->obj3_sz << 8);
   }
+  return 0;
 }
 
 
@@ -42,24 +45,15 @@ void Screen::blit() {
     SPPU::OAM oam = ptr[i];
     SPPU::OAM2 *oam2 = (SPPU::OAM2 *) ppu->oam.data() + 512 + (i / 4);
     word oam_x = compute_oam_x(oam, oam2, i);
-    for (int j = oam.x; j < oam.x + 8; ++j) {
+    for (int j = oam_x; j < oam_x + 8; ++j) {
       buf[4 * (oam.y * SCREEN_WIDTH + j) + 2] = 255;
       buf[4 * ((oam.y + 7) * SCREEN_WIDTH + j) + 2] = 255;
     }
     for (int k = oam.y; k < oam.y + 8; ++k) {
-      buf[4 * (k * SCREEN_WIDTH + oam.x) + 2] = 255;
-      buf[4 * (k * SCREEN_WIDTH + oam.x + 7) + 2] = 255;
+      buf[4 * (k * SCREEN_WIDTH + oam_x) + 2] = 255;
+      buf[4 * (k * SCREEN_WIDTH + oam_x + 7) + 2] = 255;
     }
   }
-//  i = 0;
-//  layer = fb[2];
-//  for (const colour_t& b: layer) {
-//    buf[i++] = b.b * 8;
-//    buf[i++] = b.g * 8;
-//    buf[i++] = b.r * 8;
-//    buf[i++] = 255;
-//  }
-//  }
 
   SDL_UpdateTexture(texture_, nullptr, buf.data(), SCREEN_WIDTH * 4);
   SDL_RenderClear(renderer_);
@@ -93,6 +87,12 @@ void Screen::blit() {
           break;
         case SDLK_s:
           ppu->dump_sprite();
+          break;
+        case SDLK_m:
+          ppu->bus->dump_mem();
+          break;
+        case SDLK_BACKQUOTE:
+          FLAGS_dis = !FLAGS_dis;
           break;
       }
     }

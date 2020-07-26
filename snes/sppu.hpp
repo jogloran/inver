@@ -497,6 +497,7 @@ public:
 
   std::array<byte, 512 + 32> oam {};
 
+  BusSNES* bus;
 private:
   struct BGScroll {
     void x(byte val) {
@@ -550,7 +551,6 @@ private:
   long line {};
   long x {};
 
-  BusSNES* bus;
   std::shared_ptr<Screen> screen;
 
   friend class Logger<SPPU>;
