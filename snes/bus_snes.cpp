@@ -2,17 +2,26 @@
 #include "snes_spc/spc.h"
 #include "cpu5a22.hpp"
 #include "sdl_snes_input.hpp"
+#include "debug.hpp"
 
 #include <gflags/gflags.h>
 #include <sdl_input.hpp>
+#include <map>
 
 DECLARE_bool(td);
 
+extern std::map<dword, PCWatchSpec> dis_pcs;
+
 static long n = 0;
+
 void BusSNES::tick() {
   cpu->tick();
   ppu.tick();
-  ppu.tick();ppu.tick();ppu.tick();ppu.tick();ppu.tick();
+  ppu.tick();
+  ppu.tick();
+  ppu.tick();
+  ppu.tick();
+  ppu.tick();
   if (dma_state == DMAState::Next) {
     dma_state = DMAState::Dma;
   } else if (dma_state == DMAState::Dma) {
@@ -41,6 +50,13 @@ void BusSNES::reset() {
 }
 
 byte BusSNES::read(dword address) {
+  // causes stack overflow because dump_pc does bus->read
+//  if (auto it = dis_pcs.find(address); it != dis_pcs.end() &&
+//                                       (it->second.action & PCWatchSpec::Action::R)) {
+//    cpu->dump_pc();
+//    cpu->dump();
+//  }
+
   auto bank = address >> 16;
   auto offs = address & 0xffff;
 
@@ -148,6 +164,12 @@ byte BusSNES::read(dword address) {
 }
 
 void BusSNES::write(dword address, byte value) {
+  if (auto it = dis_pcs.find(address); it != dis_pcs.end() &&
+                                       (it->second.action & PCWatchSpec::Action::W)) {
+    cpu->dump_pc();
+    cpu->dump();
+  }
+
   auto bank = address >> 16;
   auto offs = address & 0xffff;
 
@@ -332,4 +354,8 @@ void BusSNES::auto_joypad_read_start() {
   word input = static_cast<SDLSNESController*>(io1.get())->sample_input();
   joypad_sample_hi = input >> 8;
   joypad_sample_lo = input & 0xff;
+}
+
+void BusSNES::dump_mem() {
+  std::printf("1425 = %02x\n", read(0x1425));
 }

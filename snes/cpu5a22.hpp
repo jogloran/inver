@@ -32,15 +32,19 @@ public:
   cycle_count_t mvp() {
     word count = a + 1;
     cycle_count_t ncycles {};
-    byte src_bank = read_byte();
-    byte dst_bank = read_byte();
+    word operand = read_word();
+    byte src_bank = operand >> 8;
+    byte dst_bank = operand & 0xff;
 
     while (count--) {
       dual& src = x;
       dual& dst = y;
 
       db = dst_bank;
-      write((dst_bank << 16) | dst--, read((src_bank << 16) | src--));
+      byte v = read((src_bank << 16) | src);
+      write((dst_bank << 16) | dst, v);
+      --src;
+      --dst;
       --a;
       ncycles += 7;
     }
@@ -51,15 +55,19 @@ public:
   cycle_count_t mvn() {
     word count = a + 1;
     cycle_count_t ncycles {};
-    byte src_bank = read_byte();
-    byte dst_bank = read_byte();
+    word operand = read_word();
+    byte src_bank = operand >> 8;
+    byte dst_bank = operand & 0xff;
 
     while (count--) {
       dual& src = x;
       dual& dst = y;
 
       db = dst_bank;
-      write((dst_bank << 16) | dst++, read((src_bank << 16) | src++));
+      byte v = read((src_bank << 16) | src);
+      write((dst_bank << 16) | dst, v);
+      ++src;
+      ++dst;
       --a;
       ncycles += 7;
     }

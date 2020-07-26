@@ -51,7 +51,7 @@ public:
     window_ = SDL_CreateWindow("Screen", 500, 0, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE,
                                SDL_WINDOW_HIDDEN);
     renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED
-//                                                | SDL_RENDERER_PRESENTVSYNC
+                                                | SDL_RENDERER_PRESENTVSYNC
                                                 | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE);

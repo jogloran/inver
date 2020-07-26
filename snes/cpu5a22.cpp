@@ -8,12 +8,18 @@
 #include "bus_snes.hpp"
 #include "op_names_5a22.hpp"
 #include "rang.hpp"
+#include "debug.hpp"
 
 #include <gflags/gflags.h>
+#include <map>
 
 DECLARE_bool(dis);
 DECLARE_bool(xx);
 DECLARE_bool(dump_stack);
+
+extern std::map<dword, PCWatchSpec> dis_pcs;
+extern std::set<dword> ignored_pcs;
+extern std::vector<ChangeWatchSpec> change_watches;
 
 std::ostream& hex_byte(std::ostream& out) {
   return out << std::hex << std::setw(2) << std::setfill('0') << std::right;
@@ -51,8 +57,6 @@ std::ostream& CPU5A22::dump_stack(std::ostream& out) {
   }
   return out << "】";
 }
-
-byte last_mode = 0xff;
 
 void CPU5A22::dump() {
   using std::hex;
@@ -93,7 +97,8 @@ void CPU5A22::dump() {
             << hex_byte << static_cast<int>(read(0x0003))
             << hex_byte << static_cast<int>(read(0x0004));
   std::cout << " mode:" << hex_byte << static_cast<int>(read(0x7e0100));
-//  std::cout << " 1df5:" << hex_byte << static_cast<int>(read(0x1df5));
+  std::cout << " 0109:" << hex_byte << static_cast<int>(read(0x109));
+  std::cout << " 7ecc76:" << hex_byte << static_cast<int>(read(0x7ecc76));
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 
@@ -109,15 +114,21 @@ void CPU5A22::tick() {
   if (cycles_left == 0) {
     byte opcode = bus->read(pc.addr);
 
-    if (FLAGS_dis) dump_pc();
+    auto dis_pc_cmd = dis_pcs.find(pc.addr);
+    bool dis_here = false;
+    if (dis_pc_cmd != dis_pcs.end() && (dis_pc_cmd->second.action & PCWatchSpec::X)) {
+      if (dis_pc_cmd->second.log_from_here)
+        FLAGS_dis = true;
+      dis_here = true;
+    }
+//    bool ignored = pc.addr == 0x8075 || pc.addr == 0x8077 || pc.addr == 0x806b || pc.addr == 0x806d;
+    bool ignored = ignored_pcs.find(pc.addr) != ignored_pcs.end();
+    if ((FLAGS_dis || dis_here) && !ignored) dump_pc();
     ++pc.addr;
-    if (FLAGS_dis) dump();
+    if ((FLAGS_dis || dis_here) && !ignored) dump();
 
-    auto mode = bus->read(0x100);
-//    std::printf("mode: %02x %02x\n", mode, last_mode);
-    if (mode != last_mode) {
-      last_mode = mode;
-      std::printf("mode: %02x\n", last_mode);
+    for (ChangeWatchSpec& spec : change_watches) {
+      spec(bus->read(spec.addr));
     }
 
     auto op = ops_65c816[opcode];
