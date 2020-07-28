@@ -117,7 +117,7 @@ void SPPU::render_row() {
 
 std::array<byte, 256> SPPU::render_row(byte bg) {
   if (inidisp.force_blank) return {};
-  
+
   // get bg mode
   byte mode = bgmode.mode;
 

@@ -259,17 +259,40 @@ public:
         break;
 
       case 0x2123: // W12SEL  - Window BG1/BG2 Mask Settings
+        windows[0].mask_for_bg[0] = static_cast<window_t::AreaSetting>(value & 3);
+        windows[1].mask_for_bg[0] = static_cast<window_t::AreaSetting>((value >> 2) & 3);
+        windows[0].mask_for_bg[1] = static_cast<window_t::AreaSetting>((value >> 4) & 3);
+        windows[1].mask_for_bg[1] = static_cast<window_t::AreaSetting>((value >> 6) & 3);
+        break;
       case 0x2124: // W34SEL  - Window BG3/BG4 Mask Settings
+        windows[0].mask_for_bg[2] = static_cast<window_t::AreaSetting>(value & 3);
+        windows[1].mask_for_bg[2] = static_cast<window_t::AreaSetting>((value >> 2) & 3);
+        windows[0].mask_for_bg[3] = static_cast<window_t::AreaSetting>((value >> 4) & 3);
+        windows[1].mask_for_bg[3] = static_cast<window_t::AreaSetting>((value >> 6) & 3);
+        break;
       case 0x2125: // WOBJSEL - Window OBJ/MATH Mask Settings
-
+        windows[0].mask_for_obj = static_cast<window_t::AreaSetting>(value & 3);
+        windows[1].mask_for_math = static_cast<window_t::AreaSetting>((value >> 2) & 3);
+        break;
       case 0x2126: // WH0     - Window 1 Left Position (X1)
+        windows[0].l = value;
+        break;
       case 0x2127: // WH1     - Window 1 Right Position (X2)
+        windows[0].r = value;
+        break;
 
       case 0x2128: // WH2     - Window 2 Left Position (X1)
+        windows[1].l = value;
+        break;
       case 0x2129: // WH3     - Window 2 Right Position (X2)
+        windows[1].r = value;
+        break;
 
       case 0x212A: // WBGLOG  - Window 1/2 Mask Logic (BG1-BG4)
+        bg_mask_op.reg = value;
+        break;
       case 0x212B: // WOBJLOG - Window 1/2 Mask Logic (OBJ/MATH)
+        obj_math_mask_op.reg = value;
         break;
 
       case 0x212C: // TM      - Main Screen Designation
@@ -482,7 +505,6 @@ public:
     VISIBLE, HBLANK, VBLANK
   } state;
 
-
   union vram_addr_t {
     struct {
       byte l;
@@ -490,6 +512,32 @@ public:
     };
     word w;
   } vram_addr;
+
+  struct window_t {
+    enum class AreaSetting : byte {
+      Disable, Inside, Outside
+    };
+    byte l;
+    byte r; // inclusive
+    AreaSetting mask_for_bg[4];
+    AreaSetting mask_for_obj;
+    AreaSetting mask_for_math;
+    bool main_disable;
+    bool sub_disable;
+  } windows[2] {};
+
+  union window_mask_op_t {
+    enum class MaskOp : byte {
+      Or = 0, And = 1, Xor = 2, Xnor = 3
+    };
+    struct {
+      MaskOp bg1_op : 2;
+      MaskOp bg2_op : 2;
+      MaskOp bg3_op : 2;
+      MaskOp bg4_op : 2;
+    };
+    byte reg;
+  } bg_mask_op {}, obj_math_mask_op {};
 
   void dump_sprite();
 
