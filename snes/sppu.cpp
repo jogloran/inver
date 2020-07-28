@@ -217,6 +217,10 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
     std::vector<byte> pixels;
     auto tile_y = (line - entry->y) % 8; // the row (0..8) of the tile
+    auto tile_no_y_offset = (line - entry->y) / 8;
+    if (entry->attr.flip_y) {
+      tile_no_y_offset = sprite_height / 8 - tile_no_y_offset - 1;
+    }
     word tile_no = entry->tile_no + (entry->attr.tile_no_h << 8);
 
     word obj_char_data_base = obsel.obj_base_addr * 8192;
@@ -226,9 +230,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
         tile_no_x_offset = sprite_width / 8 - tile - 1;
       }
       word obj_char_data_addr = obj_char_data_base
-                              + (tile_no + tile_no_x_offset) * 0x10 // 8x8 tile row selector
+                                + (tile_no + tile_no_x_offset) * 0x10 // 8x8 tile row selector
           + tile_y // sub-tile row selector
-          + 0x100 * ((line - entry->y) / 8); // 8x8 tile column selector
+          + 0x100 * tile_no_y_offset; // 8x8 tile column selector
       auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
 
       // need to adjust pal_no for whichever tile it's in (horizontal and vertical)
