@@ -221,18 +221,19 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
     word obj_char_data_base = obsel.obj_base_addr * 8192;
     for (int tile = 0; tile < sprite_width / 8; ++tile) {
-//      if (entry->attr.flip_x) {
-//        tile = sprite_width / 8 - tile - 1;
-//      }
+      auto tile_no_x_offset = tile;
+      if (entry->attr.flip_x) {
+        tile_no_x_offset = sprite_width / 8 - tile - 1;
+      }
       word obj_char_data_addr = obj_char_data_base
-          + (tile_no + tile) * 0x10 // 8x8 tile row selector
+                              + (tile_no + tile_no_x_offset) * 0x10 // 8x8 tile row selector
           + tile_y // sub-tile row selector
           + 0x100 * ((line - entry->y) / 8); // 8x8 tile column selector
       auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
 
       // need to adjust pal_no for whichever tile it's in (horizontal and vertical)
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
-                     [&entry, tile](auto pal_index) {
+                     [&entry](auto pal_index) {
                        return 128 + entry->attr.pal_no * 8 + pal_index;
                      });
     }
