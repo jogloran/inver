@@ -38,7 +38,11 @@ public:
         return 0x21;
 
       case 0x2138: // RDOAM   - PPU1 OAM Data Read            (read-twice)
-        return oam[oamadd.addr++];
+        if (oamadd.addr < 0x200) {
+          return oam[oamadd.addr++];
+        } else {
+          return oam[oamadd.addr++ % 0x21f];
+        }
 
       case 0x2139: // RDVRAML - PPU1 VRAM Data Read           (lower 8bits)
         return vram_prefetch.l;
@@ -94,6 +98,7 @@ public:
 
       case 0x2101: // OBSEL   - Object Size and Object Base
         obsel.reg = value;
+        std::printf("sprite base address %04x\n", obsel.obj_base_addr * 8192);
         break;
 
       case 0x2102: // OAMADDL - OAM Address (lower 8bit)
@@ -109,7 +114,8 @@ public:
         word oam_addr = oamadd.addr;
 
         if (oam_addr >= 0x200) {
-          oam[oam_addr] = value;
+          log("OAM[%04x] hi <- %02x\n", oam_addr, (value << 8));
+          oam[oam_addr & 0x21f] = value;
         } else if ((oam_addr & 1) && oam_addr < 0x200) {
           log("OAM[%04x] <- %04x\n", oam_addr - 1, oam_lsb | (value << 8));
           oam[oam_addr] = value;
@@ -423,8 +429,8 @@ public:
 
   union oamadd_t {
     struct {
-      word addr: 9;
-      byte unused: 6;
+      word addr: 10; // Values of 0x220-0x3ff are mirrors of 0x200-0x21f
+      byte unused: 5;
       byte obj_prio_rotate: 1;
     };
     word reg;
@@ -498,7 +504,14 @@ public:
   std::array<byte, 512 + 32> oam {};
 
   BusSNES* bus;
+
+  void dump_oam(bool dump_bytes = false);
+
 private:
+  void dump_oam_table();
+
+  void dump_oam_bytes();
+
   struct BGScroll {
     void x(byte val) {
       if (bg_write_upper) {
@@ -551,6 +564,13 @@ private:
   long line {};
   long x {};
 
+  struct RenderedSprite {
+    OAM oam;
+    byte oam_index;
+    std::vector<byte> pixels;
+  };
+  std::vector<RenderedSprite> visible;
+
   std::shared_ptr<Screen> screen;
 
   friend class Logger<SPPU>;
@@ -565,4 +585,8 @@ private:
   std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
 
   word addr(word base, word x, word y, bool sx, bool sy);
+
+  byte get_sprite_width(byte obsel_size, byte is_large);
+
+  byte get_sprite_height(byte obsel_size, byte is_large);
 };

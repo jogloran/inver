@@ -1,9 +1,11 @@
 #include <array>
 #include <numeric>
 
+#include "utils.hpp"
 #include "sppu.hpp"
 #include "bus_snes.hpp"
 #include "ppu_utils.hpp"
+#include "fort.hpp"
 
 // table of (mode, layer) -> bpp?
 
@@ -120,7 +122,7 @@ void SPPU::render_row() {
   auto bg2 = render_row(1);
   auto bg3 = render_row(2);
 
-  std::vector bgs { bg3, bg1, bg2 };
+  std::vector bgs {bg3, bg1, bg2};
   auto pals = composite(bgs);
   auto fb_ptr = screen->fb[0].data() + line * 256;
 
@@ -195,6 +197,36 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                   ++col;
                 });
 
+  visible.clear();
+  // Get OAM candidates based on current line
+  // Render them into a structure RenderedSprite { oam, oam_index, pixels }
+  // Sort to get priority
+  // Draw onto row in that order
+  OAM* oam_ptr = (OAM*) oam.data();
+  for (byte i = 0; i < 128; ++i) {
+    OAM* entry = &oam_ptr[i];
+    OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
+    auto oam_ = compute_oam_extras(entry, oam2, i);
+    auto sprite_height = get_sprite_height(obsel.obj_size, oam_.is_large);
+    auto x_ = oam_.x_full;
+
+    if (!(x_ >= 0 && x_ <= 255 && line >= entry->y && line < entry->y + sprite_height)) {
+      continue;
+    }
+
+    std::vector<byte> pixels;
+    auto tile_y = line - entry->y; // the row (0..8) of the tile
+    word tile_no = entry->tile_no + (entry->attr.tile_no_h << 8);
+    word obj_char_data_base = obsel.obj_base_addr * 8192;
+    word obj_char_data_addr = obj_char_data_base + tile_no * 0x10 + tile_y;
+    auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
+    std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
+                   [&entry](auto pal_index) {
+                     return 128 + entry->attr.pal_no * 8 + pal_index;
+                   });
+    visible.emplace_back(RenderedSprite {*entry, i, pixels});
+  }
+
   // output row starting at scr[bg].x_reg % 8
   byte fine_offset = scr[bg].x_reg % 8;
 //  auto* fb_ptr = screen->fb[bg].data() + line * 256;
@@ -202,6 +234,12 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   auto result_ptr = result.begin();
   for (int i = fine_offset; i < 256 + fine_offset; ++i) {
     *result_ptr++ = row[i];
+  }
+
+  for (auto& sprite : visible) {
+    std::copy_n(sprite.pixels.begin(),
+                std::min(sprite.pixels.size(), 256ul - sprite.oam.x),
+                &result[sprite.oam.x]);
   }
 
   return result;
@@ -283,4 +321,78 @@ void SPPU::tick(byte master_cycles) {
   if (fire_irq) {
     bus->raise_timeup();
   }
+}
+
+byte SPPU::get_sprite_width(byte obsel_size, byte is_large) {
+  static std::array<byte, 16> table {
+      8, 8, 8, 16, 16, 32, 16, 16,
+      16, 32, 64, 32, 64, 64, 32, 32,
+  };
+  return table[(is_large ? 8 : 0) + obsel_size];
+}
+
+byte SPPU::get_sprite_height(byte obsel_size, byte is_large) {
+  static std::array<byte, 16> table {
+      8, 8, 8, 16, 16, 32, 32, 32,
+      16, 32, 64, 32, 64, 64, 64, 32,
+  };
+  return table[(is_large ? 8 : 0) + obsel_size];
+}
+
+void SPPU::dump_oam(bool dump_bytes) {
+  if (dump_bytes) {
+    dump_oam_bytes();
+  } else {
+    dump_oam_table();
+  }
+}
+
+void SPPU::dump_oam_bytes() {
+  for (word addr = 0; addr < 0x220; ++addr) {
+    if (addr % 0x20 == 0)
+      std::printf("%03x | ", addr);
+
+    auto byte = oam[addr];
+//    if (byte == 0x0) {
+//      std::printf("   ");
+//    } else {
+      std::printf("%02x ", byte);
+//    }
+    if (addr % 0x20 == 0x1f)
+      std::printf("\n");
+  }
+  std::printf("\n");
+}
+
+void SPPU::dump_oam_table() {
+  fort::char_table obsel_tb;
+  obsel_tb << fort::header << "Attr" << "Value" << fort::endr;
+  obsel_tb << "Size mode" << int(obsel.obj_size) << fort::endr;
+  obsel_tb << "Base addr" << hex_word << obsel.obj_base_addr * 8192 << fort::endr;
+  obsel_tb << "0xff-0x100 gap" << hex_word << obsel.obj_gap_size * 4096 << fort::endr;
+
+  std::cout << obsel_tb.to_string() << std::endl;
+
+  fort::char_table tb;
+  tb << fort::header << "#" << "X" << "Y" << "tile" << "prio" << "flipx" << "flipy" << "large" << "w" << "h" << "v" << fort::endr;
+
+  OAM* oam_ptr = (OAM*) oam.data();
+  for (byte i = 0; i < 128; ++i) {
+    OAM* entry = &oam_ptr[i];
+    OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
+
+    auto oam_ = compute_oam_extras(entry, oam2, i);
+    if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
+
+    tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y) << int(oam_.tile_no_full)
+       << int(entry->attr.prio)
+       << int(entry->attr.flip_x) << int(entry->attr.flip_y)
+       << bool(oam_.is_large)
+       << std::dec << int(get_sprite_width(obsel.obj_size, oam_.is_large))
+       << std::dec << int(get_sprite_height(obsel.obj_size, oam_.is_large))
+       << std::hex << std::setw(2) << std::setfill('0') << int(oam[512 + i / 4])
+       << fort::endr;
+  }
+
+  std::cout << tb.to_string() << std::endl;
 }

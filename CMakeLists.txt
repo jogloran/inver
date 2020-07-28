@@ -56,10 +56,10 @@ add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22
         cpu5a22_test/utils.hpp
         snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
 
-#include_directories(${ZIP_INCLUDE_DIRS})
-#link_directories(${ZIP_LIBRARY_DIRS})
-#add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)
-#target_link_libraries(rhomb gflags -lzip)
+include_directories(${ZIP_INCLUDE_DIRS} rhomb)
+link_directories(${ZIP_LIBRARY_DIRS})
+add_executable(rhomb rhomb/main.cpp src/header.cpp src/header.hpp rhomb/fort.c rhomb/fort.hpp)
+target_link_libraries(rhomb gflags -lzip)
 
 add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/cpu5a22.hpp snes/cpu5a22.cpp snes/ops_5a22.hpp
@@ -70,10 +70,10 @@ add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/snes_spc/blargg_config.h snes/snes_spc/blargg_endian.h
         snes/snes_spc/SNES_SPC.h snes/snes_spc/SNES_SPC.cpp
         snes/snes_spc/SNES_SPC_misc.cpp snes/snes_spc/SNES_SPC_state.cpp
-        snes/snes_spc/spc.h snes/snes_spc/spc.cpp
+        snes/snes_spc/spc.h snes/snes_spc/spc.cpp rhomb/fort.hpp rhomb/fort.c
         snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
         snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp snes/sppu.cpp snes/sppu.hpp snes/dma.cpp snes/dma.hpp snes/logger.hpp
-        snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp snes/ppu_utils.hpp
+        snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp snes/ppu_utils.hpp snes/ppu_utils.cpp
         src/peripheral.hpp snes/sdl_snes_input.hpp snes/debug.hpp)
 
 target_link_libraries(snes gflags)

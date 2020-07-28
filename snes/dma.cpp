@@ -20,7 +20,7 @@ static const char* update_vram_address(dword dst, SPPU* ppu) {
     snprintf(maybe_vram_address, 8, "[%04x]", ppu->vram_addr.w);
   }
   if (dst == 0x2104) {
-    snprintf(maybe_vram_address, 8, "<%04x>", ppu->oamadd.addr);
+    snprintf(maybe_vram_address, 8, "《%04x》", ppu->oamadd.addr);
   }
   if (dst == 0x2122) {
     snprintf(maybe_vram_address, 8, "{%04x}", ppu->cgram_addr);
