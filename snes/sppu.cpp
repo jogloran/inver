@@ -54,33 +54,6 @@ void SPPU::dump_bg(byte layer) {
       }
     }
     std::printf("\n");
-
-//    std::printf("     ");
-//    for (int cur_col = 0; cur_col < 64; ++cur_col) {
-//      word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
-//      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
-//
-//      if (t->reg != 0) {
-//        std::printf("%-4x ", t->reg);
-//      } else {
-//        std::printf("     ");
-//      }
-//    }
-//    std::printf("\n");
-//
-//    std::printf("     ");
-//    for (int cur_col = 0; cur_col < 64; ++cur_col) {
-//      word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
-//      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
-//
-//      if (t->pal_no != 0) {
-//        std::printf("%-4x ", t->pal_no);
-//      } else {
-//        std::printf("     ");
-//      }
-//    }
-//
-//    std::printf("\n");
   }
 }
 
@@ -181,8 +154,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
                   // get tile chr data
                   word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + row_to_access;
-//                  std::printf("> %06x (base %06x tile_id %04x tile_row %02x)\n", tile_chr_base,
-//                      chr_base_addr, tile_id, tile_row);
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
@@ -267,13 +238,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   }
 
   return result;
-
-  // determine which tiles are in viewport
-  // 0...32
-
-  // for each layer:
-  // lookup bpp for mode and layer
-  // write row of 256 to screen->fb[0]
 }
 
 Screen::colour_t SPPU::lookup(byte i) {
@@ -295,7 +259,6 @@ void SPPU::tick(byte master_cycles) {
         state = State::HBLANK;
 
         render_row();
-//        log("%-3ld x=%d line=%-3d vis -> hbl\n", x, ncycles, line);
       }
       break;
     case State::HBLANK:
@@ -306,10 +269,8 @@ void SPPU::tick(byte master_cycles) {
 
         if (line <= 0xe0) {
           state = State::VISIBLE;
-//          log("%-3ld x=%d line=%-3d hbl -> vis\n", x, ncycles, line);
         } else if (line == 0xe1) {
           state = State::VBLANK;
-//          log("%-3ld x=%d line=%-3d hbl -> vbl\n", x, ncycles, line);
           bus->vblank_nmi();
         }
       }
@@ -377,11 +338,7 @@ void SPPU::dump_oam_bytes() {
       std::printf("%03x | ", addr);
 
     auto byte = oam[addr];
-//    if (byte == 0x0) {
-//      std::printf("   ");
-//    } else {
     std::printf("%02x ", byte);
-//    }
     if (addr % 0x20 == 0x1f)
       std::printf("\n");
   }
