@@ -261,7 +261,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
   for (auto& sprite : visible) {
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
-      if (sprite.pixels[i] % 16 != 0)
+      if (sprite.pixels[i] % 8 != 0)
         result[sprite.oam.x + i] = sprite.pixels[i];
     }
   }
