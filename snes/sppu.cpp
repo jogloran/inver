@@ -367,9 +367,9 @@ void SPPU::dump_oam_bytes() {
 void SPPU::dump_oam_table() {
   fort::char_table obsel_tb;
   obsel_tb << fort::header << "Attr" << "Value" << fort::endr;
-  obsel_tb << "Size mode" << int(obsel.obj_size) << fort::endr;
-  obsel_tb << "Base addr" << hex_word << obsel.obj_base_addr * 8192 << fort::endr;
-  obsel_tb << "0xff-0x100 gap" << hex_word << obsel.obj_gap_size * 4096 << fort::endr;
+  obsel_tb << "Size mode" << std::dec << int(obsel.obj_size) << fort::endr;
+  obsel_tb << "Base addr" << std::hex << std::setw(4) << std::setfill('0') << obsel.obj_base_addr * 8192 << fort::endr;
+  obsel_tb << "0xff-0x100 gap" << std::hex << std::setw(4) << std::setfill('0') << obsel.obj_gap_size * 4096 << fort::endr;
 
   std::cout << obsel_tb.to_string() << std::endl;
 
