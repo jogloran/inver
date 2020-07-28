@@ -5,6 +5,7 @@
 
 DECLARE_bool(show_raster);
 DECLARE_bool(dis);
+DECLARE_bool(fake_sprites);
 
 void Screen::set_brightness(byte b) {
   // require: b >= 0 && b <= 15
@@ -26,18 +27,20 @@ void Screen::blit() {
     buf[i++] = 255;
   }
 
-  auto ptr = (SPPU::OAM *) ppu->oam.data();
-  for (int i = 0; i < 128; ++i) {
-    SPPU::OAM* oam = &ptr[i];
-    SPPU::OAM2* oam2 = (SPPU::OAM2 *) ppu->oam.data() + 512 + (i / 4);
-    word oam_x = compute_oam_x(oam, oam2, i);
-    for (int j = oam_x; j < oam_x + 8; ++j) {
-      buf[4 * (oam->y * SCREEN_WIDTH + j) + 2] = 255;
-      buf[4 * ((oam->y + 7) * SCREEN_WIDTH + j) + 2] = 255;
-    }
-    for (int k = oam->y; k < oam->y + 8; ++k) {
-      buf[4 * (k * SCREEN_WIDTH + oam_x) + 2] = 255;
-      buf[4 * (k * SCREEN_WIDTH + oam_x + 7) + 2] = 255;
+  if (FLAGS_fake_sprites) {
+    auto ptr = (SPPU::OAM*) ppu->oam.data();
+    for (int i = 0; i < 128; ++i) {
+      SPPU::OAM* oam = &ptr[i];
+      SPPU::OAM2* oam2 = (SPPU::OAM2*) ppu->oam.data() + 512 + (i / 4);
+      word oam_x = compute_oam_x(oam, oam2, i);
+      for (int j = oam_x; j < oam_x + 8; ++j) {
+        buf[4 * (oam->y * SCREEN_WIDTH + j) + 2] = 255;
+        buf[4 * ((oam->y + 7) * SCREEN_WIDTH + j) + 2] = 255;
+      }
+      for (int k = oam->y; k < oam->y + 8; ++k) {
+        buf[4 * (k * SCREEN_WIDTH + oam_x) + 2] = 255;
+        buf[4 * (k * SCREEN_WIDTH + oam_x + 7) + 2] = 255;
+      }
     }
   }
 

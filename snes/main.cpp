@@ -28,6 +28,7 @@ DEFINE_bool(show_raster, false, "Show raster");
 DEFINE_string(dis_pcs, "", "ROM locations to dump for");
 DEFINE_string(ignored_pcs, "", "ROM locations to not dump for");
 DEFINE_string(change_watches, "", "Memory locations to watch for changes at");
+DEFINE_bool(fake_sprites, false, "Displays a red rectangle at the top left of each sprite");
 
 std::set<std::string> active_tags;
 std::map<dword, PCWatchSpec> dis_pcs;
