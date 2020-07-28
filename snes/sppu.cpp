@@ -91,6 +91,7 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
 }
 
 void SPPU::render_row() {
+
   auto bg1 = render_row(0);
   auto bg2 = render_row(1);
   auto bg3 = render_row(2);
@@ -115,6 +116,8 @@ void SPPU::render_row() {
 }
 
 std::array<byte, 256> SPPU::render_row(byte bg) {
+  if (inidisp.force_blank) return {};
+  
   // get bg mode
   byte mode = bgmode.mode;
 
