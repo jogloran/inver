@@ -207,6 +207,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     OAM* entry = &oam_ptr[i];
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
+    auto sprite_width = get_sprite_width(obsel.obj_size, oam_.is_large);
     auto sprite_height = get_sprite_height(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
@@ -215,15 +216,26 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     }
 
     std::vector<byte> pixels;
-    auto tile_y = line - entry->y; // the row (0..8) of the tile
+    auto tile_y = (line - entry->y) % 8; // the row (0..8) of the tile
     word tile_no = entry->tile_no + (entry->attr.tile_no_h << 8);
+
     word obj_char_data_base = obsel.obj_base_addr * 8192;
-    word obj_char_data_addr = obj_char_data_base + tile_no * 0x10 + tile_y;
-    auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
-    std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
-                   [&entry](auto pal_index) {
-                     return 128 + entry->attr.pal_no * 8 + pal_index;
-                   });
+    for (int tile = 0; tile < sprite_width / 8; ++tile) {
+//      if (entry->attr.flip_x) {
+//        tile = sprite_width / 8 - tile - 1;
+//      }
+      word obj_char_data_addr = obj_char_data_base
+          + (tile_no + tile) * 0x10 // 8x8 tile row selector
+          + tile_y // sub-tile row selector
+          + 0x100 * ((line - entry->y) / 8); // 8x8 tile column selector
+      auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
+
+      // need to adjust pal_no for whichever tile it's in (horizontal and vertical)
+      std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
+                     [&entry, tile](auto pal_index) {
+                       return 128 + entry->attr.pal_no * 8 + pal_index;
+                     });
+    }
     visible.emplace_back(RenderedSprite {*entry, i, pixels});
   }
 
