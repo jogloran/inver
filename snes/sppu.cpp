@@ -187,6 +187,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     }
 
     std::vector<byte> pixels;
+    pixels.reserve(sprite_width);
     auto tile_y = (line - entry->y) % 8; // the row (0..8) of the tile
     auto tile_no_y_offset = (line - entry->y) / 8;
     if (entry->attr.flip_y) {
