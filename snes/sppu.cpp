@@ -231,8 +231,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       }
       word obj_char_data_addr = obj_char_data_base
                                 + (tile_no + tile_no_x_offset) * 0x10 // 8x8 tile row selector
-          + tile_y // sub-tile row selector
-          + 0x100 * tile_no_y_offset; // 8x8 tile column selector
+                                + tile_y // sub-tile row selector
+                                + 0x100 * tile_no_y_offset; // 8x8 tile column selector
       auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
 
       // need to adjust pal_no for whichever tile it's in (horizontal and vertical)
@@ -253,10 +253,16 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     *result_ptr++ = row[i];
   }
 
+  // TODO: need to look into priority for sprite pixels
+  std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
+    return t1.oam.attr.prio > t2.oam.attr.prio;
+  });
+
   for (auto& sprite : visible) {
-    std::copy_n(sprite.pixels.begin(),
-                std::min(sprite.pixels.size(), 256ul - sprite.oam.x),
-                &result[sprite.oam.x]);
+    for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
+      if (sprite.pixels[i] % 16 != 0)
+        result[sprite.oam.x + i] = sprite.pixels[i];
+    }
   }
 
   return result;
@@ -373,7 +379,7 @@ void SPPU::dump_oam_bytes() {
 //    if (byte == 0x0) {
 //      std::printf("   ");
 //    } else {
-      std::printf("%02x ", byte);
+    std::printf("%02x ", byte);
 //    }
     if (addr % 0x20 == 0x1f)
       std::printf("\n");
@@ -385,13 +391,16 @@ void SPPU::dump_oam_table() {
   fort::char_table obsel_tb;
   obsel_tb << fort::header << "Attr" << "Value" << fort::endr;
   obsel_tb << "Size mode" << std::dec << int(obsel.obj_size) << fort::endr;
-  obsel_tb << "Base addr" << std::hex << std::setw(4) << std::setfill('0') << obsel.obj_base_addr * 8192 << fort::endr;
-  obsel_tb << "0xff-0x100 gap" << std::hex << std::setw(4) << std::setfill('0') << obsel.obj_gap_size * 4096 << fort::endr;
+  obsel_tb << "Base addr" << std::hex << std::setw(4) << std::setfill('0')
+           << obsel.obj_base_addr * 8192 << fort::endr;
+  obsel_tb << "0xff-0x100 gap" << std::hex << std::setw(4) << std::setfill('0')
+           << obsel.obj_gap_size * 4096 << fort::endr;
 
   std::cout << obsel_tb.to_string() << std::endl;
 
   fort::char_table tb;
-  tb << fort::header << "#" << "X" << "Y" << "tile" << "prio" << "flipx" << "flipy" << "large" << "w" << "h" << "v" << fort::endr;
+  tb << fort::header << "#" << "X" << "Y" << "tile" << "prio" << "flipx" << "flipy" << "large"
+     << "w" << "h" << "v" << fort::endr;
 
   OAM* oam_ptr = (OAM*) oam.data();
   for (byte i = 0; i < 128; ++i) {
