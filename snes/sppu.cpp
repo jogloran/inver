@@ -211,10 +211,11 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                                 + 0x100 * tile_no_y_offset; // 8x8 tile column selector
       auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
 
-      // need to adjust pal_no for whichever tile it's in (horizontal and vertical)
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
                      [&entry](auto pal_index) {
-                       return 128 + entry->attr.pal_no * 8 + pal_index;
+                       // All sprites are 16 colour (0 <= pal_index < 16) and all sub-tiles of a
+                       // sprite share the same palette
+                       return 128 + entry->attr.pal_no * 16 + pal_index;
                      });
     }
     visible.emplace_back(RenderedSprite {*entry, i, pixels});
@@ -361,7 +362,8 @@ void SPPU::dump_oam_table() {
   std::cout << obsel_tb.to_string() << std::endl;
 
   fort::char_table tb;
-  tb << fort::header << "#" << "X" << "Y" << "tile" << "prio" << "flipx" << "flipy" << "large"
+  tb << fort::header << "#" << "X" << "Y" << "tile" << "pal" << "prio" << "flipx" << "flipy"
+     << "large"
      << "w" << "h" << "v" << fort::endr;
 
   OAM* oam_ptr = (OAM*) oam.data();
@@ -372,7 +374,8 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y) << int(oam_.tile_no_full)
+    tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
+       << int(oam_.tile_no_full) << int(entry->attr.pal_no)
        << int(entry->attr.prio)
        << int(entry->attr.flip_x) << int(entry->attr.flip_y)
        << bool(oam_.is_large)
