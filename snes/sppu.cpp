@@ -134,18 +134,16 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  // starting x index = (scr[bg].x_reg / 8)
   word start_x_index = (scr[bg].x_reg / 8);
-//  std::cout << start_x_index << ' ' << scr[bg].x_reg << '\n';
   auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row);
-  std::array<SPPU::bg_map_tile_t*, 33> tiles;
+
+  // no need to clear _tiles_ since we overwrite each one
   std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
     return (SPPU::bg_map_tile_t*) &vram[addr];
   });
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
-  std::array<byte, 256 + 8> row;
   auto ptr = row.begin();
   std::for_each(tiles.begin(), tiles.end(),
                 [&](SPPU::bg_map_tile_t* t) {

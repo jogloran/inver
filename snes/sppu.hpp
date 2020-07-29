@@ -619,6 +619,10 @@ private:
   long line {};
   long x {};
 
+  std::array<SPPU::bg_map_tile_t*, 33> tiles {};
+  std::array<byte, 256 + 8> row {};
+
+
   struct RenderedSprite {
     OAM oam;
     byte oam_index;
