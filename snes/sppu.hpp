@@ -10,6 +10,7 @@
 DECLARE_bool(test_rom_output);
 
 class BusSNES;
+
 class Screen;
 
 class SPPU : public Logger<SPPU> {
@@ -186,13 +187,15 @@ public:
         if (addr & 1) {
           reg.x(value);
           if (reg.x_reg != 0)
-          log_with_tag("scr", "%d %04x bg%d y = %04x\n", reg.bg_write_upper, addr, (addr - 0x210d) / 2,
-                       reg.x_reg);
+            log_with_tag("scr", "%d %04x bg%d y = %04x\n", reg.bg_write_upper, addr,
+                         (addr - 0x210d) / 2,
+                         reg.x_reg);
         } else {
           reg.y(value);
           if (reg.y_reg != 0)
-          log_with_tag("scr", "%d %04x bg%d x = %04x\n", reg.bg_write_upper, addr, (addr - 0x210d) / 2,
-                       reg.y_reg);
+            log_with_tag("scr", "%d %04x bg%d x = %04x\n", reg.bg_write_upper, addr,
+                         (addr - 0x210d) / 2,
+                         reg.y_reg);
         }
         break;
       }
@@ -275,16 +278,20 @@ public:
         windows[1].mask_for_math = static_cast<window_t::AreaSetting>((value >> 2) & 3);
         break;
       case 0x2126: // WH0     - Window 1 Left Position (X1)
+        log_with_tag("win", "win %d l pos %02x\n", 0, value);
         windows[0].l = value;
         break;
       case 0x2127: // WH1     - Window 1 Right Position (X2)
+        log_with_tag("win", "win %d r pos %02x\n", 0, value);
         windows[0].r = value;
         break;
 
       case 0x2128: // WH2     - Window 2 Left Position (X1)
+        log_with_tag("win", "win %d l pos %02x\n", 1, value);
         windows[1].l = value;
         break;
       case 0x2129: // WH3     - Window 2 Right Position (X2)
+        log_with_tag("win", "win %d r pos %02x\n", 1, value);
         windows[1].r = value;
         break;
 
@@ -531,10 +538,10 @@ public:
       Or = 0, And = 1, Xor = 2, Xnor = 3
     };
     struct {
-      MaskOp bg1_op : 2;
-      MaskOp bg2_op : 2;
-      MaskOp bg3_op : 2;
-      MaskOp bg4_op : 2;
+      MaskOp bg1_op: 2;
+      MaskOp bg2_op: 2;
+      MaskOp bg3_op: 2;
+      MaskOp bg4_op: 2;
     };
     byte reg;
   } bg_mask_op {}, obj_math_mask_op {};
@@ -626,6 +633,7 @@ private:
   friend class TD2;
 
   void render_row();
+
   std::array<byte, 256> render_row(byte bg);
 
   Screen::colour_t lookup(byte);
