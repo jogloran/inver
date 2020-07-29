@@ -236,18 +236,25 @@ void BusSNES::write(dword address, byte value) {
 
       if (offs == 0x420b) {
         // MDMAEN
-        log("MDMAEN %d\n", value);
+//        log("MDMAEN %d\n", value);
         for (int i = 0; i < 8; ++i) {
           if (value & (1 << i)) {
             log("DMA start %d\n", i);
           }
-          dma[i].on(value & (1 << i));
+          dma[i].on(value & (1 << i), false);
         }
         dma_state = DMAState::Next;
       }
       if (offs == 0x420c) {
         // HDMAEN
-        log("HDMAEN %d\n", value);
+        if (value != 0)
+        log_with_tag("hdma", "HDMAEN %d\n", value);
+        for (int i = 0; i < 8; ++i) {
+          if (value & (1 << i)) {
+            log_with_tag("hdma", "HDMA start %d\n", i);
+          }
+          dma[i].on(value & (1 << i), true);
+        }
       }
 
       if (offs >= 0x4300 && offs <= 0x437f) {
@@ -323,10 +330,10 @@ BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()), io1(std::make_unique<SDLS
   ppu.connect(this);
   td2.connect(this);
   td2.show();
-  byte dma_ch_no = 0;
-  std::for_each(dma.begin(), dma.end(), [this, &dma_ch_no](auto& ch) {
+  byte ch_no = 0;
+  std::for_each(dma.begin(), dma.end(), [this, &ch_no](auto& ch) {
     ch.connect(this);
-    ch.set_ch(dma_ch_no++);
+    ch.set_ch(ch_no++);
   });
 
   spc = spc_new();

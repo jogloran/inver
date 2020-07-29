@@ -17,8 +17,9 @@ public:
     bus = b;
   }
 
-  void on(bool state) {
-    enabled = state;
+  void on(bool state, bool hdma) {
+    if (hdma) hdma_enabled = state;
+    else dma_enabled = state;
   }
 
   static constexpr sbyte A_step[] = { 1, 0, -1, 0 };
@@ -166,7 +167,8 @@ public:
 
   byte unused {}; // 43xb,f
 
-  bool enabled = false;
+  bool dma_enabled = false;
+  bool hdma_enabled = false;
 
   BusSNES* bus;
 
@@ -180,4 +182,10 @@ public:
       "param", "B@", "@L", "@M", "@H", "len L", "len H", "hbank", "h@ L", "h@ H",
       "hline", "-", "junk", "junk", "junk", "-",
   };
+
+  cycle_count_t hdma();
+
+  void hdma_indirect();
+
+  void hdma_direct();
 };
