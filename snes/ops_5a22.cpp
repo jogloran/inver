@@ -76,7 +76,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(^, zpg), 4,                       // 0x45
     LSR(zpg), 7,                         // 0x46
     OP(^, zpg_far), 7,                         // 0x47
-    PHA, 4,                              // 0x48
+    PH_(a, !cpu.p.m), 4,                              // 0x48
     OP(^, imm), 3,                       // 0x49
     LSR_A, 2,                            // 0x4a
     PHK, 3,                         // 0x4b
@@ -94,7 +94,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(^, zpg_far_plus_y), 7,
     SE(I, 0), 2,                         // 0x58
     OP(^, abs_plus_y), 6,                // 0x59
-    PHY, 4,                         // 0x5a
+    PH_(y, !cpu.p.x), 4,                         // 0x5a
     TCD, 2,                         // 0x5b
     JMP(abs_dword), 4,                         // 0x5c
     OP(^, abs_plus_x), 6,                // 0x5d
@@ -108,7 +108,7 @@ std::array<op_record, 256> ops_65c816 {
     ADC(zpg), 4,                         // 0x65
     ROR(zpg), 7,                         // 0x66
     ADC(zpg_far), 7,                         // 0x67
-    PLA, 5,                              // 0x68
+    PL_(a, !cpu.p.m), 5,                              // 0x68
     ADC(imm), 3,                         // 0x69
     ROR_A, 2,                            // 0x6a
     RTL, 6,                         // 0x6b
@@ -126,7 +126,7 @@ std::array<op_record, 256> ops_65c816 {
     ADC(zpg_far_plus_y), 7,                         // 0x77
     SE(I, 1), 2,                         // 0x78
     ADC(abs_plus_y), 6,                  // 0x79
-    PLY, 5,                         // 0x7a
+    PL_(y, !cpu.p.x), 5,                         // 0x7a
     TDC, 2,                         // 0x7b
     JMPS(abs_plus_x_indirect), 6,                         // 0x7c
     ADC(abs_plus_x), 6,                  // 0x7d
@@ -222,7 +222,7 @@ std::array<op_record, 256> ops_65c816 {
     CMP(zpg_far_plus_y), 7,                         // 0xd7
     SE(D, 0), 2,                         // 0xd8
     CMP(abs_plus_y), 6,                  // 0xd9
-    PHX, 4,                         // 0xda
+    PH_(x, !cpu.p.x), 4,                         // 0xda
     STP, 3,                         // 0xdb
     JMP(abs_far), 6,                         // 0xdc
     CMP(abs_plus_x), 6,                  // 0xdd
@@ -254,7 +254,7 @@ std::array<op_record, 256> ops_65c816 {
     SBC(zpg_far_plus_y), 7,                         // 0xf7
     SE(D, 1), 2,                         // 0xf8
     SBC(abs_plus_y), 6,                  // 0xf9
-    PLX, 5,                         // 0xfa
+    PL_(x, !cpu.p.x), 5,                         // 0xfa
     XCE, 2,                         // 0xfb
     JSR_abs_plus_x_indirect, 8,                         // 0xfc
     SBC(abs_plus_x), 6,                  // 0xfd

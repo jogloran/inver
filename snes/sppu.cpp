@@ -133,9 +133,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   // get base address for this layer
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
 
-  // if line = 3 and mosaic is 4x4, then line = 0
-//  byte mosaic_offset = (line % (mosaic.size + 1));
-
   // 1024 words after this addr correspond to the current tilemap
   byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
   byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;

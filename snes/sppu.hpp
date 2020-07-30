@@ -366,7 +366,7 @@ public:
     struct {
       byte mode: 3;
       byte bg3_mode1_prio: 1;
-      byte bg1_tile_size: 1;
+      byte bg1_tile_size: 1; // TODO:
       byte bg2_tile_size: 1;
       byte bg3_tile_size: 1;
       byte bg4_tile_size: 1;
@@ -387,8 +387,7 @@ public:
   union bg_base_size_t {
     struct {
       byte sc_size: 2;
-      byte base_addr: 5;
-      byte base_addr_extended: 1;
+      byte base_addr: 6;
     };
     byte reg;
   } bg_base_size[4] {};
@@ -599,7 +598,6 @@ private:
   std::array<byte, 512> pal {};
   std::array<BGScroll, 4> scr {};
 
-  bool oam_write_upper = false;
   byte oam_lsb = 0;
 
   dual vram_prefetch {};
@@ -646,14 +644,40 @@ private:
 
   Screen::colour_t lookup(byte);
 
+  /**
+   * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
+   * a fine scroll offset, it may return part of tile 0 and part of tile 32.
+   * @param base The base BG tile address
+   * @param start_x The leftmost tile 0 <= start_x < 64
+   * @param start_y The row of the tile 0 <= start_y < 64
+   * @return An array of 33 VRAM addresses for the BG tile data
+   */
   std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
 
+  /**
+   * Compute the VRAM address for a BG tile.
+   * @param base The base BG tile address
+   * @param x 0 <= x < 64
+   * @param y 0 <= y < 64
+   * @param sx Whether we are in the right half of the 64x64 tile space
+   * @param sy Whether we are in the bottom half of the 64x64 tile space
+   * @return 16-bit VRAM address
+   */
   word addr(word base, word x, word y, bool sx, bool sy);
 
-  std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
-
+  /**
+   * Compute the VRAM address for a sprite tile.
+   * @param chr_base The base sprite tile address
+   * @param tile_no 0 <= tile_no < 512
+   * @param tile_no_x_offset
+   * @param tile_no_y_offset
+   * @param fine_y 0 <= fine_y < 8
+   * @return 16-bit VRAM address
+   */
   word
   obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
+
+  std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
 
   void vblank_end();
 };
