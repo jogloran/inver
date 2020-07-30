@@ -622,7 +622,6 @@ private:
   std::array<SPPU::bg_map_tile_t*, 33> tiles {};
   std::array<byte, 256 + 8> row {};
 
-
   struct RenderedSprite {
     OAM oam;
     byte oam_index;
@@ -646,7 +645,8 @@ private:
 
   word addr(word base, word x, word y, bool sx, bool sy);
 
-  byte get_sprite_width(byte obsel_size, byte is_large);
+  std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
 
-  byte get_sprite_height(byte obsel_size, byte is_large);
+  word
+  obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
 };

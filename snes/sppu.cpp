@@ -179,8 +179,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     OAM* entry = &oam_ptr[i];
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto sprite_width = get_sprite_width(obsel.obj_size, oam_.is_large);
-    auto sprite_height = get_sprite_height(obsel.obj_size, oam_.is_large);
+    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line >= entry->y && line < entry->y + sprite_height)) {
@@ -203,10 +202,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       if (entry->attr.flip_x) {
         tile_no_x_offset = sprite_width / 8 - tile - 1;
       }
-      word obj_char_data_addr = obj_char_data_base
-                                + (tile_no + tile_no_x_offset) * 0x10 // 8x8 tile row selector
-                                + tile_y // sub-tile row selector
-                                + 0x100 * tile_no_y_offset; // 8x8 tile column selector
+      word obj_char_data_addr = obj_addr(obj_char_data_base, tile_no, tile_no_x_offset,
+                                         tile_no_y_offset, tile_y);
       auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
 
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
@@ -219,9 +216,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     visible.emplace_back(RenderedSprite {*entry, i, pixels});
   }
 
-  // output row starting at scr[bg].x_reg % 8
   byte fine_offset = scr[bg].x_reg % 8;
-//  auto* fb_ptr = screen->fb[bg].data() + line * 256;
   std::array<byte, 256> result;
   auto result_ptr = result.begin();
   for (int i = fine_offset; i < 256 + fine_offset; ++i) {
@@ -311,19 +306,12 @@ void SPPU::tick(byte master_cycles) {
   }
 }
 
-byte SPPU::get_sprite_width(byte obsel_size, byte is_large) {
-  static std::array<byte, 16> table {
-      8, 8, 8, 16, 16, 32, 16, 16,
-      16, 32, 64, 32, 64, 64, 32, 32,
-  };
-  return table[(is_large ? 8 : 0) + obsel_size];
-}
-
-byte SPPU::get_sprite_height(byte obsel_size, byte is_large) {
-  static std::array<byte, 16> table {
-      8, 8, 8, 16, 16, 32, 32, 32,
-      16, 32, 64, 32, 64, 64, 64, 32,
-  };
+std::pair<byte, byte> SPPU::get_sprite_dims(byte obsel_size, byte is_large) {
+  static constexpr std::array<std::pair<byte, byte>, 16> table
+      {{
+           {8, 8}, {8, 8}, {8, 8}, {16, 16}, {16, 16}, {32, 32}, {16, 32}, {16, 32},
+           {16, 16}, {32, 32}, {64, 64}, {32, 32}, {64, 64}, {64, 64}, {32, 64}, {32, 32},
+       }};
   return table[(is_large ? 8 : 0) + obsel_size];
 }
 
@@ -372,16 +360,26 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
+    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)
        << int(entry->attr.prio)
        << int(entry->attr.flip_x) << int(entry->attr.flip_y)
        << bool(oam_.is_large)
-       << std::dec << int(get_sprite_width(obsel.obj_size, oam_.is_large))
-       << std::dec << int(get_sprite_height(obsel.obj_size, oam_.is_large))
+       << std::dec << int(spr_width)
+       << std::dec << int(spr_height)
        << std::hex << std::setw(2) << std::setfill('0') << int(oam[512 + i / 4])
        << fort::endr;
   }
 
   std::cout << tb.to_string() << std::endl;
+}
+
+word SPPU::obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset,
+                    long fine_y) {
+  return chr_base
+         + ((tile_no + tile_no_x_offset) << 4) // 8x8 tile row selector
+         + (tile_no_y_offset << 8) // 8x8 tile column selector
+         + fine_y;
 }
