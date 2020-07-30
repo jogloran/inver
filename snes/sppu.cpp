@@ -40,12 +40,9 @@ void SPPU::dump_pal() {
 void SPPU::dump_bg(byte layer) {
   dword tilemap_base_addr = bg_base_size[layer].base_addr * 0x400;
   for (int cur_row = 0; cur_row < 64; ++cur_row) {
-//    dword tilemap_offs_addr = tilemap_base_addr + cur_row * 32; // TODO: need to account for scroll
-    std::printf("%04x ", addr(tilemap_base_addr, 0, cur_row, true, true));
-
     for (int cur_col = 0; cur_col < 64; ++cur_col) {
       word p = addr(tilemap_base_addr, cur_col, cur_row, true, true);
-      SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &vram[p];
+      bg_map_tile_t* t = (bg_map_tile_t*) &vram[p];
 
       if (t->char_no == 0xfc || t->char_no == 0xf8 || t->char_no == 0) {
         std::printf("        ");
@@ -55,23 +52,6 @@ void SPPU::dump_bg(byte layer) {
     }
     std::printf("\n");
   }
-}
-
-word SPPU::addr(word base, word x, word y, bool sx, bool sy) {
-  return (base
-          + ((y & 0x1f) << 5)
-          + (x & 0x1f)
-          + (sy ? ((y & 0x20) << (sx ? 6 : 5)) : 0)
-          + (sy ? ((x & 0x20) << 5) : 0));
-}
-
-std::array<word, 33> SPPU::addrs_for_row(word base, word start_x, word start_y) {
-  std::array<word, 33> result;
-  auto it = result.begin();
-  for (int i = 0; i < 33; ++i) {
-    *it++ = addr(base, (start_x + i) % 64, start_y, true, true);
-  }
-  return result;
 }
 
 std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
@@ -126,32 +106,29 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   // get bg mode
   byte mode = bgmode.mode;
 
-  byte bpp = bpps[bg]; // 2bpp means one pixel is encoded in one word
-  bpp /= 2;
+  // 2bpp means one pixel is encoded in one word. wpp = words per pixel
+  byte wpp = bpps[bg] / 2;
 
-  // assume we're looking at 4bpp layer 0
-  // get base address for this layer
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
+  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  // 1024 words after this addr correspond to the current tilemap
   byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
   byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;
 
-  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
-
-  word start_x_index = (scr[bg].x_reg / 8);
+  word start_x_index = scr[bg].x_reg / 8;
+  byte fine_x_offset = scr[bg].x_reg % 8;
   auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row);
 
   // no need to clear _tiles_ since we overwrite each one
   std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
-    return (SPPU::bg_map_tile_t*) &vram[addr];
+    return (bg_map_tile_t*) &vram[addr];
   });
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
   auto ptr = row.begin();
   std::for_each(tiles.begin(), tiles.end(),
-                [&](SPPU::bg_map_tile_t* t) {
+                [&](bg_map_tile_t* t) {
                   auto tile_id = t->char_no;
 
                   auto row_to_access = tile_row;
@@ -159,16 +136,16 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                     row_to_access = 7 - row_to_access;
 
                   // get tile chr data
-                  word tile_chr_base = chr_base_addr + (8 * bpp) * tile_id + row_to_access;
+                  word tile_chr_base = chr_base_addr + (8 * wpp) * tile_id + row_to_access;
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
-                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], bpp,
+                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
                                                                 t->flip_x);
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-                    *ptr++ = (1 << (2 * bpp)) * t->pal_no + pal_bytes[i];
+                    *ptr++ = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
                   }
 
                   ++col;
@@ -184,7 +161,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     OAM* entry = &oam_ptr[i];
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
@@ -221,10 +198,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     visible.emplace_back(RenderedSprite {*entry, i, pixels});
   }
 
-  byte fine_offset = scr[bg].x_reg % 8;
   std::array<byte, 256> result;
   auto result_ptr = result.begin();
-  for (int i = fine_offset; i < 256 + fine_offset; ++i) {
+  for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
     *result_ptr++ = row[i];
   }
 
@@ -326,15 +302,6 @@ void SPPU::tick(byte master_cycles) {
   }
 }
 
-std::pair<byte, byte> SPPU::get_sprite_dims(byte obsel_size, byte is_large) {
-  static constexpr std::array<std::pair<byte, byte>, 16> table
-      {{
-           {8, 8}, {8, 8}, {8, 8}, {16, 16}, {16, 16}, {32, 32}, {16, 32}, {16, 32},
-           {16, 16}, {32, 32}, {64, 64}, {32, 32}, {64, 64}, {64, 64}, {32, 64}, {32, 32},
-       }};
-  return table[(is_large ? 8 : 0) + obsel_size];
-}
-
 void SPPU::dump_oam(bool dump_bytes) {
   if (dump_bytes) {
     dump_oam_bytes();
@@ -380,7 +347,7 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
 
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)
@@ -394,14 +361,6 @@ void SPPU::dump_oam_table() {
   }
 
   std::cout << tb.to_string() << std::endl;
-}
-
-word SPPU::obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset,
-                    long fine_y) {
-  return chr_base
-         + ((tile_no + tile_no_x_offset) << 4) // 8x8 tile row selector
-         + (tile_no_y_offset << 8) // 8x8 tile column selector
-         + fine_y;
 }
 
 void SPPU::vblank_end() {

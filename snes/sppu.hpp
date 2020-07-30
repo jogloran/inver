@@ -4,6 +4,7 @@
 #include "types.h"
 #include "logger.hpp"
 #include "screen.hpp"
+#include "regs.hpp"
 
 #include <gflags/gflags.h>
 
@@ -34,8 +35,8 @@ public:
 
       case 0x2137: // SLHV    - PPU1 Latch H/V-Counter by Software (Read=Strobe)
         hv_latched = true;
-        hloc = x;
-        vloc = line;
+        hloc.w = x;
+        vloc.w = line;
         return 0x21;
 
       case 0x2138: // RDOAM   - PPU1 OAM Data Read            (read-twice)
@@ -63,15 +64,15 @@ public:
 
       case 0x213C: // OPHCT   - PPU2 Horizontal Counter Latch (read-twice)
         if (hloc_read_upper) {
-          return hloc & 0xff;
+          return hloc.l;
         } else {
-          return hloc >> 8;
+          return hloc.h;
         }
       case 0x213D: // OPVCT   - PPU2 Vertical Counter Latch   (read-twice)
         if (vloc_read_upper) {
-          return vloc & 0xff;
+          return vloc.l;
         } else {
-          return vloc >> 8;
+          return vloc.h;
         }
       case 0x213E: // STAT77  - PPU1 Status and PPU1 Version Number
         // TODO: set sprite overflow flags
@@ -339,67 +340,17 @@ public:
   }
 
   // 212c,212d
-  union layer_ctrl_t {
-    struct {
-      byte bg1: 1;
-      byte bg2: 1;
-      byte bg3: 1;
-      byte bg4: 1;
-      byte obj: 1;
-      byte unused: 3;
-    };
-    byte reg;
-  } main_scr = {}, sub_scr = {};
-
+  layer_ctrl_t main_scr = {}, sub_scr = {};
   // 2100
-  union inidisp_t {
-    struct {
-      byte brightness: 4;
-      byte unused: 3;
-      byte force_blank: 1;
-    };
-    byte reg;
-  } inidisp {};
-
+  inidisp_t inidisp {};
   // 2105
-  union bgmode_t {
-    struct {
-      byte mode: 3;
-      byte bg3_mode1_prio: 1;
-      byte bg1_tile_size: 1; // TODO:
-      byte bg2_tile_size: 1;
-      byte bg3_tile_size: 1;
-      byte bg4_tile_size: 1;
-    };
-    byte reg;
-  } bgmode {};
-
+  bgmode_t bgmode {};
   // 2106
-  union mosaic_t {
-    struct {
-      byte enable_for_bg: 4;
-      byte size: 4;
-    };
-    byte reg;
-  } mosaic {};
-
+  mosaic_t mosaic {};
   // 2107-210a
-  union bg_base_size_t {
-    struct {
-      byte sc_size: 2;
-      byte base_addr: 6;
-    };
-    byte reg;
-  } bg_base_size[4] {};
-
+  bg_base_size_t bg_base_size[4] {};
   // 210b,210c (16 bits)
-  union bg_char_data_addr_t {
-    struct {
-      byte bg1_tile_base_addr: 4;
-      byte bg2_tile_base_addr: 4;
-    };
-    byte reg;
-  } bg_char_data_addr[2] {};
+  bg_char_data_addr_t bg_char_data_addr[2] {};
 
   word bg_chr_base_addr_for_bg(byte bg_no) {
     switch (bg_no) {
@@ -415,96 +366,10 @@ public:
     return 0;
   }
 
-  union vram_addr_incr_t {
-    struct {
-      byte step_mode: 2;
-      byte addr_trans: 2; // TODO:
-      byte unused: 3;
-      byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
-    };
-    byte reg;
-  } vram_addr_incr {};
-
-  union setini_t {
-    struct {
-      byte vscan: 1;
-      byte obj_v_direction_disp: 1;
-      byte bg_v_direction_disp: 1;
-      byte horiz_pseudo_512: 1;
-      byte unused: 2;
-      byte ext_bg: 1;
-      byte ext_sync: 1;
-    };
-    byte reg;
-  } setini {};
-
-  union bg_map_tile_t {
-    struct {
-      word char_no: 10;
-      byte pal_no: 3;
-      byte bg_prio: 1;
-      byte flip_x: 1;
-      byte flip_y: 1;
-    };
-    word reg;
-  };
-  union obsel_t {
-    struct {
-      byte obj_base_addr: 3;
-      byte obj_gap_size: 2;
-      byte obj_size: 3;
-    };
-    byte reg;
-  } obsel {};
-
-  union oamadd_t {
-    struct {
-      word addr: 10; // Values of 0x220-0x3ff are mirrors of 0x200-0x21f
-      byte unused: 5;
-      byte obj_prio_rotate: 1;
-    };
-    word reg;
-  } oamadd;
-
-  // each entry is 4 bytes
-  struct OAM {
-    byte x;
-    byte y;
-    byte tile_no;
-    union attr_t {
-      struct {
-        byte tile_no_h: 1;
-        byte pal_no: 3;
-        byte prio: 2;
-        byte flip_x: 1;
-        byte flip_y: 1;
-      };
-      byte reg;
-    } attr;
-  };
-
-  struct OAM2 {
-    byte obj0_xh: 1;
-    byte obj0_sz: 1;
-    byte obj1_xh: 1;
-    byte obj1_sz: 1;
-    byte obj2_xh: 1;
-    byte obj2_sz: 1;
-    byte obj3_xh: 1;
-    byte obj3_sz: 1;
-  };
-
-  union hvtime_t {
-    struct {
-      byte l;
-      byte h;
-    };
-    struct {
-      word v: 9;
-      byte unused: 7;
-    };
-    word reg;
-  };
+  vram_addr_incr_t vram_addr_incr {};
+  setini_t setini {};
+  obsel_t obsel {};
+  oamadd_t oamadd;
   hvtime_t htime {};
   hvtime_t vtime {};
 
@@ -512,39 +377,10 @@ public:
     VISIBLE, HBLANK, VBLANK
   } state;
 
-  union vram_addr_t {
-    struct {
-      byte l;
-      byte h;
-    };
-    word w;
-  } vram_addr;
+  vram_addr_t vram_addr;
 
-  struct window_t {
-    enum class AreaSetting : byte {
-      Disable, Inside, Outside
-    };
-    byte l;
-    byte r; // inclusive
-    AreaSetting mask_for_bg[4];
-    AreaSetting mask_for_obj;
-    AreaSetting mask_for_math;
-    bool main_disable;
-    bool sub_disable;
-  } windows[2] {};
-
-  union window_mask_op_t {
-    enum class MaskOp : byte {
-      Or = 0, And = 1, Xor = 2, Xnor = 3
-    };
-    struct {
-      MaskOp bg1_op: 2;
-      MaskOp bg2_op: 2;
-      MaskOp bg3_op: 2;
-      MaskOp bg4_op: 2;
-    };
-    byte reg;
-  } bg_mask_op {}, obj_math_mask_op {};
+  window_t windows[2] {};
+  window_mask_op_t bg_mask_op {}, obj_math_mask_op {};
 
   void dump_sprite();
 
@@ -567,32 +403,6 @@ private:
 
   void dump_oam_bytes();
 
-  struct BGScroll {
-    void x(byte val) {
-      if (bg_write_upper) {
-        x_reg = (x_reg & ~0x300) | ((val & 3) << 8);
-        bg_write_upper = false;
-      } else {
-        x_reg = (x_reg & ~0xff) | val;
-        bg_write_upper = true;
-      }
-    }
-
-    void y(byte val) {
-      if (bg_write_upper) {
-        y_reg = (y_reg & ~0x300) | ((val & 3) << 8);
-        bg_write_upper = false;
-      } else {
-        y_reg = (y_reg & ~0xff) | val;
-        bg_write_upper = true;
-      }
-    }
-
-    word x_reg {};
-    word y_reg {};
-    bool bg_write_upper = false;
-  };
-
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
@@ -607,9 +417,9 @@ private:
   bool sprite_range_overflow = false;
 
   bool hv_latched = false;
-  word hloc {};
+  dual hloc {};
   bool hloc_read_upper = false;
-  word vloc {};
+  dual vloc {};
   bool vloc_read_upper = false;
 
   Screen::colour_t backdrop_colour {};
@@ -622,7 +432,7 @@ private:
   long line {};
   long x {};
 
-  std::array<SPPU::bg_map_tile_t*, 33> tiles {};
+  std::array<bg_map_tile_t*, 33> tiles {};
   std::array<byte, 256 + 8> row {};
 
   struct RenderedSprite {
@@ -643,41 +453,6 @@ private:
   std::array<byte, 256> render_row(byte bg);
 
   Screen::colour_t lookup(byte);
-
-  /**
-   * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
-   * a fine scroll offset, it may return part of tile 0 and part of tile 32.
-   * @param base The base BG tile address
-   * @param start_x The leftmost tile 0 <= start_x < 64
-   * @param start_y The row of the tile 0 <= start_y < 64
-   * @return An array of 33 VRAM addresses for the BG tile data
-   */
-  std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
-
-  /**
-   * Compute the VRAM address for a BG tile.
-   * @param base The base BG tile address
-   * @param x 0 <= x < 64
-   * @param y 0 <= y < 64
-   * @param sx Whether we are in the right half of the 64x64 tile space
-   * @param sy Whether we are in the bottom half of the 64x64 tile space
-   * @return 16-bit VRAM address
-   */
-  word addr(word base, word x, word y, bool sx, bool sy);
-
-  /**
-   * Compute the VRAM address for a sprite tile.
-   * @param chr_base The base sprite tile address
-   * @param tile_no 0 <= tile_no < 512
-   * @param tile_no_x_offset
-   * @param tile_no_y_offset
-   * @param fine_y 0 <= fine_y < 8
-   * @return 16-bit VRAM address
-   */
-  word
-  obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
-
-  std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
 
   void vblank_end();
 };

@@ -27,7 +27,7 @@ TD2::show() {
 //  dword base = ppu->bg_base_size[0].base_addr * 0x400;
   dword base = 0x6000;
   for (dword i = base; i < base + 32 * 32; ++i) {
-    SPPU::bg_map_tile_t* t = (SPPU::bg_map_tile_t*) &ppu->vram[i];
+    bg_map_tile_t* t = (bg_map_tile_t*) &ppu->vram[i];
 //    std::printf("%04x [%04x]\n", i, t->reg);
 
     int offset = i - base;

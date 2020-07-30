@@ -28,10 +28,10 @@ void Screen::blit() {
   }
 
   if (FLAGS_fake_sprites) {
-    auto ptr = (SPPU::OAM*) ppu->oam.data();
+    auto ptr = (OAM*) ppu->oam.data();
     for (int i = 0; i < 128; ++i) {
-      SPPU::OAM* oam = &ptr[i];
-      SPPU::OAM2* oam2 = (SPPU::OAM2*) ppu->oam.data() + 512 + (i / 4);
+      OAM* oam = &ptr[i];
+      OAM2* oam2 = (OAM2*) ppu->oam.data() + 512 + (i / 4);
       word oam_x = compute_oam_x(oam, oam2, i);
       for (int j = oam_x; j < oam_x + 8; ++j) {
         buf[4 * (oam->y * SCREEN_WIDTH + j) + 2] = 255;

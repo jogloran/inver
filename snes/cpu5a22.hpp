@@ -399,9 +399,6 @@ public:
 
   dual deref_imm(bool op16) {
     if (native()) {
-      // TODO:
-      // We need to know if this is going to X,Y or A,Z to know whether to consult
-      // flag m or flag x.
       if (op16) {
         return {.w = read_word()};
       } else {
