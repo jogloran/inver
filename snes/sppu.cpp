@@ -232,8 +232,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   }
 
   // TODO: need to look into priority for sprite pixels
-  std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
-    return t1.oam.attr.prio > t2.oam.attr.prio;
+  std::sort(visible.begin(), visible.end(), [this](const RenderedSprite& t1, const RenderedSprite& t2) {
+    return t1.oam_index == t2.oam_index ? (t1.oam.attr.prio > t2.oam.attr.prio) :
+           (oamadd.obj_prio_rotate ? t1.oam_index > t2.oam_index : t1.oam_index < t2.oam_index);
   });
 
   for (auto& sprite : visible) {
