@@ -232,12 +232,18 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   }
 
   // TODO: need to look into priority for sprite pixels
-  std::sort(visible.begin(), visible.end(), [this](const RenderedSprite& t1, const RenderedSprite& t2) {
-    return t1.oam_index == t2.oam_index ? (t1.oam.attr.prio > t2.oam.attr.prio) :
-           (oamadd.obj_prio_rotate ? t1.oam_index > t2.oam_index : t1.oam_index < t2.oam_index);
+  std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
+    return t1.oam_index == t2.oam_index
+           ? (t1.oam.attr.prio > t2.oam.attr.prio)
+           : t1.oam_index < t2.oam_index;
   });
 
+  int nvisible = 0;
   for (auto& sprite : visible) {
+    if (nvisible++ == 32) {
+      sprite_range_overflow = true;
+      break;
+    }
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
       if (sprite.pixels[i] % 8 != 0)
         result[sprite.oam.x + i] = sprite.pixels[i];
@@ -299,7 +305,7 @@ void SPPU::tick(byte master_cycles) {
         // vblank
 
         if (line >= 0x106) {
-          bus->vblank_end();
+          vblank_end();
           screen->blit();
           state = State::VISIBLE;
           log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
@@ -399,4 +405,9 @@ word SPPU::obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile
          + ((tile_no + tile_no_x_offset) << 4) // 8x8 tile row selector
          + (tile_no_y_offset << 8) // 8x8 tile column selector
          + fine_y;
+}
+
+void SPPU::vblank_end() {
+  if (!inidisp.force_blank) sprite_range_overflow = false;
+  bus->vblank_end();
 }

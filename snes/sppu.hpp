@@ -75,7 +75,7 @@ public:
         }
       case 0x213E: // STAT77  - PPU1 Status and PPU1 Version Number
         // TODO: set sprite overflow flags
-        return 0x1;
+        return 0x1 | (sprite_range_overflow << 6);
       case 0x213F: // STAT78  - PPU2 Status and PPU2 Version Number
       {
         // TODO: interlacing bit
@@ -415,7 +415,7 @@ public:
   union vram_addr_incr_t {
     struct {
       byte step_mode: 2;
-      byte addr_trans: 2;
+      byte addr_trans: 2; // TODO:
       byte unused: 3;
       byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
     };
@@ -600,6 +600,9 @@ private:
 
   dual vram_prefetch {};
 
+  // Set if more than 32 sprites are on this line. Cleared at end
+  // of vblank but not during fblank.
+  bool sprite_range_overflow = false;
 
   bool hv_latched = false;
   word hloc {};
@@ -646,4 +649,6 @@ private:
 
   word
   obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
+
+  void vblank_end();
 };
