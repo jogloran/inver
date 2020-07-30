@@ -97,8 +97,7 @@ void CPU5A22::dump() {
             << hex_byte << static_cast<int>(read(0x0003))
             << hex_byte << static_cast<int>(read(0x0004));
   std::cout << " mode:" << hex_byte << static_cast<int>(read(0x7e0100));
-  std::cout << " 0109:" << hex_byte << static_cast<int>(read(0x109));
-  std::cout << " 7ecc76:" << hex_byte << static_cast<int>(read(0x7ecc76));
+  std::cout << " 81c5aa:" << hex_byte << static_cast<int>(read(0x81c5aa) | (read(0x81c5ab) << 8));
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 

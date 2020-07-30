@@ -131,6 +131,10 @@ public:
 
       case 0x2105: // BGMODE  - BG Mode and BG Character Size
         bgmode.reg = value;
+        if (bgmode.mode != last_mode) {
+          log_with_tag("bgmode", "bg mode: %d\n", bgmode.mode);
+          last_mode = bgmode.mode;
+        }
         break;
 
       case 0x2106: // MOSAIC  - Mosaic Size and Mosaic Enable
@@ -614,6 +618,7 @@ private:
 
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";
+  byte last_mode = 0xff;
 
   long ncycles {};
   long line {};

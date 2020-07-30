@@ -13,20 +13,28 @@ public:
   void reset();
 
   void brk() {
+    irq<BusSNES::Interrupt::BRK>();
+  }
 
+  void cop() {
+    irq<BusSNES::Interrupt::COP>();
   }
 
   template <BusSNES::Interrupt rupt>
   void irq() {
-    if (rupt == BusSNES::NMI) {
+//    if (rupt == BusSNES::NMI) {
       log("NMI\n");
       push(pc.b);
-      push_word(pc.addr);
-      push(p.reg);
+      push_word(pc.addr + ((rupt == BusSNES::BRK || rupt == BusSNES::COP) ? 1 : 0));
+      if (rupt == BusSNES::BRK) {
+        push((p.reg & ~0x30) | 0x30);
+      } else {
+        push(p.reg);
+      }
       p.I = 1;
       pc.b = 0x0;
       pc.c = bus->read_vector<rupt>();
-    }
+//    }
   }
 
   cycle_count_t mvp() {
@@ -90,8 +98,6 @@ public:
       pc.c = pop_word();
     }
   }
-
-  void cop() {}
 
   void stp() {}
 
@@ -304,7 +310,7 @@ public:
   }
 
   dword addr_same_bank_abs_plus_x_indirect() {
-    return read(pc.b << 16) | addr_abs_plus_x_indirect();
+    return (pc.b << 16) | read_word((pc.b << 16) | (read_word() + x));
   }
 
   dword addr_abs() {
