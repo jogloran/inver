@@ -373,11 +373,8 @@ public:
   // 2106
   union mosaic_t {
     struct {
-      byte bg1_mosaic_on: 1;
-      byte bg2_mosaic_on: 1;
-      byte bg3_mosaic_on: 1;
-      byte bg4_mosaic_on: 1;
-      byte mosaic_size: 4;
+      byte enable_for_bg: 4;
+      byte size: 4;
     };
     byte reg;
   } mosaic {};

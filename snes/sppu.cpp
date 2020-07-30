@@ -118,6 +118,11 @@ void SPPU::render_row() {
 std::array<byte, 256> SPPU::render_row(byte bg) {
   if (inidisp.force_blank) return {};
 
+  auto line_ = line;
+  if (mosaic.enable_for_bg & (1 << bg)) {
+    line_ = (line / (mosaic.size + 1)) * (mosaic.size + 1);
+  }
+
   // get bg mode
   byte mode = bgmode.mode;
 
@@ -128,9 +133,12 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   // get base address for this layer
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
 
+  // if line = 3 and mosaic is 4x4, then line = 0
+//  byte mosaic_offset = (line % (mosaic.size + 1));
+
   // 1024 words after this addr correspond to the current tilemap
-  byte cur_row = ((line + scr[bg].y_reg) % 512) / 8;
-  byte tile_row = ((line + scr[bg].y_reg) % 512) % 8;
+  byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
+  byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;
 
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
@@ -182,14 +190,14 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
-    if (!(x_ >= 0 && x_ <= 255 && line >= entry->y && line < entry->y + sprite_height)) {
+    if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
       continue;
     }
 
     std::vector<byte> pixels;
     pixels.reserve(sprite_width);
-    auto tile_y = (line - entry->y) % 8; // the row (0..8) of the tile
-    auto tile_no_y_offset = (line - entry->y) / 8;
+    auto tile_y = (line_ - entry->y) % 8; // the row (0..8) of the tile
+    auto tile_no_y_offset = (line_ - entry->y) / 8;
     if (entry->attr.flip_y) {
       tile_y = 7 - tile_y;
       tile_no_y_offset = sprite_height / 8 - tile_no_y_offset - 1;
@@ -232,6 +240,14 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
       if (sprite.pixels[i] % 8 != 0)
         result[sprite.oam.x + i] = sprite.pixels[i];
+    }
+  }
+
+  // Horizontal mosaic
+  if (mosaic.enable_for_bg & (1 << bg)) {
+    auto n = mosaic.size + 1;
+    for (int i = 0; i < 256; ++i) {
+      result[i] = result[(i / n) * n];
     }
   }
 
