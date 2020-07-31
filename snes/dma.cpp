@@ -29,12 +29,52 @@ static const char* update_vram_address(dword dst, SPPU* ppu) {
   return maybe_vram_address;
 }
 
+cycle_count_t DMA::hdma() {
+  if (dma_params.hdma_indirect_table) {
+    hdma_indirect();
+  } else {
+    hdma_direct();
+  }
+
+  return 0;
+}
+
+void DMA::hdma_indirect() {
+  dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
+
+  byte bank = hdma_addr >> 16;
+  hdma_ptr = hdma_addr; // truncate the bank number. hdma_ptr is the one that changes
+
+  // identify dst (on B bus), swap if necessary based on 43x0.7
+  dword dst = 0x2100 | B_addr;
+
+  // load in the table data into the registers
+  byte instr = read(hdma_ptr++ | (bank << 16));
+  hdma_line_counter = instr & 0x7f;
+  bool repeat = instr & 0x80;
+
+  if (!repeat) {
+    // get the number of unit bytes determined by DMA mode
+    // set the internal pointer to point at the first byte
+    // copy from src -> dst, increment the pointers
+  } else {
+
+  }
+
+  // if high byte (repeat flag) is _not_ set:
+    // transfer the given unit, then wait the given number of scanlines after transfer
+  // else:
+    // transfer the given unit a number of times equals to the given number of scanlines
+  // unit size depends on DMA mode (43x0)
+
+}
+
 cycle_count_t DMA::run() {
   // while length counter > 0
   // transfer one unit from source to destination
   // decrement length counter (43x5,6)
   cycle_count_t cycles {0};
-  if (enabled) {
+  if (dma_enabled) {
     dword& src = a1.addr;
     dword dst = 0x2100 | B_addr;
     if (dma_params.b_to_a) std::swap(src, dst);
@@ -179,8 +219,12 @@ cycle_count_t DMA::run() {
     }
     out:;
 
-    enabled = false;
+    dma_enabled = false;
   }
 
   return cycles;
+}
+
+void DMA::hdma_direct() {
+
 }

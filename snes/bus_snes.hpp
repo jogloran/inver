@@ -68,7 +68,7 @@ public:
 
   [[noreturn]] void run();
 
-  std::array<DMA, 8> dma;
+  std::array<DMA, 8> dma {};
   enum class DMAState { Idle, Next, Dma } dma_state = DMAState::Idle;
 
   union wmadd_t {
