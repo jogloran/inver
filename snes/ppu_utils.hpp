@@ -13,6 +13,13 @@ struct OAMExtras {
   word tile_no_full;
   bool is_large;
 };
+/**
+ * Computes extra OAM attributes which have to be assembled from main and secondary OAM
+ * @param oam Pointer to main OAM for this sprite
+ * @param oam2 Pointer to secondary OAM for this sprite
+ * @param i OAM index for this sprite
+ * @return OAMExtras struct
+ */
 OAMExtras compute_oam_extras(OAM* oam, OAM2 *oam2, int i);
 
 /*

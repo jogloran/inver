@@ -175,6 +175,7 @@ public:
   static constexpr const char* TAG = "dma";
   char tag[16] = {};
   byte ch = 0xff;
+  bool in_transfer = false;
 
   void log(const char* msg, ...);
 
@@ -183,9 +184,13 @@ public:
       "hline", "-", "junk", "junk", "junk", "-",
   };
 
-  cycle_count_t hdma();
+  cycle_count_t hdma_init();
 
   void hdma_indirect();
 
   void hdma_direct();
+
+  void hdma_tick();
+
+  void hdma_init(bool indirect);
 };

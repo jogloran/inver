@@ -98,6 +98,9 @@ void SPPU::render_row() {
 std::array<byte, 256> SPPU::render_row(byte bg) {
   if (inidisp.force_blank) return {};
 
+  if (bg==0 && windows[0].l!=0 && windows[0].l < windows[0].r)
+  std::printf("%3d wh0 %02x %02x\n", line, windows[0].l, windows[0].r);
+
   auto line_ = line;
   if (mosaic.enable_for_bg & (1 << bg)) {
     line_ = (line / (mosaic.size + 1)) * (mosaic.size + 1);
@@ -231,6 +234,13 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     }
   }
 
+//  if (bg==0) {
+//    for (int i = 0; i < 256; ++i) {
+//      if (windows[0].l < i || windows[0].r >= i)
+//        result[i] = 0;
+//    }
+//  }
+
   return result;
 }
 
@@ -253,11 +263,12 @@ void SPPU::tick(byte master_cycles) {
         state = State::HBLANK;
 
         render_row();
+        bus->hblank_start();
       }
       break;
     case State::HBLANK:
-      if (ncycles >= 84 * 4) {
-        ncycles -= 84 * 4;
+      if (ncycles >= 4 * 84) {
+        ncycles -= 4 * 84;
         ++line;
         x = 0;
 
@@ -270,8 +281,8 @@ void SPPU::tick(byte master_cycles) {
       }
       break;
     case State::VBLANK:
-      if (ncycles >= 340 * 4) {
-        ncycles -= 340 * 4;
+      if (ncycles >= 4 * 340) {
+        ncycles -= 4 * 340;
         ++line;
         x = 0;
         // TODO: status flags need to distinguish hblank even during
@@ -283,6 +294,8 @@ void SPPU::tick(byte master_cycles) {
           state = State::VISIBLE;
           log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
           line = 0;
+
+          bus->frame_start();
         }
       }
       break;

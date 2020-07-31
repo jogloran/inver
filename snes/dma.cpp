@@ -29,44 +29,96 @@ static const char* update_vram_address(dword dst, SPPU* ppu) {
   return maybe_vram_address;
 }
 
-cycle_count_t DMA::hdma() {
-  if (dma_params.hdma_indirect_table) {
-    hdma_indirect();
-  } else {
-    hdma_direct();
-  }
-
+cycle_count_t DMA::hdma_init() {
+  hdma_init(dma_params.hdma_indirect_table);
   return 0;
 }
 
-void DMA::hdma_indirect() {
+void DMA::hdma_tick() {
+  if (!hdma_enabled) return;
+
+  bool indirect = dma_params.hdma_indirect_table;
+
+  if (in_transfer) {
+    dword dst = 0x2100 | B_addr;
+    byte bank = a1.hi;
+
+    byte value;
+    switch (dma_params.tx_type) {
+      case 0: {
+        // assume A -> B to begin with
+        if (indirect) {
+          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
+          value = bus->read(das.addr++);
+        } else {
+          value = bus->read((bank << 16) | hdma_ptr++);
+        }
+        bus->write(dst, value);
+        break;
+      }
+      case 1: {
+        if (indirect) {
+          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
+          value = bus->read(das.addr++);
+        } else {
+          value = bus->read((bank << 16) | hdma_ptr++);
+        }
+        bus->write(dst, value);
+        if (indirect) {
+          log("%04x <- %06x [%02x]\n", dst + 1, das.addr, bus->read(das.addr));
+          value = bus->read(das.addr++);
+        } else {
+          value = bus->read((bank << 16) | hdma_ptr++);
+        }
+        bus->write(dst + 1, value);
+        break;
+      }
+    }
+
+    --hdma_line_counter;
+    in_transfer = hdma_line_counter & 0x80;
+
+    if ((hdma_line_counter & 0x7f) == 0) {
+      byte instr = bus->read(hdma_ptr++ | (bank << 16));
+      if (instr != 0) {
+        hdma_line_counter = instr;
+      } else {
+        hdma_enabled = false;
+        return;
+      }
+
+      if (indirect) {
+        das.lo = bus->read(hdma_ptr++ | (bank << 16));
+        das.md = bus->read(hdma_ptr++ | (bank << 16));
+      }
+
+      in_transfer = true;
+    }
+  }
+}
+
+void DMA::hdma_init(bool indirect) {
   dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
 
   byte bank = hdma_addr >> 16;
   hdma_ptr = hdma_addr; // truncate the bank number. hdma_ptr is the one that changes
 
-  // identify dst (on B bus), swap if necessary based on 43x0.7
-  dword dst = 0x2100 | B_addr;
-
   // load in the table data into the registers
-  byte instr = read(hdma_ptr++ | (bank << 16));
-  hdma_line_counter = instr & 0x7f;
-  bool repeat = instr & 0x80;
-
-  if (!repeat) {
-    // get the number of unit bytes determined by DMA mode
-    // set the internal pointer to point at the first byte
-    // copy from src -> dst, increment the pointers
+  byte instr = bus->read(hdma_ptr++ | (bank << 16));
+  if (instr != 0) {
+    hdma_line_counter = instr;
   } else {
-
+    hdma_enabled = false;
   }
 
-  // if high byte (repeat flag) is _not_ set:
-    // transfer the given unit, then wait the given number of scanlines after transfer
-  // else:
-    // transfer the given unit a number of times equals to the given number of scanlines
-  // unit size depends on DMA mode (43x0)
+  if (indirect) {
+    das.lo = bus->read(hdma_ptr++ | (bank << 16));
+    das.md = bus->read(hdma_ptr++ | (bank << 16));
 
+    log("indirect reading from %06x\n", das.addr);
+  }
+
+  in_transfer = true;
 }
 
 cycle_count_t DMA::run() {
@@ -88,7 +140,8 @@ cycle_count_t DMA::run() {
     const char* maybe_vram_address = update_vram_address(dst, &bus->ppu);
 
     auto incr = A_step[dma_params.dma_A_step];
-    log("DMA %-6s 0x%-6x %-7s <- 0x%-6x (len 0x%-4x) pc: %06x incr: %d (%02x)\n", dma_modes[dma_params.tx_type],
+    log("DMA %-6s 0x%-6x %-7s <- 0x%-6x (len 0x%-4x) pc: %06x incr: %d (%02x)\n",
+        dma_modes[dma_params.tx_type],
         dst, maybe_vram_address, src, das.addr, bus->cpu->pc.addr,
         static_cast<int>(incr), dma_params.dma_A_step);
 
@@ -119,7 +172,8 @@ cycle_count_t DMA::run() {
         case 0:
           value = bus->read(src);
           maybe_vram_address = update_vram_address(dst, &bus->ppu);
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address, value, das.addr & 0xffff);
+          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
+              value, das.addr & 0xffff);
           bus->write(dst, bus->read(src));
           a1.addr += incr;
           --das.addr;
@@ -128,7 +182,8 @@ cycle_count_t DMA::run() {
         case 1:
           value = bus->read(src);
           maybe_vram_address = update_vram_address(dst, &bus->ppu);
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address, value, das.addr & 0xffff);
+          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
+              value, das.addr & 0xffff);
           bus->write(dst, bus->read(src));
           a1.addr += incr;
           --das.addr;
@@ -136,7 +191,8 @@ cycle_count_t DMA::run() {
 
           value = bus->read(src);
           maybe_vram_address = update_vram_address(dst, &bus->ppu);
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst + 1, src, maybe_vram_address, value, das.addr & 0xffff);
+          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst + 1, src,
+              maybe_vram_address, value, das.addr & 0xffff);
           bus->write(dst + 1, bus->read(src));
           a1.addr += incr;
           --das.addr;
@@ -223,8 +279,4 @@ cycle_count_t DMA::run() {
   }
 
   return cycles;
-}
-
-void DMA::hdma_direct() {
-
 }

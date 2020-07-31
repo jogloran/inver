@@ -101,6 +101,18 @@ public:
 
   constexpr static const char* TAG = "bus";
 
+  void frame_start() {
+    std::for_each(dma.begin(), dma.end(), [](DMA& ch) {
+      ch.hdma_init();
+    });
+  }
+
+  void hblank_start() {
+    std::for_each(dma.begin(), dma.end(), [](DMA& ch) {
+      ch.hdma_tick();
+    });
+  }
+
   void vblank_nmi();
 
   void vblank_end();
