@@ -69,7 +69,7 @@ void Screen::blit() {
           std::printf("\n");
           ppu->dump_bg(2);
           std::printf("\n");
-          std::exit(0);
+//          std::exit(0);
           break;
         case SDLK_p:
           ppu->dump_pal();

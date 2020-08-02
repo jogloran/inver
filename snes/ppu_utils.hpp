@@ -42,7 +42,7 @@ std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
  * @param sy Whether we are in the bottom half of the 64x64 tile space
  * @return 16-bit VRAM address
  */
-inline word addr(word base, word x, word y, bool sx, bool sy);
+word addr(word base, word x, word y, bool sx, bool sy);
 
 /**
  * Compute the VRAM address for a sprite tile.
@@ -53,7 +53,7 @@ inline word addr(word base, word x, word y, bool sx, bool sy);
  * @param fine_y 0 <= fine_y < 8
  * @return 16-bit VRAM address
  */
-inline word
+word
 obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
 
 /**
@@ -64,7 +64,7 @@ obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offse
  * @param wpp Words per pixel (bpp / 2)
  * @return 16-bit VRAM address
  */
-inline word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp);
+word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp);
 
 /**
  * Get (width, height) for a given OBSEL size setting

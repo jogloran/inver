@@ -56,15 +56,19 @@ void SPPU::dump_bg(byte layer) {
 
 std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
   std::array<byte, 256> result = layers[0];
+  int index = 0;
   for (auto it = layers.begin() + 1; it != layers.end(); ++it) {
     auto& layer = *it;
     for (int i = 0; i < 256; ++i) {
       auto& buf = result[i];
       auto& next = layer[i];
 
-      if (buf % 8 == 0 && next % 8 != 0) {
+      if (buf == 0 && next != 0) {
         buf = next;
       }
+
+      ++index;
+
     }
   }
   return result;
@@ -82,7 +86,7 @@ void SPPU::render_row() {
 
   for (byte pal_idx : pals) {
     Screen::colour_t rgb;
-    if (pal_idx % 8 == 0) {
+    if (pal_idx == 0) {
       rgb = backdrop_colour;
     } else {
       rgb = lookup(pal_idx);
@@ -98,8 +102,8 @@ void SPPU::render_row() {
 std::array<byte, 256> SPPU::render_row(byte bg) {
   if (inidisp.force_blank) return {};
 
-  if (bg==0 && windows[0].l!=0 && windows[0].l < windows[0].r)
-  std::printf("%3d wh0 %02x %02x\n", line, windows[0].l, windows[0].r);
+  if (bg == 0 && windows[0].l != 0 && windows[0].l < windows[0].r)
+    std::printf("%3d wh0 %02x %02x\n", line, windows[0].l, windows[0].r);
 
   auto line_ = line;
   if (mosaic.enable_for_bg & (1 << bg)) {
@@ -133,7 +137,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   std::for_each(tiles.begin(), tiles.end(),
                 [&](bg_map_tile_t* t) {
                   auto tile_id = t->char_no;
-
+                  if (tile_id == 0xad) { ;
+                  }
                   auto row_to_access = tile_row;
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
@@ -148,7 +153,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-                    *ptr++ = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
+
+                    auto pal_index = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
+                    *ptr++ = (pal_index % (1 << (2 * wpp)) == 0) ? 0 : pal_index;
                   }
 
                   ++col;
@@ -164,7 +171,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     OAM* entry = &oam_ptr[i];
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
@@ -221,7 +228,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       break;
     }
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
-      if (sprite.pixels[i] % 8 != 0)
+      // Only replace non-transparent pixels. Since all sprite chr data is 4bpp, this means
+      // a palette index of 0 within each palette.
+      if (sprite.pixels[i] % 16 != 0)
         result[sprite.oam.x + i] = sprite.pixels[i];
     }
   }
@@ -233,13 +242,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       result[i] = result[(i / n) * n];
     }
   }
-//
-//  if (bg==2) {
-//    for (int i = 0; i < 256; ++i) {
-//      if (windows[0].l > i && windows[0].r < i)
-//        result[i] = 2;
-//    }
-//  }
 
   return result;
 }
@@ -360,7 +362,7 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    auto [spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
 
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)
