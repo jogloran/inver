@@ -120,3 +120,7 @@ word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_
          + (tile_no_y_offset << 8) // 8x8 tile column selector
          + fine_y;
 }
+
+word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp) {
+  return chr_base + (8 * wpp) * tile_id + fine_y;
+}

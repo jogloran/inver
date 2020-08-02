@@ -49,6 +49,7 @@ private:
   constexpr static int SCALE = 2;
   
   std::array<byte, (TD2_WIDTH * TD2_HEIGHT) * 4> buf {};
+  byte bg {0};
   
   SDL_Window* window_;
   SDL_Renderer* renderer_;

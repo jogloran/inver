@@ -329,7 +329,7 @@ BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()), io1(std::make_unique<SDLS
   cpu->connect(this);
   ppu.connect(this);
   td2.connect(this);
-  td2.show();
+  if (FLAGS_td) td2.show();
   byte ch_no = 0;
   std::for_each(dma.begin(), dma.end(), [this, &ch_no](auto& ch) {
     ch.connect(this);

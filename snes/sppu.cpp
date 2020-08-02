@@ -139,7 +139,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                     row_to_access = 7 - row_to_access;
 
                   // get tile chr data
-                  word tile_chr_base = chr_base_addr + (8 * wpp) * tile_id + row_to_access;
+                  word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
@@ -233,11 +233,11 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       result[i] = result[(i / n) * n];
     }
   }
-
-//  if (bg==0) {
+//
+//  if (bg==2) {
 //    for (int i = 0; i < 256; ++i) {
-//      if (windows[0].l < i || windows[0].r >= i)
-//        result[i] = 0;
+//      if (windows[0].l > i && windows[0].r < i)
+//        result[i] = 2;
 //    }
 //  }
 

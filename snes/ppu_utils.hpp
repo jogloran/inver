@@ -6,13 +6,14 @@
 
 std::array<byte, 8> decode_planar(dual* ptr, byte bpp, bool flip_x);
 
-word compute_oam_x(OAM* oam, OAM2 *oam2, int i);
+word compute_oam_x(OAM* oam, OAM2* oam2, int i);
 
 struct OAMExtras {
   word x_full;
   word tile_no_full;
   bool is_large;
 };
+
 /**
  * Computes extra OAM attributes which have to be assembled from main and secondary OAM
  * @param oam Pointer to main OAM for this sprite
@@ -20,7 +21,7 @@ struct OAMExtras {
  * @param i OAM index for this sprite
  * @return OAMExtras struct
  */
-OAMExtras compute_oam_extras(OAM* oam, OAM2 *oam2, int i);
+OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i);
 
 /*
  * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
@@ -33,15 +34,15 @@ OAMExtras compute_oam_extras(OAM* oam, OAM2 *oam2, int i);
 std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
 
 /**
-   * Compute the VRAM address for a BG tile.
-   * @param base The base BG tile address
-   * @param x 0 <= x < 64
-   * @param y 0 <= y < 64
-   * @param sx Whether we are in the right half of the 64x64 tile space
-   * @param sy Whether we are in the bottom half of the 64x64 tile space
-   * @return 16-bit VRAM address
-   */
-word addr(word base, word x, word y, bool sx, bool sy);
+ * Compute the VRAM address for a BG tile.
+ * @param base The base BG tile address
+ * @param x 0 <= x < 64
+ * @param y 0 <= y < 64
+ * @param sx Whether we are in the right half of the 64x64 tile space
+ * @param sy Whether we are in the bottom half of the 64x64 tile space
+ * @return 16-bit VRAM address
+ */
+inline word addr(word base, word x, word y, bool sx, bool sy);
 
 /**
  * Compute the VRAM address for a sprite tile.
@@ -52,8 +53,18 @@ word addr(word base, word x, word y, bool sx, bool sy);
  * @param fine_y 0 <= fine_y < 8
  * @return 16-bit VRAM address
  */
-word
+inline word
 obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
+
+/**
+ * Compute the VRAM address for BG tile chr data.
+ * @param chr_base The base BG chr tile address
+ * @param tile_id 0 <= tile_no < 256
+ * @param fine_y 0 <= fine_y < 8
+ * @param wpp Words per pixel (bpp / 2)
+ * @return 16-bit VRAM address
+ */
+inline word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp);
 
 /**
  * Get (width, height) for a given OBSEL size setting
