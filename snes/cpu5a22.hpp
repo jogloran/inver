@@ -306,7 +306,7 @@ public:
   }
 
   dword addr_same_bank_indirect() {
-    return read_full_addr((pc.b << 16) | read_word());
+    return (pc.b << 16) | read_word(read_word());
   }
 
   dword addr_same_bank_abs_plus_x_indirect() {
