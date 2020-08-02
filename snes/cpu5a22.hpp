@@ -352,19 +352,16 @@ public:
 
   dword addr_x_indirect() {
     byte zp_offset = read_byte();
-    word ptr = read((zp_offset + x) % 256);
-    ptr |= read((zp_offset + x + 1) % 256) << 8;
-    return ptr;
+    word ptr = read((dp + zp_offset + x) % 256);
+    ptr |= read((dp + zp_offset + x + 1) % 256) << 8;
+    return (db << 16) | ptr;
   }
 
   dword addr_indirect_y() {
     byte zp_offset = read_byte();
-    word ptr = read(zp_offset);
-    if (ptr & 0xff) {
-      crossed_page = true;
-    }
-    ptr |= read((zp_offset + 1) % 256) << 8;
-    return ptr + y;
+    dword ptr = read(dp + zp_offset);
+    ptr |= read((dp + zp_offset + 1) % 256) << 8;
+    return (db << 16) | (ptr + y);
   }
 
   dword addr_zpg_far() {
