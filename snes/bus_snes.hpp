@@ -65,6 +65,8 @@ public:
   std::shared_ptr<Peripheral> io1;
 
   std::vector<byte> rom;
+  std::array<byte, 0x8000 * 0xd> sram1 {};
+  std::array<byte, 0x8000 * 0x10> sram2 {};
 
   [[noreturn]] void run();
 

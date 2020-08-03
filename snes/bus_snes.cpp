@@ -137,7 +137,7 @@ byte BusSNES::read(dword address) {
     }
   } else if (address <= 0x7d'ffff) {
     if (offs <= 0x7fff) {
-      return 0; // sram
+      return sram1[(bank - 0x70) * 0x8000 + offs]; // sram
     } else {
       return rom[bank * 0x8000 + (offs - 0x8000)];
     }
@@ -151,7 +151,7 @@ byte BusSNES::read(dword address) {
     // mirrors
   } else if (address <= 0xff'ffff) {
     if (offs <= 0x7fff) {
-      return 0; // sram
+      return sram2[(bank - 0xf0) * 0x8000 + offs]; // sram
     } else {
       if (bank == 0x7fe) {
         return rom[0x3f'0000 + (offs - 0x8000)];
@@ -277,7 +277,7 @@ void BusSNES::write(dword address, byte value) {
     }
   } else if (address <= 0x7d'ffff) {
     if (offs <= 0x7fff) {
-//      return 0; // sram
+      sram1[(bank - 0x70) * 0x8000 + offs] = value;
     } else {
 //      return rom[bank * 0x8000 + (offs - 0x8000)];
     }
@@ -291,7 +291,7 @@ void BusSNES::write(dword address, byte value) {
     // mirrors
   } else if (address <= 0xff'ffff) {
     if (offs <= 0x7fff) {
-//      return 0; // sram
+      sram2[(bank - 0xf0) * 0x8000 + offs] = value;
     } else {
       if (bank == 0x7fe) {
 //        return rom[0x3f'0000 + (offs - 0x8000)];

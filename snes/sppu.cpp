@@ -137,8 +137,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   std::for_each(tiles.begin(), tiles.end(),
                 [&](bg_map_tile_t* t) {
                   auto tile_id = t->char_no;
-                  if (tile_id == 0xad) { ;
-                  }
                   auto row_to_access = tile_row;
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
