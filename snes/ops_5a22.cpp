@@ -64,7 +64,7 @@ std::array<op_record, 256> ops_65c816 {
     OP(&, abs_plus_y), 6,                // 0x39
     DE_A, 2,                         // 0x3a
     TSC, 2,                         // 0x3b
-    BIT(zpg_plus_x), 6,                         // 0x3c
+    BIT(abs_plus_x), 6,                         // 0x3c
     OP(&, abs_plus_x), 6,                // 0x3d
     ROL(abs_plus_x), 9,                  // 0x3e
     OP(&, abs_dword_plus_x), 6,                         // 0x3f
