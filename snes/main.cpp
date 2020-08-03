@@ -3,8 +3,6 @@
 #include <cstdlib>
 #include <vector>
 #include <iterator>
-#include <fstream>
-#include <sstream>
 #include <set>
 
 #include <gflags/gflags.h>
@@ -13,7 +11,6 @@
 #include "rang.hpp"
 
 #include "types.h"
-#include "cpu5a22.hpp"
 #include "bus_snes.hpp"
 #include "debug.hpp"
 

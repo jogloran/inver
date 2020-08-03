@@ -6,7 +6,6 @@
 
 #include <gflags/gflags.h>
 #include <map>
-#include <fstream>
 #include <cereal/archives/binary.hpp>
 
 DECLARE_bool(td);
