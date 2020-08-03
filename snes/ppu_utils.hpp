@@ -4,13 +4,21 @@
 
 #include "types.h"
 
-std::array<byte, 8> decode_planar(dual* ptr, byte bpp, bool flip_x);
+/**
+ * Decodes 1, 2 or 4 words of chr data representing one row of 8 tile pixels
+ * into an array of 8 palette indices.
+ * @param ptr The initial offset of the chr data
+ * @param wpp Words per pixel (1, 2 or 4)
+ * @param flip_x Whether the tile is horizontally flipped
+ * @return An array of 8 palette indices
+ */
+std::array<byte, 8> decode_planar(dual* ptr, byte wpp, bool flip_x);
 
 word compute_oam_x(OAM* oam, OAM2* oam2, int i);
 
 struct OAMExtras {
-  word x_full;
-  word tile_no_full;
+  word x_full; // The full 9-bit x offset
+  word tile_no_full; // The full 9-bit tile number
   bool is_large;
 };
 

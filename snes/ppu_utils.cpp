@@ -39,8 +39,8 @@ std::array<byte, 8> decode(word w1, word w2, word w3, word w4, bool flip_x) {
   return result;
 }
 
-std::array<byte, 8> decode_planar(dual* ptr, byte bpp, bool flip_x) {
-  switch (bpp) {
+std::array<byte, 8> decode_planar(dual* ptr, byte wpp, bool flip_x) {
+  switch (wpp) {
     case 1:
       return decode((*ptr).w, flip_x);
     case 2:

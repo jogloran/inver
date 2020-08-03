@@ -339,6 +339,10 @@ public:
     }
   }
 
+  enum class State {
+    VISIBLE, HBLANK, VBLANK
+  } state;
+
   // 212c,212d
   layer_ctrl_t main_scr = {}, sub_scr = {};
   // 2100
@@ -349,6 +353,7 @@ public:
   mosaic_t mosaic {};
   // 2107-210a
   bg_base_size_t bg_base_size[4] {};
+
   // 210b,210c (16 bits)
   bg_char_data_addr_t bg_char_data_addr[2] {};
 
@@ -365,28 +370,18 @@ public:
     }
     return 0;
   }
-
   vram_addr_incr_t vram_addr_incr {};
   setini_t setini {};
   obsel_t obsel {};
-  oamadd_t oamadd;
+  oamadd_t oamadd {};
+
   hvtime_t htime {};
   hvtime_t vtime {};
-
-  enum class State {
-    VISIBLE, HBLANK, VBLANK
-  } state;
 
   vram_addr_t vram_addr;
 
   window_t windows[2] {};
   window_mask_op_t bg_mask_op {}, obj_math_mask_op {};
-
-  void dump_sprite();
-
-  void dump_bg(byte layer);
-
-  void dump_pal();
 
   byte cgram_addr {};
   bool cgram_rw_upper = false;
@@ -397,6 +392,12 @@ public:
   BusSNES* bus;
 
   void dump_oam(bool dump_bytes = false);
+
+  void dump_sprite();
+
+  void dump_bg(byte layer);
+
+  void dump_pal();
 
 private:
   void dump_oam_table();
@@ -432,6 +433,7 @@ private:
   long line {};
   long x {};
 
+  // region PPU caches
   std::array<bg_map_tile_t*, 33> tiles {};
   std::array<byte, 256 + 8> row {};
 
@@ -441,6 +443,7 @@ private:
     std::vector<byte> pixels;
   };
   std::vector<RenderedSprite> visible;
+  // endregion
 
   std::shared_ptr<Screen> screen;
 
