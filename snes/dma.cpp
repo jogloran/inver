@@ -137,7 +137,7 @@ cycle_count_t DMA::run() {
     byte last_value = 0;
     dword skipped_since = 0;
 
-    const char* maybe_vram_address = update_vram_address(dst, &bus->ppu);
+    const char* maybe_vram_address = update_vram_address(dst, bus->ppu.get());
 
     auto incr = A_step[dma_params.dma_A_step];
     log("DMA %-6s 0x%-6x %-7s <- 0x%-6x (len 0x%-4x) pc: %06x incr: %d (%02x)\n",
@@ -171,7 +171,7 @@ cycle_count_t DMA::run() {
       switch (dma_params.tx_type) {
         case 0:
           value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, &bus->ppu);
+          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
           log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
               value, das.addr & 0xffff);
           bus->write(dst, bus->read(src));
@@ -181,7 +181,7 @@ cycle_count_t DMA::run() {
           break;
         case 1:
           value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, &bus->ppu);
+          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
           log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
               value, das.addr & 0xffff);
           bus->write(dst, bus->read(src));
@@ -190,7 +190,7 @@ cycle_count_t DMA::run() {
           if (das.addr == 0) goto out;
 
           value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, &bus->ppu);
+          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
           log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst + 1, src,
               maybe_vram_address, value, das.addr & 0xffff);
           bus->write(dst + 1, bus->read(src));

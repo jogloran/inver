@@ -3,6 +3,11 @@
 #include <array>
 #include <vector>
 
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "types.h"
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
@@ -57,7 +62,7 @@ public:
   std::array<byte, 0x20000> ram {};
 
   std::shared_ptr<CPU5A22> cpu;
-  SPPU ppu;
+  std::shared_ptr<SPPU> ppu;
   TD2 td2;
   SNES_SPC* spc;
   size_t spc_time {};
@@ -84,6 +89,9 @@ public:
       word unused : 15;
     };
     dword reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } wmadd {};
 
   union nmitimen_t {
@@ -95,6 +103,9 @@ public:
       byte vblank_nmi : 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } nmi;
 
   bool in_nmi = false;
@@ -134,4 +145,15 @@ public:
   byte joypad_sample_lo = 0;
 
   void dump_mem();
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(ram, ppu, rom, sram1, sram2, dma, dma_state,
+        wmadd, nmi, in_nmi, timeup,
+        auto_joypad_read_busy, joypad_sample_hi, joypad_sample_lo);
+  }
+
+  void pickle(std::string filename);
+
+  void unpickle(std::string filename);
 };

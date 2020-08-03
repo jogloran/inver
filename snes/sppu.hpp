@@ -1,6 +1,12 @@
 #pragma once
 
 #include <array>
+
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "types.h"
 #include "logger.hpp"
 #include "screen.hpp"
@@ -399,6 +405,23 @@ public:
 
   void dump_pal();
 
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(main_scr, sub_scr,
+       inidisp, bgmode, mosaic, bg_base_size,
+       bg_char_data_addr,
+       vram_addr_incr, setini, obsel, oamadd,
+       htime, vtime, vram_addr,
+       windows, bg_mask_op, obj_math_mask_op,
+       cgram_addr, cgram_rw_upper, cgram_lsb,
+       oam, vram, pal, scr, oam_lsb, vram_prefetch,
+       sprite_range_overflow,
+       hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
+       backdrop_colour, last_mode,
+       ncycles, line, x,
+       visible);
+  }
+
 private:
   void dump_oam_table();
 
@@ -441,6 +464,12 @@ private:
     OAM oam;
     byte oam_index;
     std::vector<byte> pixels;
+
+
+    template<typename Ar>
+    void serialize(Ar& ar) {
+      ar(oam, oam_index, pixels);
+    }
   };
   std::vector<RenderedSprite> visible;
   // endregion

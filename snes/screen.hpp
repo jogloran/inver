@@ -12,11 +12,19 @@ class SPPU;
 
 class Screen {
 public:
-  struct colour_t {
-    byte r: 5;
-    byte g: 5;
-    byte b: 5;
-    byte unused: 1;
+  union colour_t {
+    struct {
+      byte r: 5;
+      byte g: 5;
+      byte b: 5;
+      byte unused: 1;
+    };
+    word reg;
+
+    template<typename Ar>
+    void serialize(Ar& ar) {
+      ar(reg);
+    }
   };
 
   SDL_Texture* make_raster_texture(size_t dx, size_t dy) {
@@ -74,7 +82,7 @@ public:
 
   void blit();
 
-  void connect(SPPU* ppu);
+  void connect(std::shared_ptr<SPPU> ppu);
 
 //private:
   constexpr static int SCREEN_WIDTH = 256;
@@ -94,7 +102,7 @@ public:
   TTF_Font* font_;
   SDL_Texture* raster_;
 
-  SPPU* ppu;
+  std::shared_ptr<SPPU> ppu;
 
   void set_brightness(byte b);
 

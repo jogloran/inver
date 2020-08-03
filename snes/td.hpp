@@ -13,7 +13,7 @@ class BusSNES;
 
 class TD2 {
 public:
-  SPPU* ppu;
+  std::shared_ptr<SPPU> ppu;
   TD2() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();

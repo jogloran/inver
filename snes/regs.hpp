@@ -26,6 +26,9 @@ struct BGScroll {
   word x_reg {};
   word y_reg {};
   bool bg_write_upper = false;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(x_reg, y_reg, bg_write_upper); }
 };
 
 union window_mask_op_t {
@@ -39,6 +42,8 @@ union window_mask_op_t {
     MaskOp bg4_op: 2;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 struct window_t {
@@ -52,6 +57,9 @@ struct window_t {
   AreaSetting mask_for_math;
   bool main_disable;
   bool sub_disable;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(l, r, mask_for_bg, mask_for_obj,
+      mask_for_math, main_disable, sub_disable); }
 };
 
 union vram_addr_t {
@@ -60,6 +68,8 @@ union vram_addr_t {
     byte h;
   };
   word w;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(w); }
 };
 
 union hvtime_t {
@@ -72,8 +82,9 @@ union hvtime_t {
     byte unused: 7;
   };
   word reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
-
 
 // each entry is 4 bytes
 struct OAM {
@@ -90,6 +101,8 @@ struct OAM {
     };
     byte reg;
   } attr;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(x, y, tile_no, attr.reg); }
 };
 
 struct OAM2 {
@@ -110,6 +123,8 @@ union oamadd_t {
     byte obj_prio_rotate: 1;
   };
   word reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union obsel_t {
@@ -119,6 +134,8 @@ union obsel_t {
     byte obj_size: 3;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union bg_map_tile_t {
@@ -130,6 +147,8 @@ union bg_map_tile_t {
     byte flip_y: 1;
   };
   word reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union setini_t {
@@ -143,6 +162,8 @@ union setini_t {
     byte ext_sync: 1;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union vram_addr_incr_t {
@@ -153,6 +174,8 @@ union vram_addr_incr_t {
     byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union bg_char_data_addr_t {
@@ -161,6 +184,8 @@ union bg_char_data_addr_t {
     byte bg2_tile_base_addr: 4;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union bg_base_size_t {
@@ -169,6 +194,8 @@ union bg_base_size_t {
     byte base_addr: 6;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union mosaic_t {
@@ -177,6 +204,8 @@ union mosaic_t {
     byte size: 4;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union bgmode_t {
@@ -189,6 +218,8 @@ union bgmode_t {
     byte bg4_tile_size: 1;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union inidisp_t {
@@ -198,6 +229,8 @@ union inidisp_t {
     byte force_blank: 1;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union layer_ctrl_t {
@@ -210,4 +243,6 @@ union layer_ctrl_t {
     byte unused: 3;
   };
   byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };

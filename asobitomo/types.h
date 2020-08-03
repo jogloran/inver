@@ -41,4 +41,10 @@ union dual {
     byte h: 8;
   };
   word w;
+
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(w);
+  }
 };

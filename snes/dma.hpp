@@ -2,6 +2,9 @@
 
 #include <cstdio>
 
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "types.h"
 #include "logger.hpp"
 
@@ -145,6 +148,9 @@ public:
       byte b_to_a : 1;
     };
     byte reg;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(reg); }
   } dma_params {};
 
   byte B_addr {};
@@ -157,6 +163,9 @@ public:
       byte padding: 8;
     };
     dword addr;
+
+    template <typename Ar>
+    void serialize(Ar& ar) { ar(addr); }
   } pc {};
 
   dword_bits_t a1 {}; // 43x2,3,4
@@ -186,11 +195,13 @@ public:
 
   cycle_count_t hdma_init();
 
-  void hdma_indirect();
-
-  void hdma_direct();
-
   void hdma_tick();
 
   void hdma_init(bool indirect);
+
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(dma_params, B_addr, pc, a1, das, hdma_ptr, hdma_line_counter,
+        unused, dma_enabled, hdma_enabled, ch, in_transfer);
+  }
 };

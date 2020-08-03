@@ -496,5 +496,11 @@ public:
 
   std::ostream& dump_stack(std::ostream& out);
 
+  template<typename Ar>
+  void serialize(Ar& ar) {
+    ar(a, x, y, sp, pc, p, ncycles, cycles_left, crossed_page,
+        e, dp, db);
+  }
+
   static constexpr const char* TAG = "cpu";
 };

@@ -6,6 +6,8 @@
 
 #include <gflags/gflags.h>
 #include <map>
+#include <fstream>
+#include <cereal/archives/binary.hpp>
 
 DECLARE_bool(td);
 
@@ -15,12 +17,12 @@ static long n = 0;
 
 void BusSNES::tick() {
   cpu->tick();
-  ppu.tick();
-  ppu.tick();
-  ppu.tick();
-  ppu.tick();
-  ppu.tick();
-  ppu.tick();
+  ppu->tick();
+  ppu->tick();
+  ppu->tick();
+  ppu->tick();
+  ppu->tick();
+  ppu->tick();
   if (dma_state == DMAState::Next) {
     dma_state = DMAState::Dma;
   } else if (dma_state == DMAState::Dma) {
@@ -34,7 +36,7 @@ void BusSNES::tick() {
   }
 
   if (cpu->pc.addr == 0x8468) {
-//    ppu.dump_pal();
+//    ppu->dump_pal();
 //    std::exit(0);
   }
   // whyyyyyyy.
@@ -72,7 +74,7 @@ byte BusSNES::read(dword address) {
     } else if (offs <= 0x21ff) {
       // PPU1 (2100-213f), APU (2140-217f), WRAM (2180-2183)
       if (offs >= 0x2134 && offs <= 0x213f) {
-        return ppu.read(offs);
+        return ppu->read(offs);
       }
       if (offs >= 0x2140 && offs <= 0x2143) {
         return spc_read_port(spc, spc_time++, (offs - 0x2140) % 4);
@@ -105,8 +107,9 @@ byte BusSNES::read(dword address) {
         return value << 7;
       }
       if (offs == 0x4212) {
-        bool vblank = ppu.state == SPPU::State::VBLANK;
-        bool hblank = ppu.state == SPPU::State::HBLANK;
+        bool vblank = ppu->state == SPPU::State::VBLANK;
+        bool hblank = ppu->state
+            == SPPU::State::HBLANK;
         return (vblank << 7) | (hblank << 6) | auto_joypad_read_busy;
       }
       if (offs == 0x4218) {
@@ -189,7 +192,7 @@ void BusSNES::write(dword address, byte value) {
         spc_write_port(spc, spc_time++, (offs - 0x2140) % 4, value);
       }
       if (offs >= 0x2100 && offs <= 0x2133) {
-        ppu.write(offs, value);
+        ppu->write(offs, value);
       }
       if (offs == 0x2180) {
         // WRAM read/write
@@ -222,15 +225,15 @@ void BusSNES::write(dword address, byte value) {
       }
       // HTIMEL/HTIMEH
       if (offs == 0x4207) {
-        ppu.htime.l = value;
+        ppu->htime.l = value;
       } else if (offs == 0x4208) {
-        ppu.htime.h = value;
+        ppu->htime.h = value;
       }
       // VTIMEL/VTIMEH
       if (offs == 0x4209) {
-        ppu.vtime.l = value;
+        ppu->vtime.l = value;
       } else if (offs == 0x420a) {
-        ppu.vtime.h = value;
+        ppu->vtime.h = value;
       }
 
       if (offs == 0x420b) {
@@ -324,9 +327,11 @@ void BusSNES::vblank_end() {
   if (FLAGS_td) td2.show();
 }
 
-BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()), io1(std::make_unique<SDLSNESController>()) {
+BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()),
+  ppu(std::make_unique<SPPU>()),
+  io1(std::make_unique<SDLSNESController>()) {
   cpu->connect(this);
-  ppu.connect(this);
+  ppu->connect(this);
   td2.connect(this);
   if (FLAGS_td) td2.show();
   byte ch_no = 0;
@@ -364,4 +369,18 @@ void BusSNES::auto_joypad_read_start() {
 
 void BusSNES::dump_mem() {
   std::printf("1425 = %02x\n", read(0x1425));
+}
+
+void BusSNES::pickle(std::string filename) {
+  std::ofstream ofs(filename);
+  {
+    cereal::BinaryOutputArchive oa(ofs);
+    oa(*this);
+  }
+}
+
+void BusSNES::unpickle(std::string filename) {
+  std::ifstream ifs(filename);
+  cereal::BinaryInputArchive ia(ifs);
+  ia(*this);
 }

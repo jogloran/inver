@@ -87,6 +87,6 @@ TD2::show() {
 }
 
 void TD2::connect(BusSNES* b) {
-  ppu = &b->ppu;
+  ppu = b->ppu;
 }
 

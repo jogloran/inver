@@ -93,6 +93,6 @@ void Screen::blit() {
   }
 }
 
-void Screen::connect(SPPU *p) {
+void Screen::connect(std::shared_ptr<SPPU> p) {
   ppu = p;
 }
