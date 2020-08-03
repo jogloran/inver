@@ -5,7 +5,6 @@
 #include "debug.hpp"
 
 #include <gflags/gflags.h>
-#include <sdl_input.hpp>
 #include <map>
 
 DECLARE_bool(td);
@@ -248,7 +247,7 @@ void BusSNES::write(dword address, byte value) {
       if (offs == 0x420c) {
         // HDMAEN
         if (value != 0)
-        log_with_tag("hdma", "HDMAEN %d\n", value);
+          log_with_tag("hdma", "HDMAEN %d\n", value);
         for (int i = 0; i < 8; ++i) {
           if (value & (1 << i)) {
             log_with_tag("hdma", "HDMA start %d\n", i);
