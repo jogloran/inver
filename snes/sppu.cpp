@@ -274,7 +274,7 @@ void SPPU::tick(byte master_cycles) {
 
         if (line <= 0xe0) {
           state = State::VISIBLE;
-        } else if (line == 0xe1) {
+        } else if (line >= 0xe1) {
           state = State::VBLANK;
           bus->vblank_nmi();
         }

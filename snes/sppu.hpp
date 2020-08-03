@@ -26,7 +26,7 @@ public:
     bus = b;
   }
 
-  void connect(std::shared_ptr<Screen> s) {
+  void connect(Screen* s) {
     screen = s;
   }
 
@@ -422,6 +422,8 @@ public:
        visible);
   }
 
+  Screen* screen;
+
 private:
   void dump_oam_table();
 
@@ -473,8 +475,6 @@ private:
   };
   std::vector<RenderedSprite> visible;
   // endregion
-
-  std::shared_ptr<Screen> screen;
 
   friend class Logger<SPPU>;
 

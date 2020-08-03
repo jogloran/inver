@@ -465,6 +465,11 @@ public:
       byte padding: 8;
     };
     dword addr;
+
+    template<typename Ar>
+    void serialize(Ar& ar) {
+      ar(addr);
+    }
   } pc {};
 
   union flags_t {
@@ -479,6 +484,11 @@ public:
       byte N: 1;
     };
     byte reg;
+
+    template<typename Ar>
+    void serialize(Ar& ar) {
+      ar(reg);
+    }
   } p = {};
 
   bool crossed_page = false;

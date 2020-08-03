@@ -150,8 +150,7 @@ int main(int argc, char* argv[]) {
 
   BusSNES bus;
   auto s = std::make_shared<Screen>();
-  bus.ppu->connect(s);
-  s->connect(bus.ppu);
+  bus.attach_screen(s);
 
   std::vector<byte> data = read_bytes(f);
   word rst = inspect(data);

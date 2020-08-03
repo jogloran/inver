@@ -63,6 +63,7 @@ public:
 
   std::shared_ptr<CPU5A22> cpu;
   std::shared_ptr<SPPU> ppu;
+  std::shared_ptr<Screen> screen;
   TD2 td2;
   SNES_SPC* spc;
   size_t spc_time {};
@@ -148,7 +149,7 @@ public:
 
   template<typename Ar>
   void serialize(Ar& ar) {
-    ar(ram, ppu, rom, sram1, sram2, dma, dma_state,
+    ar(ram, cpu, ppu, rom, sram1, sram2, dma, dma_state,
         wmadd, nmi, in_nmi, timeup,
         auto_joypad_read_busy, joypad_sample_hi, joypad_sample_lo);
   }
@@ -156,4 +157,6 @@ public:
   void pickle(std::string filename);
 
   void unpickle(std::string filename);
+
+  void attach_screen(std::shared_ptr<Screen> s);
 };

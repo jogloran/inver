@@ -88,6 +88,13 @@ void Screen::blit() {
         case SDLK_BACKQUOTE:
           FLAGS_dis = !FLAGS_dis;
           break;
+
+        case SDLK_v:
+          ppu->bus->pickle("save.state");
+          break;
+        case SDLK_e:
+          ppu->bus->unpickle("save.state");
+          break;
       }
     }
   }

@@ -383,4 +383,14 @@ void BusSNES::unpickle(std::string filename) {
   std::ifstream ifs(filename);
   cereal::BinaryInputArchive ia(ifs);
   ia(*this);
+
+  ppu->connect(this);
+  cpu->connect(this);
+  attach_screen(screen);
+}
+
+void BusSNES::attach_screen(std::shared_ptr<Screen> s) {
+  screen = s;
+  ppu->screen = s.get();
+  screen->connect(ppu);
 }
