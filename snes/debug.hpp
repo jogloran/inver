@@ -2,8 +2,21 @@
 
 #include <cstdio>
 #include <string>
+#include <memory>
+#include <iostream>
+#include <cstdlib>
+#include <vector>
+#include <iterator>
+#include <fstream>
+#include <sstream>
+#include <set>
+#include <gflags/gflags.h>
+#include <map>
 
 #include "types.h"
+#include "rang.hpp"
+#include "cpu5a22.hpp"
+#include "bus_snes.hpp"
 
 struct ChangeWatchSpec {
   std::string name;
@@ -54,3 +67,11 @@ static PCWatchSpec::Action watch_spec_interpret_rwx(std::string rwx) {
   }
   return a;
 }
+
+std::set<std::string> parse_tags(std::string tags_str);
+
+std::set<dword> parse_ignored_pcs(std::string ignored_pcs_str);
+
+std::map<dword, PCWatchSpec> parse_pc_watch_spec(std::string dis_pcs_str);
+
+std::vector<ChangeWatchSpec> parse_change_watches(std::string change_watches_str);
