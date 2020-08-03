@@ -98,6 +98,7 @@ void CPU5A22::dump() {
             << hex_byte << static_cast<int>(read(0x0004));
   std::cout << " mode:" << hex_byte << static_cast<int>(read(0x7e0100));
   std::cout << " 81c5aa:" << hex_byte << static_cast<int>(read(0x81c5aa) | (read(0x81c5ab) << 8));
+  std::cout << " 1eff:" << hex_byte << static_cast<int>(read(0x1eff));
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 
@@ -157,14 +158,24 @@ byte CPU5A22::read(dword address) {
 }
 
 byte CPU5A22::pop() {
-  auto result = bus->ram[(sp & 0xff00) + (((sp & 0xff) + 1) & 0xff)];
+  byte result;
+  if (native()) {
+    result = bus->ram[sp + 1];
+  } else {
+    result = bus->ram[(sp & 0xff00) + (((sp & 0xff) + 1) & 0xff)];
+  }
   ++sp;
   return result;
 }
 
 word CPU5A22::pop_word() {
-  auto result = (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 1) & 0xff)] |
-                 (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 2) & 0xff)] << 8));
+  word result;
+  if (native()) {
+    result = (bus->ram[sp + 1] | (bus->ram[sp + 2] << 8));
+  } else {
+    result = (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 1) & 0xff)] |
+                   (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 2) & 0xff)] << 8));
+  }
   ++sp;
   ++sp;
   return result;
@@ -176,8 +187,13 @@ void CPU5A22::push(byte data) {
 }
 
 void CPU5A22::push_word(word address) {
-  bus->ram[(sp & 0xff00) + ((sp - 1) & 0xff)] = address & 0xff;
-  bus->ram[(sp & 0xff00) + (sp & 0xff)] = address >> 8;
+  if (native()) {
+    bus->ram[sp - 1] = address & 0xff;
+    bus->ram[sp] = address >> 8;
+  } else {
+    bus->ram[(sp & 0xff00) + ((sp - 1) & 0xff)] = address & 0xff;
+    bus->ram[(sp & 0xff00) + (sp & 0xff)] = address >> 8;
+  }
   --sp;
   --sp;
 }

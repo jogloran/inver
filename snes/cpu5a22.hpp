@@ -23,7 +23,7 @@ public:
   template <BusSNES::Interrupt rupt>
   void irq() {
 //    if (rupt == BusSNES::NMI) {
-      log("NMI\n");
+      log_with_tag("irq", "NMI\n");
       push(pc.b);
       push_word(pc.addr + ((rupt == BusSNES::BRK || rupt == BusSNES::COP) ? 1 : 0));
       if (rupt == BusSNES::BRK) {
