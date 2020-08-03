@@ -159,4 +159,6 @@ public:
   void unpickle(std::string filename);
 
   void attach_screen(std::shared_ptr<Screen> s);
+
+  void set_pc(word rst_addr);
 };

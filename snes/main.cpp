@@ -98,6 +98,6 @@ int main(int argc, char* argv[]) {
 
   bus.map(std::move(data));
   bus.reset();
-  bus.cpu->pc.addr = rst;
+  bus.set_pc(rst);
   bus.run();
 }

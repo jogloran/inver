@@ -394,3 +394,7 @@ void BusSNES::attach_screen(std::shared_ptr<Screen> s) {
   ppu->screen = s.get();
   screen->connect(ppu);
 }
+
+void BusSNES::set_pc(word pc) {
+  cpu->pc.addr = pc;
+}
