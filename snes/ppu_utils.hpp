@@ -29,9 +29,10 @@ OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i);
  * @param base The base BG tile address
  * @param start_x The leftmost tile 0 <= start_x < 64
  * @param start_y The row of the tile 0 <= start_y < 64
+ * @param sc_size The mirroring mode from BGxSC 0 <= sc_size < 4
  * @return An array of 33 VRAM addresses for the BG tile data
  */
-std::array<word, 33> addrs_for_row(word base, word start_x, word start_y);
+std::array<word, 33> addrs_for_row(word base, word start_x, word start_y, byte sc_size);
 
 /**
  * Compute the VRAM address for a BG tile.

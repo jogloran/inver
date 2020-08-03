@@ -87,11 +87,20 @@ OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i) {
   return {};
 }
 
-std::array<word, 33> addrs_for_row(word base, word start_x, word start_y) {
+std::array<word, 33> addrs_for_row(word base, word start_x, word start_y,
+    byte sc_size) {
+  //                sx,    sy
+  // sc_size = 0 => false, false
+  // sc_size = 1 => true, false
+  // sc_size = 2 => false, true
+  // sc_size = 3 => true, true
+  auto sx = sc_size & 1;
+  auto sy = sc_size >> 1;
+
   std::array<word, 33> result;
   auto it = result.begin();
   for (int i = 0; i < 33; ++i) {
-    *it++ = addr(base, (start_x + i) % 64, start_y, true, true);
+    *it++ = addr(base, (start_x + i) % 64, start_y, sx, sy);
   }
   return result;
 }
@@ -101,7 +110,7 @@ word addr(word base, word x, word y, bool sx, bool sy) {
           + ((y & 0x1f) << 5)
           + (x & 0x1f)
           + (sy ? ((y & 0x20) << (sx ? 6 : 5)) : 0)
-          + (sy ? ((x & 0x20) << 5) : 0));
+          + (sx ? ((x & 0x20) << 5) : 0));
 }
 
 std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large) {

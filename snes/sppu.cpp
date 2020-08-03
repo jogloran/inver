@@ -124,7 +124,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
 
   word start_x_index = scr[bg].x_reg / 8;
   byte fine_x_offset = scr[bg].x_reg % 8;
-  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row);
+  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row, bg_base_size[bg].sc_size);
 
   // no need to clear _tiles_ since we overwrite each one
   std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
