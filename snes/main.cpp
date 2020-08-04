@@ -38,27 +38,33 @@ std::vector<byte> read_bytes(std::ifstream& f) {
 }
 
 word inspect(std::vector<byte> data) {
-  byte* name = &data[0x7fc0];
+  word offset = 0x7000;
+  byte* name = &data[offset + 0xfc0];
+  if (std::any_of(name, name + 21, [](char c) { return !isprint(c); })) {
+    offset = 0xf000;
+    name = &data[offset + 0xfc0];
+  }
+
   std::printf("%.*s\n", 21, name);
   std::printf("Type: ");
-  byte rom_layout = data[0x7fd5];
+  byte rom_layout = data[offset + 0xfd5];
   if ((rom_layout & 0b110000) == 3) {
     std::printf("FastROM\n");
   } else {
     if (rom_layout & 1) std::printf("HiROM\n");
     else std::printf("LoROM\n");
   }
-  std::printf("ROM: %02x\n", data[0x7fd6]);
-  std::printf("ROM size:  %d\n", 0x400 << data[0x7fd7]);
-  std::printf("SRAM size: %d\n", 0x400 << data[0x7fd8]);
-  std::printf("Creator:   %02x\n", byte(data[0x7fd9]));
-  std::printf("Version:   %02x\n", byte(data[0x7fdb]));
-  std::printf("Checksum:  %02x\n", byte(data[0x7fde]));
-  std::printf("~Checksum: %02x\n", byte(data[0x7fdc]));
-  std::printf("RST:       %04x\n", word(data[0x7ffc]) | word(data[0x7ffd] << 8));
-  std::printf("NMI:       %04x\n", word(data[0x7fea]) | word(data[0x7feb] << 8));
+  std::printf("ROM: %02x\n", data[offset + 0xfd6]);
+  std::printf("ROM size:  %d\n", 0x400 << data[offset + 0xfd7]);
+  std::printf("SRAM size: %d\n", 0x400 << data[offset + 0xfd8]);
+  std::printf("Creator:   %02x\n", byte(data[offset + 0xfd9]));
+  std::printf("Version:   %02x\n", byte(data[offset + 0xfdb]));
+  std::printf("Checksum:  %02x\n", byte(data[offset + 0xfde]));
+  std::printf("~Checksum: %02x\n", byte(data[offset + 0xfdc]));
+  std::printf("RST:       %04x\n", word(data[offset + 0xffc]) | word(data[offset + 0xffd] << 8));
+  std::printf("NMI:       %04x\n", word(data[offset + 0xfea]) | word(data[offset + 0xfeb] << 8));
 
-  return word(data[0x7ffc]) | word(data[0x7ffd] << 8);
+  return word(data[offset + 0xffc]) | word(data[offset + 0xffd] << 8);
 }
 
 int main(int argc, char* argv[]) {
