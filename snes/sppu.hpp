@@ -69,15 +69,19 @@ public:
         return value;
 
       case 0x213C: // OPHCT   - PPU2 Horizontal Counter Latch (read-twice)
-        if (hloc_read_upper) {
+        if (!hloc_read_upper) {
+          hloc_read_upper = true;
           return hloc.l;
         } else {
+          hloc_read_upper = false;
           return hloc.h;
         }
       case 0x213D: // OPVCT   - PPU2 Vertical Counter Latch   (read-twice)
-        if (vloc_read_upper) {
+        if (!vloc_read_upper) {
+          vloc_read_upper = true;
           return vloc.l;
         } else {
+          vloc_read_upper = false;
           return vloc.h;
         }
       case 0x213E: // STAT77  - PPU1 Status and PPU1 Version Number
