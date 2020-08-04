@@ -86,6 +86,16 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
 void SPPU::render_row() {
   std::array<byte, 256> pals;
   switch (bgmode.mode) {
+    case 0: {
+      auto bg1 = render_row(0);
+      auto bg2 = render_row(1);
+      auto bg3 = render_row(2);
+      auto bg4 = render_row(3);
+
+      std::vector bgs {bg3, bg1, bg2, bg4};
+      pals = composite(bgs);
+      break;
+    }
     case 1: {
       auto bg1 = render_row(0);
       auto bg2 = render_row(1);
