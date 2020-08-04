@@ -34,7 +34,7 @@ std::array<byte, 8> decode(word w1, word w2, word w3, word w4, bool flip_x) {
   auto plane1 = decode(w1, w2, flip_x);
   auto plane2 = decode(w3, w4, flip_x);
   for (int i = 0; i < 8; ++i) {
-    result[i] = plane1[i] + (plane2[i] << 8);
+    result[i] = plane1[i] + (plane2[i] << 4);
   }
   return result;
 }

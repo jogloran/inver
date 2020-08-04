@@ -9,8 +9,16 @@
 
 // table of (mode, layer) -> bpp?
 
-//std::array<byte, 3> bpps = {{4, 4, 2}};
-std::array<byte, 2> bpps = {{8, 4}};
+std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
+    {2, 2, 2, 2},
+    {4, 4, 2, 0},
+    {4, 4, 0, 0},
+    {8, 4, 0, 0},
+    {8, 2, 0, 0},
+    {4, 2, 0, 0},
+    {4, 0, 0, 0},
+    {0, 0, 0, 0},
+}};
 
 void SPPU::dump_sprite() {
   word addr = 0x27c0 / 2;
@@ -76,13 +84,27 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
 }
 
 void SPPU::render_row() {
+  std::array<byte, 256> pals;
+  switch (bgmode.mode) {
+    case 1: {
+      auto bg1 = render_row(0);
+      auto bg2 = render_row(1);
+      auto bg3 = render_row(2);
 
-  auto bg1 = render_row(0);
-  auto bg2 = render_row(1);
-//  auto bg3 = render_row(2);
+      std::vector bgs {bg3, bg1, bg2};
+      pals = composite(bgs);
+      break;
+    }
 
-  std::vector bgs {bg1, bg2};
-  auto pals = composite(bgs);
+    case 3: {
+      auto bg1 = render_row(0);
+      auto bg2 = render_row(1);
+
+      std::vector bgs {bg1, bg2};
+      pals = composite(bgs);
+      break;
+    }
+  }
   auto fb_ptr = screen->fb[0].data() + line * 256;
 
   for (byte pal_idx : pals) {
@@ -115,7 +137,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   byte mode = bgmode.mode;
 
   // 2bpp means one pixel is encoded in one word. wpp = words per pixel
-  byte wpp = bpps[bg] / 2;
+  byte wpp = bpps_for_mode[mode][bg] / 2;
 
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
@@ -152,7 +174,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
-
+                    // TODO: This seems to work in 8bpp, although I think that direct colour interferes
+                    //  with t->pal_no
                     auto pal_index = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
                     *ptr++ = (pal_index % (1 << (2 * wpp)) == 0) ? 0 : pal_index;
                   }
@@ -195,7 +218,7 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       }
       word obj_char_data_addr = obj_addr(obj_char_data_base, tile_no, tile_no_x_offset,
                                          tile_no_y_offset, tile_y);
-      auto pixel_array = decode_planar(&vram[obj_char_data_addr], 4, entry->attr.flip_x);
+      auto pixel_array = decode_planar(&vram[obj_char_data_addr], 2, entry->attr.flip_x);
 
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
                      [&entry](auto pal_index) {
