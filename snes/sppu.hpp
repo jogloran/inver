@@ -110,7 +110,6 @@ public:
 
       case 0x2101: // OBSEL   - Object Size and Object Base
         obsel.reg = value;
-        std::printf("sprite base address %04x\n", obsel.obj_base_addr * 8192);
         break;
 
       case 0x2102: // OAMADDL - OAM Address (lower 8bit)

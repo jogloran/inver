@@ -9,6 +9,7 @@
 #include <cereal/archives/binary.hpp>
 
 DECLARE_bool(td);
+DECLARE_int32(sram);
 
 extern std::map<dword, PCWatchSpec> dis_pcs;
 
@@ -106,6 +107,7 @@ byte BusSNES::read(dword address) {
         return value << 7;
       }
       if (offs == 0x4212) {
+        // HVBJOY
         bool vblank = ppu->state == SPPU::State::VBLANK;
         bool hblank = ppu->state
             == SPPU::State::HBLANK;
@@ -138,7 +140,7 @@ byte BusSNES::read(dword address) {
     }
   } else if (address <= 0x7d'ffff) {
     if (offs <= 0x7fff) {
-      return sram1[(bank - 0x70) * 0x8000 + offs]; // sram
+      return sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram]; // sram
     } else {
       return rom[bank * 0x8000 + (offs - 0x8000)];
     }
@@ -278,7 +280,7 @@ void BusSNES::write(dword address, byte value) {
     }
   } else if (address <= 0x7d'ffff) {
     if (offs <= 0x7fff) {
-      sram1[(bank - 0x70) * 0x8000 + offs] = value;
+      sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram] = value;
     } else {
 //      return rom[bank * 0x8000 + (offs - 0x8000)];
     }
