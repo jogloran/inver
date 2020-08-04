@@ -129,8 +129,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     std::printf("%3d wh0 %02x %02x\n", line, windows[0].l, windows[0].r);
 
   auto line_ = line;
-  if (mosaic.enable_for_bg & (1 << bg)) {
-    line_ = (line / (mosaic.size + 1)) * (mosaic.size + 1);
+  if (mosaic.enabled_for_bg(bg)) {
+    line_ = (line / mosaic.size()) * (mosaic.size());
   }
 
   // get bg mode
@@ -208,9 +208,9 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       tile_y = 7 - tile_y;
       tile_no_y_offset = sprite_height / 8 - tile_no_y_offset - 1;
     }
-    word tile_no = entry->tile_no + (entry->attr.tile_no_h << 8);
+    word tile_no = oam_.tile_no_full;
 
-    word obj_char_data_base = obsel.obj_base_addr * 8192;
+    word obj_char_data_base = obsel.obj_base_addr << 13;
     for (int tile = 0; tile < sprite_width / 8; ++tile) {
       auto tile_no_x_offset = tile;
       if (entry->attr.flip_x) {
@@ -258,8 +258,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   }
 
   // Horizontal mosaic
-  if (mosaic.enable_for_bg & (1 << bg)) {
-    auto n = mosaic.size + 1;
+  if (mosaic.enabled_for_bg(bg)) {
+    auto n = mosaic.size();
     for (int i = 0; i < 256; ++i) {
       result[i] = result[(i / n) * n];
     }

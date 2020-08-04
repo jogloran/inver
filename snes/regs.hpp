@@ -236,11 +236,19 @@ union bg_base_size_t {
 union mosaic_t {
   struct {
     byte enable_for_bg: 4;
-    byte size: 4;
+    byte size_minus_one: 4;
   };
   byte reg;
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
+
+  bool enabled_for_bg(byte bg) {
+    return enable_for_bg & (1 << bg);
+  }
+
+  byte size() {
+    return size_minus_one + 1;
+  }
 };
 
 union bgmode_t {
