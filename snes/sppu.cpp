@@ -9,7 +9,8 @@
 
 // table of (mode, layer) -> bpp?
 
-std::array<byte, 3> bpps = {{4, 4, 2}};
+//std::array<byte, 3> bpps = {{4, 4, 2}};
+std::array<byte, 2> bpps = {{8, 4}};
 
 void SPPU::dump_sprite() {
   word addr = 0x27c0 / 2;
@@ -78,9 +79,9 @@ void SPPU::render_row() {
 
   auto bg1 = render_row(0);
   auto bg2 = render_row(1);
-  auto bg3 = render_row(2);
+//  auto bg3 = render_row(2);
 
-  std::vector bgs {bg3, bg1, bg2};
+  std::vector bgs {bg1, bg2};
   auto pals = composite(bgs);
   auto fb_ptr = screen->fb[0].data() + line * 256;
 

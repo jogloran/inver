@@ -55,11 +55,46 @@ struct window_t {
   AreaSetting mask_for_bg[4];
   AreaSetting mask_for_obj;
   AreaSetting mask_for_math;
-  bool main_disable;
-  bool sub_disable;
   template <typename Ar>
   void serialize(Ar& ar) { ar(l, r, mask_for_bg, mask_for_obj,
-      mask_for_math, main_disable, sub_disable); }
+      mask_for_math); }
+};
+
+union window_disable_mask_t {
+  struct {
+    byte bg_disabled : 4;
+    byte obj_disabled : 1;
+    byte padding : 3;
+  };
+  byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
+
+union cgwsel_t {
+  struct {
+    bool direct_colour_enabled : 1;
+    bool subscreen_bg_obj_enabled : 1;
+    byte unused : 2;
+    byte colour_math_enabled : 2;
+    byte force_main_screen_black_flags : 2;
+  };
+  byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
+
+union cgadsub_t {
+  struct {
+    byte on_main_screen : 4;
+    byte on_obj_4_to_7 : 1;
+    byte on_backdrop : 1;
+    byte half_result : 1;
+    byte add_or_subtract : 1;
+  };
+  byte reg;
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
 };
 
 union vram_addr_t {

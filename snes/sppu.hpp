@@ -325,9 +325,17 @@ public:
         break;
 
       case 0x212E: // TMW     - Window Area Main Screen Disable
+        window_main_disable_mask.reg = value;
+        break;
       case 0x212F: // TSW     - Window Area Sub Screen Disable
+        window_sub_disable_mask.reg = value;
+        break;
+
       case 0x2130: // CGWSEL  - Color Math Control Register A
+        cgwsel.reg = value;
+        break;
       case 0x2131: // CGADSUB - Color Math Control Register B
+        colour_math.reg = value;
         break;
 
       case 0x2132: // COLDATA - Color Math Sub Screen Backdrop Color
@@ -379,6 +387,7 @@ public:
     }
     return 0;
   }
+
   vram_addr_incr_t vram_addr_incr {};
   setini_t setini {};
   obsel_t obsel {};
@@ -391,6 +400,10 @@ public:
 
   window_t windows[2] {};
   window_mask_op_t bg_mask_op {}, obj_math_mask_op {};
+  window_disable_mask_t window_main_disable_mask {}, window_sub_disable_mask {};
+
+  cgwsel_t cgwsel {};
+  cgadsub_t colour_math {};
 
   byte cgram_addr {};
   bool cgram_rw_upper = false;
@@ -415,7 +428,9 @@ public:
        bg_char_data_addr,
        vram_addr_incr, setini, obsel, oamadd,
        htime, vtime, vram_addr,
-       windows, bg_mask_op, obj_math_mask_op,
+       windows, window_main_disable_mask, window_sub_disable_mask,
+       bg_mask_op, obj_math_mask_op,
+       cgwsel, colour_math,
        cgram_addr, cgram_rw_upper, cgram_lsb,
        oam, vram, pal, scr, oam_lsb, vram_prefetch,
        sprite_range_overflow,
@@ -476,6 +491,7 @@ private:
       ar(oam, oam_index, pixels);
     }
   };
+
   std::vector<RenderedSprite> visible;
   // endregion
 
