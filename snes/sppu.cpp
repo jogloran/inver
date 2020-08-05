@@ -160,6 +160,7 @@ void SPPU::dump_colour_math() {
   };
   using namespace fort;
   char_table tb;
+  tb.set_border_style(FT_SOLID_ROUND_STYLE);
   tb.column(0).set_cell_text_align(text_align::right);
   tb << header << "" << "BG1" << "BG2" << "BG3" << "BG4" << "OBJ" << "BD" << endr;
   tb << "Main" << fmt_bool(main_scr.bg1) << fmt_bool(main_scr.bg2) << fmt_bool(main_scr.bg3)
@@ -206,9 +207,9 @@ void SPPU::dump_colour_math() {
      << fmt_bool(colour_math.on_main_screen & 8)
      << fmt_bool(colour_math.on_obj_4_to_7)
      << fmt_bool(colour_math.on_backdrop) << endr;
-  tb << separator << "CM on" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
-  tb << "CM op" << fmt_cgadsub(colour_math.reg) << endr;
-  tb << "Backdrop"
+  auto cm_on = tb << separator << "CM on" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
+  auto cm_op = tb << "CM op" << fmt_cgadsub(colour_math.reg) << endr;
+  auto backdrop = tb << "Backdrop"
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.r)
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.g)
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.b) << endr;
