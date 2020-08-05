@@ -442,6 +442,8 @@ public:
 
   Screen* screen;
 
+  void dump_colour_math();
+
 private:
   void dump_oam_table();
 
@@ -501,9 +503,11 @@ private:
 
   void render_row();
 
-  std::array<byte, 256> render_row(byte bg);
+  std::array<byte, 256> render_row(byte bg, byte prio);
 
   Screen::colour_t lookup(byte);
 
   void vblank_end();
+
+  std::array<byte, 256> render_obj(byte prio);
 };

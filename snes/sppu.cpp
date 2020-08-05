@@ -10,15 +10,15 @@
 // table of (mode, layer) -> bpp?
 
 std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
-    {2, 2, 2, 2},
-    {4, 4, 2, 0},
-    {4, 4, 0, 0},
-    {8, 4, 0, 0},
-    {8, 2, 0, 0},
-    {4, 2, 0, 0},
-    {4, 0, 0, 0},
-    {0, 0, 0, 0},
-}};
+                                                        {2, 2, 2, 2},
+                                                        {4, 4, 2, 0},
+                                                        {4, 4, 0, 0},
+                                                        {8, 4, 0, 0},
+                                                        {8, 2, 0, 0},
+                                                        {4, 2, 0, 0},
+                                                        {4, 0, 0, 0},
+                                                        {0, 0, 0, 0},
+                                                    }};
 
 void SPPU::dump_sprite() {
   word addr = 0x27c0 / 2;
@@ -72,7 +72,7 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
       auto& buf = result[i];
       auto& next = layer[i];
 
-      if (buf == 0 && next != 0) {
+      if (next != 0) {
         buf = next;
       }
 
@@ -87,28 +87,35 @@ void SPPU::render_row() {
   std::array<byte, 256> pals;
   switch (bgmode.mode) {
     case 0: {
-      auto bg1 = render_row(0);
-      auto bg2 = render_row(1);
-      auto bg3 = render_row(2);
-      auto bg4 = render_row(3);
+      auto bg1 = render_row(0, 0);
+      auto bg2 = render_row(1, 0);
+      auto bg3 = render_row(2, 0);
+      auto bg4 = render_row(3, 0);
 
       std::vector bgs {bg3, bg1, bg2, bg4};
       pals = composite(bgs);
       break;
     }
     case 1: {
-      auto bg1 = render_row(0);
-      auto bg2 = render_row(1);
-      auto bg3 = render_row(2);
+      auto bg1 = render_row(0, 0);
+      auto bg2 = render_row(1, 0);
+      auto bg3 = render_row(2, 0);
+      auto bg3b = render_row(2, 1);
 
-      std::vector bgs {bg3, bg1, bg2};
+      auto obj0 = render_obj(0);
+      auto obj1 = render_obj(1);
+      auto obj2 = render_obj(2);
+      auto obj3 = render_obj(3);
+
+//      std::vector bgs { bg3b, obj0, bg3, obj1, obj2, bg1, bg2, obj3 };
+      std::vector bgs {obj0, bg3, obj1, bg2, bg1, obj2, obj3, bg3b};
       pals = composite(bgs);
       break;
     }
 
     case 3: {
-      auto bg1 = render_row(0);
-      auto bg2 = render_row(1);
+      auto bg1 = render_row(0, 0);
+      auto bg2 = render_row(1, 0);
 
       std::vector bgs {bg1, bg2};
       pals = composite(bgs);
@@ -132,66 +139,91 @@ void SPPU::render_row() {
   }
 }
 
-std::array<byte, 256> SPPU::render_row(byte bg) {
+void SPPU::dump_colour_math() {
+  static auto fmt_bool = [](byte b) { return b == 0 ? "" : "X"; };
+  static auto fmt_cgwsel = [](byte b) {
+    static constexpr const char* cgwsel[] = {"Always", "Math Window", "~Math Window", "Never"};
+    return cgwsel[b];
+  };
+  static auto fmt_cgadsub = [](byte b) {
+    static constexpr const char* cgwsel[] = {"Main + Sub", "Main - Sub", "(Main + Sub) / 2",
+                                             "(Main - Sub) / 2"};
+    return cgwsel[b >> 6];
+  };
+  static auto fmt_wxlog = [](window_mask_op_t::MaskOp b) {
+    static constexpr const char* op[] = {"Or", "And", "Xor", "Xnor"};
+    return op[static_cast<int>(b)];
+  };
+  static auto fmt_wxsel = [](window_t::AreaSetting b) {
+    static constexpr const char* op[] = {"", "", "In", "Out"};
+    return op[static_cast<int>(b)];
+  };
+  using namespace fort;
+  char_table tb;
+  tb.column(0).set_cell_text_align(text_align::right);
+  tb << header << "" << "BG1" << "BG2" << "BG3" << "BG4" << "OBJ" << "BD" << endr;
+  tb << "Main" << fmt_bool(main_scr.bg1) << fmt_bool(main_scr.bg2) << fmt_bool(main_scr.bg3)
+     << fmt_bool(main_scr.bg4) << fmt_bool(main_scr.obj) << endr;
+  tb << "Sub" << fmt_bool(sub_scr.bg1) << fmt_bool(sub_scr.bg2) << fmt_bool(sub_scr.bg3)
+     << fmt_bool(sub_scr.bg4) << fmt_bool(sub_scr.obj) << endr;
+  tb << "Win bounds" << int(windows[0].l) << int(windows[0].r) << "" << int(windows[1].l)
+     << int(windows[1].r) << "" << endr;
+  tb << "Main Woff" << fmt_bool(window_main_disable_mask.bg_disabled & 1)
+     << fmt_bool(window_main_disable_mask.bg_disabled & 2)
+     << fmt_bool(window_main_disable_mask.bg_disabled & 4)
+     << fmt_bool(window_main_disable_mask.bg_disabled & 8)
+     << fmt_bool(window_main_disable_mask.obj_disabled) << "" << endr;
+  tb << "Sub Woff" << fmt_bool(window_sub_disable_mask.bg_disabled & 1)
+     << fmt_bool(window_sub_disable_mask.bg_disabled & 2)
+     << fmt_bool(window_sub_disable_mask.bg_disabled & 4)
+     << fmt_bool(window_sub_disable_mask.bg_disabled & 8)
+     << fmt_bool(window_sub_disable_mask.obj_disabled) << "" << endr;
+  tb << "Win merge op" << fmt_wxlog(bg_mask_op.bg1_op)
+     << fmt_wxlog(bg_mask_op.bg2_op)
+     << fmt_wxlog(bg_mask_op.bg3_op)
+     << fmt_wxlog(bg_mask_op.bg4_op)
+     << fmt_wxlog(obj_math_mask_op.bg1_op)
+     << fmt_wxlog(obj_math_mask_op.bg2_op)
+     << endr;
+  tb << "Win1 mask" << fmt_wxsel(windows[0].mask_for_bg[0])
+     << fmt_wxsel(windows[0].mask_for_bg[1])
+     << fmt_wxsel(windows[0].mask_for_bg[2])
+     << fmt_wxsel(windows[0].mask_for_bg[3])
+     << fmt_wxsel(windows[0].mask_for_obj)
+     << fmt_wxsel(windows[0].mask_for_math)
+     << endr;
+  tb << "Win2 mask" << fmt_wxsel(windows[1].mask_for_bg[0])
+     << fmt_wxsel(windows[1].mask_for_bg[1])
+     << fmt_wxsel(windows[1].mask_for_bg[2])
+     << fmt_wxsel(windows[1].mask_for_bg[3])
+     << fmt_wxsel(windows[1].mask_for_obj)
+     << fmt_wxsel(windows[1].mask_for_math)
+     << endr;
+
+  tb << "CM" << fmt_bool(colour_math.on_main_screen & 1)
+     << fmt_bool(colour_math.on_main_screen & 2)
+     << fmt_bool(colour_math.on_main_screen & 4)
+     << fmt_bool(colour_math.on_main_screen & 8)
+     << fmt_bool(colour_math.on_obj_4_to_7)
+     << fmt_bool(colour_math.on_backdrop) << endr;
+  tb << separator << "CM on" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
+  tb << "CM op" << fmt_cgadsub(colour_math.reg) << endr;
+  tb << "Backdrop"
+     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.r)
+     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.g)
+     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.b) << endr;
+
+  tb[10][1].set_cell_span(6);
+  tb[11][1].set_cell_span(6);
+  tb[12][3].set_cell_span(4);
+  std::cout << tb.to_string() << std::endl;
+}
+
+std::array<byte, 256> SPPU::render_obj(byte prio) {
   if (inidisp.force_blank) return {};
 
-  if (bg == 0 && windows[0].l != 0 && windows[0].l < windows[0].r)
-    std::printf("%3d wh0 %02x %02x\n", line, windows[0].l, windows[0].r);
-
+  std::array<byte, 256> result {};
   auto line_ = line;
-  if (mosaic.enabled_for_bg(bg)) {
-    line_ = (line / mosaic.size()) * (mosaic.size());
-  }
-
-  // get bg mode
-  byte mode = bgmode.mode;
-
-  // 2bpp means one pixel is encoded in one word. wpp = words per pixel
-  byte wpp = bpps_for_mode[mode][bg] / 2;
-
-  dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
-  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
-
-  byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
-  byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;
-
-  word start_x_index = scr[bg].x_reg / 8;
-  byte fine_x_offset = scr[bg].x_reg % 8;
-  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row, bg_base_size[bg].sc_size);
-
-  // no need to clear _tiles_ since we overwrite each one
-  std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
-    return (bg_map_tile_t*) &vram[addr];
-  });
-
-  // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
-  int col = 0;
-  auto ptr = row.begin();
-  std::for_each(tiles.begin(), tiles.end(),
-                [&](bg_map_tile_t* t) {
-                  auto tile_id = t->char_no;
-                  auto row_to_access = tile_row;
-                  if (t->flip_y)
-                    row_to_access = 7 - row_to_access;
-
-                  // get tile chr data
-                  word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
-
-                  // decode planar data
-                  // produce 8 byte values (palette indices)
-                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
-                                                                t->flip_x);
-                  for (int i = 0; i < 8; ++i) {
-                    // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
-                    // into the palette
-                    // TODO: This seems to work in 8bpp, although I think that direct colour interferes
-                    //  with t->pal_no
-                    auto pal_index = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
-                    *ptr++ = (pal_index % (1 << (2 * wpp)) == 0) ? 0 : pal_index;
-                  }
-
-                  ++col;
-                });
 
   visible.clear();
   // Get OAM candidates based on current line
@@ -201,6 +233,8 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
   OAM* oam_ptr = (OAM*) oam.data();
   for (byte i = 0; i < 128; ++i) {
     OAM* entry = &oam_ptr[i];
+    if (entry->attr.prio != prio) continue;
+
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
     auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
@@ -240,12 +274,6 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
     visible.emplace_back(RenderedSprite {*entry, i, pixels});
   }
 
-  std::array<byte, 256> result;
-  auto result_ptr = result.begin();
-  for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
-    *result_ptr++ = row[i];
-  }
-
   // TODO: need to look into priority for sprite pixels
   std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
     return t1.oam_index == t2.oam_index
@@ -265,6 +293,86 @@ std::array<byte, 256> SPPU::render_row(byte bg) {
       if (sprite.pixels[i] % 16 != 0)
         result[sprite.oam.x + i] = sprite.pixels[i];
     }
+  }
+
+  return result;
+}
+
+/**
+ * prio can take values: 0,1 (bg or obj) 2,3 (obj)
+ * in mode 1, BG3 can have priorities 0a, 0b as well as 1a, 1b.
+ *   0, 1 refers to per-tile priority flag
+ *   a, b refers to BG3 screen priority flag
+ */
+std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
+  if (inidisp.force_blank) return {};
+
+  auto line_ = line;
+  if (mosaic.enabled_for_bg(bg)) {
+    line_ = (line / mosaic.size()) * (mosaic.size());
+  }
+
+  // get bg mode
+  byte mode = bgmode.mode;
+
+  // 2bpp means one pixel is encoded in one word. wpp = words per pixel
+  byte wpp = bpps_for_mode[mode][bg] / 2;
+
+  dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
+  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
+
+  byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
+  byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;
+
+  word start_x_index = scr[bg].x_reg / 8;
+  byte fine_x_offset = scr[bg].x_reg % 8;
+  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row, bg_base_size[bg].sc_size);
+
+  // no need to clear _tiles_ since we overwrite each one
+  std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
+    return (bg_map_tile_t*) &vram[addr];
+  });
+
+  // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
+  int col = 0;
+  auto ptr = row.begin();
+  std::for_each(tiles.begin(), tiles.end(),
+                [&](bg_map_tile_t* t) {
+                  if (t->bg_prio != prio) {
+                    for (int i = 0; i < 8; ++i) {
+                      *ptr++ = 0;
+                    }
+                    return;
+                  }
+
+                  auto tile_id = t->char_no;
+                  auto row_to_access = tile_row;
+                  if (t->flip_y)
+                    row_to_access = 7 - row_to_access;
+
+                  // get tile chr data
+                  word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
+
+                  // decode planar data
+                  // produce 8 byte values (palette indices)
+                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
+                                                                t->flip_x);
+                  for (int i = 0; i < 8; ++i) {
+                    // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
+                    // into the palette
+                    // TODO: This seems to work in 8bpp, although I think that direct colour interferes
+                    //  with t->pal_no
+                    auto pal_index = (1 << (2 * wpp)) * t->pal_no + pal_bytes[i];
+                    *ptr++ = (pal_index % (1 << (2 * wpp)) == 0) ? 0 : pal_index;
+                  }
+
+                  ++col;
+                });
+
+  std::array<byte, 256> result {};
+  auto result_ptr = result.begin();
+  for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
+    *result_ptr++ = row[i];
   }
 
   // Horizontal mosaic

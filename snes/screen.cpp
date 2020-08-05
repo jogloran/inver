@@ -63,13 +63,16 @@ void Screen::blit() {
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
-          ppu->dump_bg(0);
-          std::printf("\n");
+//          ppu->dump_bg(0);
+//          std::printf("\n");
           ppu->dump_bg(1);
           std::printf("\n");
-          ppu->dump_bg(2);
-          std::printf("\n");
+//          ppu->dump_bg(2);
+//          std::printf("\n");
 //          std::exit(0);
+          break;
+        case SDLK_c:
+          ppu->dump_colour_math();
           break;
         case SDLK_p:
           ppu->dump_pal();
