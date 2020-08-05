@@ -163,37 +163,37 @@ void SPPU::dump_colour_math() {
   tb.set_border_style(FT_SOLID_ROUND_STYLE);
   tb.column(0).set_cell_text_align(text_align::right);
   tb << header << "" << "BG1" << "BG2" << "BG3" << "BG4" << "OBJ" << "BD" << endr;
-  tb << "Main" << fmt_bool(main_scr.bg1) << fmt_bool(main_scr.bg2) << fmt_bool(main_scr.bg3)
+  tb << "Main (212c)" << fmt_bool(main_scr.bg1) << fmt_bool(main_scr.bg2) << fmt_bool(main_scr.bg3)
      << fmt_bool(main_scr.bg4) << fmt_bool(main_scr.obj) << endr;
-  tb << "Sub" << fmt_bool(sub_scr.bg1) << fmt_bool(sub_scr.bg2) << fmt_bool(sub_scr.bg3)
+  tb << "Sub (212d)" << fmt_bool(sub_scr.bg1) << fmt_bool(sub_scr.bg2) << fmt_bool(sub_scr.bg3)
      << fmt_bool(sub_scr.bg4) << fmt_bool(sub_scr.obj) << endr;
-  tb << "Win bounds" << int(windows[0].l) << int(windows[0].r) << "" << int(windows[1].l)
+  tb << "Win bounds (2126-9)" << int(windows[0].l) << int(windows[0].r) << "" << int(windows[1].l)
      << int(windows[1].r) << "" << endr;
-  tb << "Main Woff" << fmt_bool(window_main_disable_mask.bg_disabled & 1)
+  tb << "Main Win off (212e)" << fmt_bool(window_main_disable_mask.bg_disabled & 1)
      << fmt_bool(window_main_disable_mask.bg_disabled & 2)
      << fmt_bool(window_main_disable_mask.bg_disabled & 4)
      << fmt_bool(window_main_disable_mask.bg_disabled & 8)
      << fmt_bool(window_main_disable_mask.obj_disabled) << "" << endr;
-  tb << "Sub Woff" << fmt_bool(window_sub_disable_mask.bg_disabled & 1)
+  tb << "Sub Win off (212f)" << fmt_bool(window_sub_disable_mask.bg_disabled & 1)
      << fmt_bool(window_sub_disable_mask.bg_disabled & 2)
      << fmt_bool(window_sub_disable_mask.bg_disabled & 4)
      << fmt_bool(window_sub_disable_mask.bg_disabled & 8)
      << fmt_bool(window_sub_disable_mask.obj_disabled) << "" << endr;
-  tb << "Win merge op" << fmt_wxlog(bg_mask_op.bg1_op)
+  tb << "Win1+2 merge (2121a-b)" << fmt_wxlog(bg_mask_op.bg1_op)
      << fmt_wxlog(bg_mask_op.bg2_op)
      << fmt_wxlog(bg_mask_op.bg3_op)
      << fmt_wxlog(bg_mask_op.bg4_op)
      << fmt_wxlog(obj_math_mask_op.bg1_op)
      << fmt_wxlog(obj_math_mask_op.bg2_op)
      << endr;
-  tb << "Win1 mask" << fmt_wxsel(windows[0].mask_for_bg[0])
+  tb << "Win1 mask (2123-5)" << fmt_wxsel(windows[0].mask_for_bg[0])
      << fmt_wxsel(windows[0].mask_for_bg[1])
      << fmt_wxsel(windows[0].mask_for_bg[2])
      << fmt_wxsel(windows[0].mask_for_bg[3])
      << fmt_wxsel(windows[0].mask_for_obj)
      << fmt_wxsel(windows[0].mask_for_math)
      << endr;
-  tb << "Win2 mask" << fmt_wxsel(windows[1].mask_for_bg[0])
+  tb << "Win2 mask (2123-5)" << fmt_wxsel(windows[1].mask_for_bg[0])
      << fmt_wxsel(windows[1].mask_for_bg[1])
      << fmt_wxsel(windows[1].mask_for_bg[2])
      << fmt_wxsel(windows[1].mask_for_bg[3])
@@ -201,22 +201,25 @@ void SPPU::dump_colour_math() {
      << fmt_wxsel(windows[1].mask_for_math)
      << endr;
 
-  tb << "CM" << fmt_bool(colour_math.on_main_screen & 1)
+  tb << "CM (2131)" << fmt_bool(colour_math.on_main_screen & 1)
      << fmt_bool(colour_math.on_main_screen & 2)
      << fmt_bool(colour_math.on_main_screen & 4)
      << fmt_bool(colour_math.on_main_screen & 8)
      << fmt_bool(colour_math.on_obj_4_to_7)
      << fmt_bool(colour_math.on_backdrop) << endr;
-  auto cm_on = tb << separator << "CM on" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
-  auto cm_op = tb << "CM op" << fmt_cgadsub(colour_math.reg) << endr;
-  auto backdrop = tb << "Backdrop"
+  auto cm_on = tb << separator << "CM on (2130)" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
+  auto main_screen_black = tb << "Main black (2130)" << fmt_cgwsel(cgwsel.force_main_screen_black_flags) << endr;
+  auto cm_op = tb << "CM op (2131)" << fmt_cgadsub(colour_math.reg) << endr;
+  auto backdrop = tb << separator << "Backdrop"
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.r)
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.g)
      << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.b) << endr;
-
+  tb << "Subscreen BG/OBJ enable (2130)" << fmt_bool(cgwsel.subscreen_bg_obj_enabled) << endr;
   tb[10][1].set_cell_span(6);
   tb[11][1].set_cell_span(6);
-  tb[12][3].set_cell_span(4);
+  tb[12][1].set_cell_span(6);
+  tb[13][3].set_cell_span(4);
+  tb[14][1].set_cell_span(6);
   std::cout << tb.to_string() << std::endl;
 }
 
@@ -373,7 +376,12 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   std::array<byte, 256> result {};
   auto result_ptr = result.begin();
   for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
-    *result_ptr++ = row[i];
+    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
+      *result_ptr++ = 3; // TODO: fake
+    } else {
+      *result_ptr++ = row[i];
+    }
+//    *result_ptr++ = row[i];
   }
 
   // Horizontal mosaic

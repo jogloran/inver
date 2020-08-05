@@ -27,6 +27,7 @@ DEFINE_string(ignored_pcs, "", "ROM locations to not dump for");
 DEFINE_string(change_watches, "", "Memory locations to watch for changes at");
 DEFINE_bool(fake_sprites, false, "Displays a red rectangle at the top left of each sprite");
 DEFINE_int32(sram, 0x10000, "Size of the first SRAM bank (70-7d:0000-ffff)");
+DEFINE_bool(load_save, false, "Load save immediately");
 
 std::set<std::string> active_tags;
 std::map<dword, PCWatchSpec> dis_pcs;
@@ -101,7 +102,12 @@ int main(int argc, char* argv[]) {
   word rst = inspect(data);
 
   bus.map(std::move(data));
-  bus.reset();
-  bus.set_pc(rst);
+
+  if (FLAGS_load_save) {
+    bus.unpickle("save.state");
+  } else {
+    bus.reset();
+    bus.set_pc(rst);
+  }
   bus.run();
 }
