@@ -124,6 +124,9 @@ void SPPU::render_row() {
   }
   auto fb_ptr = screen->fb[0].data() + line * 256;
 
+  // Need to compose the main and sub screens
+  // before CM can be done
+
   for (byte pal_idx : pals) {
     Screen::colour_t rgb;
     if (pal_idx == 0) {
@@ -376,11 +379,11 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   std::array<byte, 256> result {};
   auto result_ptr = result.begin();
   for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
-    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
-      *result_ptr++ = 3; // TODO: fake
-    } else {
+//    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
+//      *result_ptr++ = 3; // TODO: fake
+//    } else {
       *result_ptr++ = row[i];
-    }
+//    }
 //    *result_ptr++ = row[i];
   }
 
@@ -404,65 +407,67 @@ Screen::colour_t SPPU::lookup(byte i) {
 }
 
 void SPPU::tick(byte master_cycles) {
-  ncycles += master_cycles;
+  for (int i = 0; i < master_cycles; ++i) {
+    ++ncycles;
+    
+    switch (state) {
+      case State::VISIBLE:
+        x = ncycles / 4;
+        if (ncycles >= 4 * 256) {
+          ncycles -= 4 * 256;
+          state = State::HBLANK;
 
-  switch (state) {
-    case State::VISIBLE:
-      x = ncycles / 4;
-      if (ncycles >= 4 * 256) {
-        ncycles -= 4 * 256;
-        state = State::HBLANK;
-
-        render_row();
-        bus->hblank_start();
-      }
-      break;
-    case State::HBLANK:
-      if (ncycles >= 4 * 84) {
-        ncycles -= 4 * 84;
-        ++line;
-        x = 0;
-
-        if (line <= 0xe0) {
-          state = State::VISIBLE;
-        } else if (line >= 0xe1) {
-          state = State::VBLANK;
-          bus->vblank_nmi();
+          render_row();
+          bus->hblank_start();
         }
-      }
-      break;
-    case State::VBLANK:
-      if (ncycles >= 4 * 340) {
-        ncycles -= 4 * 340;
-        ++line;
-        x = 0;
-        // TODO: status flags need to distinguish hblank even during
-        // vblank
+        break;
+      case State::HBLANK:
+        if (ncycles >= 4 * 84) {
+          ncycles -= 4 * 84;
+          ++line;
+          x = 0;
 
-        if (line >= 0x106) {
-          vblank_end();
-          screen->blit();
-          state = State::VISIBLE;
-          log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
-          line = 0;
-
-          bus->frame_start();
+          if (line <= 0xe0) {
+            state = State::VISIBLE;
+          } else if (line >= 0xe1) {
+            state = State::VBLANK;
+            bus->vblank_nmi();
+          }
         }
-      }
-      break;
-  }
+        break;
+      case State::VBLANK:
+        if (ncycles >= 4 * 340) {
+          ncycles -= 4 * 340;
+          ++line;
+          x = 0;
+          // TODO: status flags need to distinguish hblank even during
+          // vblank
 
-  auto hv_irq = bus->nmi.hv_irq;
-  bool fire_irq = false;
-  if (hv_irq == 1 && x == htime.v) {
-    fire_irq = true;
-  } else if (hv_irq == 2 && x == 0 && line == vtime.v) {
-    fire_irq = true;
-  } else if (hv_irq == 3 && x == htime.v && line == vtime.v) {
-    fire_irq = true;
-  }
-  if (fire_irq) {
-    bus->raise_timeup();
+          if (line >= 0x106) {
+            vblank_end();
+            screen->blit();
+            state = State::VISIBLE;
+            log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
+            line = 0;
+
+            bus->frame_start();
+          }
+        }
+        break;
+    }
+
+    auto hv_irq = bus->nmi.hv_irq;
+    bool fire_irq = false;
+    if (hv_irq == 1 && x == htime.v) {
+      fire_irq = true;
+    } else if (hv_irq == 2 && x == 0 && line == vtime.v) {
+      fire_irq = true;
+    } else if (hv_irq == 3 && x == htime.v && line == vtime.v) {
+      fire_irq = true;
+    }
+    if (fire_irq) {
+      bus->raise_timeup();
+    }
   }
 }
 
