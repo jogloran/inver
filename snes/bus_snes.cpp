@@ -17,12 +17,8 @@ static long n = 0;
 
 void BusSNES::tick() {
   cpu->tick();
-  ppu->tick();
-  ppu->tick();
-  ppu->tick();
-  ppu->tick();
-  ppu->tick();
-  ppu->tick();
+  ppu->tick(6);
+
   if (dma_state == DMAState::Next) {
     dma_state = DMAState::Dma;
   } else if (dma_state == DMAState::Dma) {
