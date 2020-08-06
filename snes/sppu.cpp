@@ -409,7 +409,7 @@ Screen::colour_t SPPU::lookup(byte i) {
 void SPPU::tick(byte master_cycles) {
   for (int i = 0; i < master_cycles; ++i) {
     ++ncycles;
-    
+
     switch (state) {
       case State::VISIBLE:
         x = ncycles / 4;
