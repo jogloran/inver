@@ -103,15 +103,15 @@ void SPPU::render_row() {
       break;
     }
     case 1: {
-      auto bg1 = *l.bg1[0];
-      auto bg2 = *l.bg2[0];
-      auto bg3 = *l.bg3[0];
-      auto bg3b = *l.bg3[1];
+      auto bg1 = l.bg1->pal[0];
+      auto bg2 = l.bg2->pal[0];
+      auto bg3 = l.bg3->pal[0];
+      auto bg3b = l.bg3->pal[1];
 
-      auto obj0 = *l.obj[0];
-      auto obj1 = *l.obj[1];
-      auto obj2 = *l.obj[2];
-      auto obj3 = *l.obj[3];
+      auto obj0 = l.obj->pal[0];
+      auto obj1 = l.obj->pal[1];
+      auto obj2 = l.obj->pal[2];
+      auto obj3 = l.obj->pal[3];
 
       std::vector bgs {obj0, bg3, obj1, bg2, bg1, obj2, obj3, bg3b};
       pals = composite(bgs);
@@ -216,12 +216,14 @@ void SPPU::dump_colour_math() {
      << fmt_bool(colour_math.on_obj_4_to_7)
      << fmt_bool(colour_math.on_backdrop) << endr;
   auto cm_on = tb << separator << "CM on (2130)" << fmt_cgwsel(cgwsel.colour_math_enabled) << endr;
-  auto main_screen_black = tb << "Main black (2130)" << fmt_cgwsel(cgwsel.force_main_screen_black_flags) << endr;
+  auto main_screen_black =
+      tb << "Main black (2130)" << fmt_cgwsel(cgwsel.force_main_screen_black_flags) << endr;
   auto cm_op = tb << "CM op (2131)" << fmt_cgadsub(colour_math.reg) << endr;
   auto backdrop = tb << separator << "Backdrop"
-     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.r)
-     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.g)
-     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.b) << endr;
+                     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.r)
+                     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.g)
+                     << std::hex << std::setfill('0') << std::setw(2) << int(backdrop_colour.b)
+                     << endr;
   tb << "Subscreen BG/OBJ enable (2130)" << fmt_bool(cgwsel.subscreen_bg_obj_enabled) << endr;
   tb[10][1].set_cell_span(6);
   tb[11][1].set_cell_span(6);
@@ -387,7 +389,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
 //    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
 //      *result_ptr++ = 3; // TODO: fake
 //    } else {
-      *result_ptr++ = row[i];
+    *result_ptr++ = row[i];
 //    }
 //    *result_ptr++ = row[i];
   }
@@ -540,4 +542,65 @@ void SPPU::dump_oam_table() {
 void SPPU::vblank_end() {
   if (!inidisp.force_blank) sprite_range_overflow = false;
   bus->vblank_end();
+}
+
+Layers::Win SPPU::compute_mask(byte layer) {
+  static std::array<std::function<bool(bool, bool)>, 4> ops
+      {
+          std::logical_and<bool>(),
+          std::logical_or<bool>(),
+          std::bit_xor<bool>(),
+          std::not_fn(std::bit_xor<bool>()),
+      };
+  Layers::Win win {};
+
+  for (int i = 0; i < 256; ++i) {
+    bool w1_in;
+    bool w2_in;
+    switch (windows[0].mask_for_bg[layer]) {
+      case window_t::AreaSetting::Inside:
+        w1_in = i >= windows[0].l && i <= windows[0].r;
+        break;
+      case window_t::AreaSetting::Outside:
+        w1_in = !(i >= windows[0].l && i <= windows[0].r);
+        break;
+      case window_t::AreaSetting::Disable:
+        w1_in = false;
+        break;
+    }
+    switch (windows[1].mask_for_bg[layer]) {
+      case window_t::AreaSetting::Inside:
+        w2_in = i >= windows[1].l && i <= windows[1].r;
+        break;
+      case window_t::AreaSetting::Outside:
+        w2_in = !(i >= windows[1].l && i <= windows[1].r);
+        break;
+      case window_t::AreaSetting::Disable:
+        w2_in = false;
+        break;
+    }
+    // combine the two windows using the op
+    switch (layer) {
+      case 0:
+        win[i] = ops[static_cast<byte>(bg_mask_op.bg1_op)](w1_in, w2_in);
+        break;
+      case 1:
+        win[i] = ops[static_cast<byte>(bg_mask_op.bg2_op)](w1_in, w2_in);
+        break;
+      case 2:
+        win[i] = ops[static_cast<byte>(bg_mask_op.bg3_op)](w1_in, w2_in);
+        break;
+      case 3:
+        win[i] = ops[static_cast<byte>(bg_mask_op.bg4_op)](w1_in, w2_in);
+        break;
+      case Layers::OBJ:
+        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg1_op)](w1_in, w2_in);
+        break;
+      case Layers::MATH:
+        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg2_op)](w1_in, w2_in);
+        break;
+    }
+  }
+
+  return win;
 }

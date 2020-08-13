@@ -17,12 +17,24 @@ constexpr std::array<std::array<byte, 4>, 8> bpps = {{
                                                     }};
 
 struct Layers {
-  using Pixels = std::optional<std::array<byte, 256>>;
-  Pixels bg1[2];
-  Pixels bg2[2];
-  Pixels bg3[2];
-  Pixels bg4[2];
-  Pixels obj[4];
+  enum {
+    OBJ = 0xfe, MATH = 0xff
+  };
+  using Pal = std::array<byte, 256>;
+  using Win = std::array<byte, 256>;
+  template <size_t Prios>
+  struct LayerData {
+    Pal pal[Prios];
+    Win mask;
+  };
+
+  template <size_t T> using Layer = std::optional<LayerData<T>>;
+  Layer<2> bg1;
+  Layer<2> bg2;
+  Layer<2> bg3;
+  Layer<2> bg4;
+  Layer<4> obj;
+  Win math;
 };
 
 template <byte M>
@@ -33,23 +45,29 @@ constexpr Layers mode(SPPU& ppu) {
   constexpr auto bg3 = bpps[M][2];
   constexpr auto bg4 = bpps[M][3];
   if constexpr (bg1 > 0) {
-    result.bg1[0] = ppu.render_row(0, 0);
-    result.bg1[1] = ppu.render_row(0, 1);
+    result.bg1->pal[0] = ppu.render_row(0, 0);
+    result.bg1->pal[1] = ppu.render_row(0, 1);
+    result.bg1->mask = ppu.compute_mask(0);
   }
   if constexpr (bg2 > 0) {
-    result.bg2[0] = ppu.render_row(1, 0);
-    result.bg2[1] = ppu.render_row(1, 1);
+    result.bg2->pal[0] = ppu.render_row(1, 0);
+    result.bg2->pal[1] = ppu.render_row(1, 1);
+    result.bg1->mask = ppu.compute_mask(1);
   }
   if constexpr (bg3 > 0) {
-    result.bg3[0] = ppu.render_row(2, 0);
-    result.bg3[1] = ppu.render_row(2, 1);
+    result.bg3->pal[0] = ppu.render_row(2, 0);
+    result.bg3->pal[1] = ppu.render_row(2, 1);
+    result.bg1->mask = ppu.compute_mask(2);
   }
   if constexpr (bg4 > 0) {
-    result.bg4[0] = ppu.render_row(3, 0);
-    result.bg4[1] = ppu.render_row(3, 1);
+    result.bg4->pal[0] = ppu.render_row(3, 0);
+    result.bg4->pal[1] = ppu.render_row(3, 1);
+    result.bg1->mask = ppu.compute_mask(3);
   }
   for (int i = 0; i < 4; ++i) {
-    result.obj[i] = ppu.render_obj(i);
+    result.obj->pal[i] = ppu.render_obj(i);
+    result.obj->mask = ppu.compute_mask(Layers::OBJ);
   }
+  result.math = ppu.compute_mask(Layers::MATH);
   return result;
 }
