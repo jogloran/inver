@@ -6,6 +6,11 @@
 #include "bus_snes.hpp"
 #include "ppu_utils.hpp"
 #include "fort.hpp"
+#include "mode.hpp"
+
+std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
+    mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>
+};
 
 // table of (mode, layer) -> bpp?
 
@@ -85,6 +90,7 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
 
 void SPPU::render_row() {
   std::array<byte, 256> pals;
+  Layers l {mode_fns[bgmode.mode](*this)};
   switch (bgmode.mode) {
     case 0: {
       auto bg1 = render_row(0, 0);
@@ -97,17 +103,16 @@ void SPPU::render_row() {
       break;
     }
     case 1: {
-      auto bg1 = render_row(0, 0);
-      auto bg2 = render_row(1, 0);
-      auto bg3 = render_row(2, 0);
-      auto bg3b = render_row(2, 1);
+      auto bg1 = *l.bg1[0];
+      auto bg2 = *l.bg2[0];
+      auto bg3 = *l.bg3[0];
+      auto bg3b = *l.bg3[1];
 
-      auto obj0 = render_obj(0);
-      auto obj1 = render_obj(1);
-      auto obj2 = render_obj(2);
-      auto obj3 = render_obj(3);
+      auto obj0 = *l.obj[0];
+      auto obj1 = *l.obj[1];
+      auto obj2 = *l.obj[2];
+      auto obj3 = *l.obj[3];
 
-//      std::vector bgs { bg3b, obj0, bg3, obj1, obj2, bg1, bg2, obj3 };
       std::vector bgs {obj0, bg3, obj1, bg2, bg1, obj2, obj3, bg3b};
       pals = composite(bgs);
       break;
