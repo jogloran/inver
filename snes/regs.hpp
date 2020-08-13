@@ -48,7 +48,7 @@ union window_mask_op_t {
 
 struct window_t {
   enum class AreaSetting : byte {
-    Disable, Inside, Outside
+    DisableInside, DisableOutside, Inside, Outside
   };
   byte l;
   byte r; // inclusive

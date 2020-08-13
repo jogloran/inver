@@ -104,7 +104,9 @@ void SPPU::render_row() {
     }
     case 1: {
       auto bg1 = l.bg1->pal[0];
+      auto bg11 = l.bg1->pal[1];
       auto bg2 = l.bg2->pal[0];
+      auto bg21 = l.bg2->pal[1];
       auto bg3 = l.bg3->pal[0];
       auto bg3b = l.bg3->pal[1];
 
@@ -114,7 +116,18 @@ void SPPU::render_row() {
       auto obj3 = l.obj->pal[3];
 
       std::vector bgs {obj0, bg3, obj1, bg2, bg1, obj2, obj3, bg3b};
-      pals = composite(bgs);
+      // priority sorting (take topmost non-transparent pixel)
+      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
+      for (int i = 0; i < 256; ++i) {
+        pals[i] = std::reduce(prio.rbegin(), prio.rend(), 0, [i](auto acc, auto l2) {
+          return acc % 8 != 0 ? acc : l2[i];
+        });
+      }
+//      pals = composite(bgs);
+      // resolve to 15-bit colours
+      // masking with window using TMW/TSW
+      // main/sub routing
+      // colour math to obtain final pixel
       break;
     }
 
@@ -547,8 +560,8 @@ void SPPU::vblank_end() {
 Layers::Win SPPU::compute_mask(byte layer) {
   static std::array<std::function<bool(bool, bool)>, 4> ops
       {
-          std::logical_and<bool>(),
           std::logical_or<bool>(),
+          std::logical_and<bool>(),
           std::bit_xor<bool>(),
           std::not_fn(std::bit_xor<bool>()),
       };
@@ -564,7 +577,8 @@ Layers::Win SPPU::compute_mask(byte layer) {
       case window_t::AreaSetting::Outside:
         w1_in = !(i >= windows[0].l && i <= windows[0].r);
         break;
-      case window_t::AreaSetting::Disable:
+      case window_t::AreaSetting::DisableInside:
+      case window_t::AreaSetting::DisableOutside:
         w1_in = false;
         break;
     }
@@ -575,7 +589,8 @@ Layers::Win SPPU::compute_mask(byte layer) {
       case window_t::AreaSetting::Outside:
         w2_in = !(i >= windows[1].l && i <= windows[1].r);
         break;
-      case window_t::AreaSetting::Disable:
+      case window_t::AreaSetting::DisableInside:
+      case window_t::AreaSetting::DisableOutside:
         w2_in = false;
         break;
     }

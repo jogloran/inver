@@ -52,17 +52,17 @@ constexpr Layers mode(SPPU& ppu) {
   if constexpr (bg2 > 0) {
     result.bg2->pal[0] = ppu.render_row(1, 0);
     result.bg2->pal[1] = ppu.render_row(1, 1);
-    result.bg1->mask = ppu.compute_mask(1);
+    result.bg2->mask = ppu.compute_mask(1);
   }
   if constexpr (bg3 > 0) {
     result.bg3->pal[0] = ppu.render_row(2, 0);
     result.bg3->pal[1] = ppu.render_row(2, 1);
-    result.bg1->mask = ppu.compute_mask(2);
+    result.bg3->mask = ppu.compute_mask(2);
   }
   if constexpr (bg4 > 0) {
     result.bg4->pal[0] = ppu.render_row(3, 0);
     result.bg4->pal[1] = ppu.render_row(3, 1);
-    result.bg1->mask = ppu.compute_mask(3);
+    result.bg4->mask = ppu.compute_mask(3);
   }
   for (int i = 0; i < 4; ++i) {
     result.obj->pal[i] = ppu.render_obj(i);
