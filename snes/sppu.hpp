@@ -448,6 +448,8 @@ public:
 
   std::array<byte, 256> render_obj(byte prio);
 
+  std::array<byte, 256> compute_mask(byte layer);
+
 private:
   void dump_oam_table();
 
@@ -510,5 +512,4 @@ private:
   Screen::colour_t lookup(byte);
 
   void vblank_end();
-
 };
