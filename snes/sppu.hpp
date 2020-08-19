@@ -22,6 +22,8 @@ class Screen;
 
 class Layers;
 
+class LayerSpec;
+
 class SPPU : public Logger<SPPU> {
 public:
   void connect(BusSNES* b) {
@@ -511,19 +513,24 @@ private:
 
   friend class TD2;
 
+  auto prio_sort(std::vector<LayerSpec> layers, const Layers& l, int i);
+
   void render_row();
 
   Screen::colour_t lookup(byte);
 
   void vblank_end();
 
-  auto get_pal_row(Layers& l, byte layer, byte prio);
+  auto get_pal_row(const Layers& l, byte layer, byte prio);
 
-  auto get_mask_row(Layers& l, byte layer);
+  auto get_mask_row(const Layers& l, byte layer);
 
   void route_main_sub(std::tuple<byte, word, bool> result, int i);
 
+  auto route_main_sub(std::vector<LayerSpec> prios);
+
   bool colour_math_applies(int i, const Layers& layers);
 
-  std::array<byte, 256> source_layer {};
+  std::array<byte, 256> main_source_layer {};
+  std::array<byte, 256> sub_source_layer {};
 };

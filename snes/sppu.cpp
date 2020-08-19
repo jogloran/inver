@@ -27,6 +27,48 @@ std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
     {0, 0, 0, 0},
 }};
 
+auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
+  if (layer == Layers::OBJ) {
+    return l.obj.pal[prio];
+  } else {
+    return l.bg[layer].pal[prio];
+  }
+}
+
+auto SPPU::get_mask_row(const Layers& l, byte layer) {
+  if (layer == Layers::OBJ) {
+    return l.obj.mask;
+  } else {
+    return l.bg[layer].mask;
+  }
+}
+
+auto SPPU::prio_sort(std::vector<LayerSpec> prio, const Layers& l, int i) {
+  return std::reduce(prio.rbegin(), prio.rend(),
+              std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
+              [this, i, &l](auto acc,
+                            auto layer_spec) -> std::tuple<byte, word, bool> {
+                auto& [prio_layer, prio_pal, _] = acc;
+                auto& [layer, prio] = layer_spec;
+                auto l2 = get_pal_row(l, layer, prio);
+                auto mask = get_mask_row(l, layer);
+
+                if (prio_pal % 16 != 0) {
+                  return {prio_layer, prio_pal, mask[i]};
+                } else {
+                  if (mask[i]) {
+                    return {prio_layer, 257, mask[i]};
+                  } else {
+                    if (l2[i] % 16 != 0) {
+                      return {layer, l2[i], mask[i]};
+                    } else {
+                      return {prio_layer, prio_pal, mask[i]};
+                    }
+                  }
+                }
+              });
+}
+
 void SPPU::dump_sprite() {
   word addr = 0x27c0 / 2;
   for (int i = 0; i < 32; ++i) {
@@ -70,41 +112,6 @@ void SPPU::dump_bg(byte layer) {
   }
 }
 
-std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
-  std::array<byte, 256> result = layers[0];
-  int index = 0;
-  for (auto it = layers.begin() + 1; it != layers.end(); ++it) {
-    auto& layer = *it;
-    for (int i = 0; i < 256; ++i) {
-      auto& buf = result[i];
-      auto& next = layer[i];
-
-      if (next != 0) {
-        buf = next;
-      }
-
-      ++index;
-    }
-  }
-  return result;
-}
-
-auto SPPU::get_pal_row(Layers& l, byte layer, byte prio) {
-  if (layer == Layers::OBJ) {
-    return l.obj.pal[prio];
-  } else {
-    return l.bg[layer].pal[prio];
-  }
-}
-
-auto SPPU::get_mask_row(Layers& l, byte layer) {
-  if (layer == Layers::OBJ) {
-    return l.obj.mask;
-  } else {
-    return l.bg[layer].mask;
-  }
-}
-
 void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
   // applies TM, TS switch
   // need to apply TMW, TSW:
@@ -116,7 +123,7 @@ void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
   bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << layer));
   bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << layer));
 
-  source_layer[i] = layer; // This is the culprit
+  main_source_layer[i] = layer; // This is the culprit
 
   // TM, TS:
   // "If the layer data is prevented from propagating forward, the layer data is effectively
@@ -160,6 +167,36 @@ void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
   }
 }
 
+auto SPPU::route_main_sub(std::vector<LayerSpec> prios) {
+  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
+
+  for (LayerSpec l : prios) {
+    switch (l.layer) {
+      case 0:
+        if (main_scr.bg1) result.first.push_back(l);
+        if (sub_scr.bg1) result.second.push_back(l);
+        break;
+      case 1:
+        if (main_scr.bg2) result.first.push_back(l);
+        if (sub_scr.bg2) result.second.push_back(l);
+        break;
+      case 2:
+        if (main_scr.bg3) result.first.push_back(l);
+        if (sub_scr.bg3) result.second.push_back(l);
+        break;
+      case 3:
+        if (main_scr.bg4) result.first.push_back(l);
+        if (sub_scr.bg4) result.second.push_back(l);
+        break;
+      case Layers::OBJ:
+        if (main_scr.obj) result.first.push_back(l);
+        if (sub_scr.obj) result.second.push_back(l);
+        break;
+    }
+  }
+
+  return result;
+}
 
 void SPPU::render_row() {
   std::array<Screen::colour_t, 256> pals;
@@ -183,22 +220,25 @@ void SPPU::render_row() {
       // priority sorting (take topmost non-transparent pixel)
       //      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
       std::vector<LayerSpec> prio {
-//          {2, 0},
-//          {Layers::OBJ, 0},
-//          {Layers::OBJ, 1},
+          {2, 0},
+          {Layers::OBJ, 0},
+          {Layers::OBJ, 1},
           {1, 0},
           {0, 0},
-//          {Layers::OBJ, 2},
-//          {1, 1},
-//          {0, 1},
-//          {Layers::OBJ, 3},
-//          {2, 1}
+          {Layers::OBJ, 2},
+          {1, 1},
+          {0, 1},
+          {Layers::OBJ, 3},
+          {2, 1}
       };
 
 //      for (int i = 0; i < 256; ++i) {
 //        pals[i] = lookup(l.bg[1].pal[0][i]);
 //      }
 //      break;
+
+      // Filter prio into MAIN and SUB
+      auto [main_layers, sub_layers] = route_main_sub(prio);
 
       // need to use colour math Layers::MATH (how?)
       // Colour math is enabled on backdrop (2131). What does this mean?
@@ -209,41 +249,22 @@ void SPPU::render_row() {
         // One MAIN topmost pixel will be computed
         // One SUB topmost pixel will be computed
         // If a layer is disabled for MAIN or SUB, it will not be considered in the prio list
-        auto prio_result = std::reduce(prio.rbegin(), prio.rend(),
-                                       std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
-                                       [this, i, &l](auto acc,
-                                                     auto layer_spec) -> std::tuple<byte, word, bool> {
-                                         auto& [prio_layer, prio_pal, _] = acc;
-                                         auto& [layer, prio] = layer_spec;
-                                         auto l2 = get_pal_row(l, layer, prio);
-                                         auto mask = get_mask_row(l, layer);
+        auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
+        auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-                                         if (prio_pal % 8 != 0) {
-                                           return {prio_layer, prio_pal, mask[i]};
-                                         } else {
-                                           if (mask[i]) {
-                                             return {prio_layer, 257, mask[i]};
-                                           } else {
-                                             if (l2[i] % 8 != 0) {
-                                               return {layer, l2[i], mask[i]};
-                                             } else {
-                                               return {prio_layer, prio_pal, mask[i]};
-                                             }
-                                           }
-                                         }
-                                       });
-
-        route_main_sub(prio_result, i);
-//main[i] = std::get<1>(prio_result);
+        main[i] = main_pal;
+        sub[i] = sub_pal;
+        main_source_layer[i] = main_layer;
+        sub_source_layer[i] = sub_layer;
       }
 
       for (int i = 0; i < 256; ++i) {
         // if backdrop colour, then main[i] or sub[i] will == 256
         // in this case, if cgwsel.7 has 3, then set main[i] to black wherever it has 256
-        bool main_clear = main[i] % 8 == 0;
-        auto main_colour = main[i] == 257 ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
-        bool sub_clear = sub[i] != 256 && sub[i] % 8 == 0;
-        auto sub_colour = sub[i] == 256 ? backdrop_colour : lookup(sub[i]);
+        bool main_clear = main[i] % 16 == 0;
+        auto main_colour = main_source_layer[i] == Layers::BACKDROP ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+        bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && sub[i] % 16 == 0;
+        auto sub_colour = sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
         if (sub_clear && main_clear) {
           pals[i] = lookup(0);
         } else if (sub_clear) {
@@ -270,7 +291,7 @@ void SPPU::render_row() {
             // does the pixel correspond to a layer that has colour math enabled? (2131.0-5 - CGADSUB)
             //   we have lost the layer information at this point
             // operation add/subtract? (2131.7)
-            pals[i] = colour_math.subtract ? (main_colour - sub_colour) : (main_colour + sub_colour);
+            pals[i] = colour_math.add ? (main_colour + sub_colour) : (main_colour - sub_colour);
             // operation halved? (2131.6)
             if (colour_math.half_result) pals[i] = pals[i].div2();
           } else {
@@ -820,7 +841,7 @@ bool SPPU::colour_math_applies(int i, const Layers& layers) {
     return false;
   };
   auto math_window_enabled_for_layer = [&]() -> bool {
-    auto layer = source_layer[i];
+    auto layer = main_source_layer[i];
     switch (layer) {
       case 0:
       case 1:
