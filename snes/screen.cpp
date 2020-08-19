@@ -6,6 +6,8 @@
 DECLARE_bool(show_raster);
 DECLARE_bool(dis);
 DECLARE_bool(fake_sprites);
+DECLARE_bool(show_main);
+DECLARE_bool(show_sub);
 
 void Screen::set_brightness(byte b) {
   // require: b >= 0 && b <= 15
@@ -90,6 +92,14 @@ void Screen::blit() {
           break;
         case SDLK_BACKQUOTE:
           FLAGS_dis = !FLAGS_dis;
+          break;
+
+        case SDLK_SLASH:
+          FLAGS_show_main = !FLAGS_show_main;
+          break;
+
+        case SDLK_PERIOD:
+          FLAGS_show_sub = !FLAGS_show_sub;
           break;
 
         case SDLK_v:
