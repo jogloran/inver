@@ -1,29 +1,31 @@
 #include <array>
 #include <numeric>
 
-#include "utils.hpp"
-#include "sppu.hpp"
 #include "bus_snes.hpp"
-#include "ppu_utils.hpp"
 #include "fort.hpp"
 #include "mode.hpp"
+#include "ppu_utils.hpp"
+#include "sppu.hpp"
+#include "utils.hpp"
+
+DECLARE_bool(show_main);
+DECLARE_bool(show_sub);
 
 std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
-    mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>
-};
+    mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
 // table of (mode, layer) -> bpp?
 
 std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
-                                                        {2, 2, 2, 2},
-                                                        {4, 4, 2, 0},
-                                                        {4, 4, 0, 0},
-                                                        {8, 4, 0, 0},
-                                                        {8, 2, 0, 0},
-                                                        {4, 2, 0, 0},
-                                                        {4, 0, 0, 0},
-                                                        {0, 0, 0, 0},
-                                                    }};
+    {2, 2, 2, 2},
+    {4, 4, 2, 0},
+    {4, 4, 0, 0},
+    {8, 4, 0, 0},
+    {8, 2, 0, 0},
+    {4, 2, 0, 0},
+    {4, 0, 0, 0},
+    {0, 0, 0, 0},
+}};
 
 void SPPU::dump_sprite() {
   word addr = 0x27c0 / 2;
@@ -82,48 +84,203 @@ std::array<byte, 256> composite(std::vector<std::array<byte, 256>> layers) {
       }
 
       ++index;
-
     }
   }
   return result;
 }
 
+auto SPPU::get_pal_row(Layers& l, byte layer, byte prio) {
+  if (layer == Layers::OBJ) {
+    return l.obj.pal[prio];
+  } else {
+    return l.bg[layer].pal[prio];
+  }
+}
+
+auto SPPU::get_mask_row(Layers& l, byte layer) {
+  if (layer == Layers::OBJ) {
+    return l.obj.mask;
+  } else {
+    return l.bg[layer].mask;
+  }
+}
+
+void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
+  // applies TM, TS switch
+  // need to apply TMW, TSW:
+  // if TMW is set for BGx and _i_ is inside the window,
+  // if main is on, set main to 0
+  // if sub is on,  set sub to fixed colour
+
+  auto [layer, pal, masked] = prio_result;
+  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << layer));
+  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << layer));
+
+  source_layer[i] = layer; // This is the culprit
+
+  // TM, TS:
+  // "If the layer data is prevented from propagating forward, the layer data is effectively
+  //  disabled, and the layer is treated as transparent."
+
+  // TMW: TSW:
+  // Controls whether the window applies (after W1 and W2 are merged)
+
+  // CGWSEL.1 (subscreen_bg_obj_enabled)
+  // If false, SUB is treated as a solid background with the value of backdrop_colour
+
+  // we need to treat differently these cases:
+  // - backdrop pixel within window
+  // - backdrop pixel outside window
+
+  switch (layer) {
+    case 0:
+      if (main_scr.bg1) main[i] = (main_window_masked && masked) ? 0 : pal;
+      if (sub_scr.bg1) sub[i] = (sub_window_masked && masked) ? 256 : pal;
+      break;
+    case 1:
+      if (main_scr.bg2) main[i] = (main_window_masked && masked) ? 0 : pal;
+      if (sub_scr.bg2) sub[i] = (sub_window_masked && masked) ? 256 : pal;
+      break;
+    case 2:
+      if (main_scr.bg3) main[i] = (main_window_masked && masked) ? 0 : pal;
+      if (sub_scr.bg3) sub[i] = (sub_window_masked && masked) ? 256 : pal;
+      break;
+    case 3:
+      if (main_scr.bg4) main[i] = (main_window_masked && masked) ? 0 : pal;
+      if (sub_scr.bg4) sub[i] = (sub_window_masked && masked) ? 256 : pal;
+      break;
+    case Layers::OBJ:
+      if (main_scr.obj) main[i] = (main_window_masked && masked) ? 0 : pal;
+      if (sub_scr.obj) sub[i] = (sub_window_masked && masked) ? 256 : pal;
+      break;
+    case Layers::BACKDROP:
+      main[i] = 0;
+      sub[i] = 256;
+      break;
+  }
+}
+
+
 void SPPU::render_row() {
-  std::array<byte, 256> pals;
+  std::array<Screen::colour_t, 256> pals;
+
+  std::fill(main.begin(), main.end(), 0);
+  std::fill(sub.begin(), sub.end(), 256);
+
   Layers l {mode_fns[bgmode.mode](*this)};
   switch (bgmode.mode) {
     case 0: {
-      auto bg1 = render_row(0, 0);
-      auto bg2 = render_row(1, 0);
-      auto bg3 = render_row(2, 0);
-      auto bg4 = render_row(3, 0);
-
-      std::vector bgs {bg3, bg1, bg2, bg4};
-      pals = composite(bgs);
-      break;
+      //      auto bg1 = render_row(0, 0);
+      //      auto bg2 = render_row(1, 0);
+      //      auto bg3 = render_row(2, 0);
+      //      auto bg4 = render_row(3, 0);
+      //
+      //      std::vector bgs {bg3, bg1, bg2, bg4};
+      //      pals = composite(bgs);
+      //      break;
     }
     case 1: {
-      auto bg1 = l.bg1->pal[0];
-      auto bg11 = l.bg1->pal[1];
-      auto bg2 = l.bg2->pal[0];
-      auto bg21 = l.bg2->pal[1];
-      auto bg3 = l.bg3->pal[0];
-      auto bg3b = l.bg3->pal[1];
-
-      auto obj0 = l.obj->pal[0];
-      auto obj1 = l.obj->pal[1];
-      auto obj2 = l.obj->pal[2];
-      auto obj3 = l.obj->pal[3];
-
-      std::vector bgs {obj0, bg3, obj1, bg2, bg1, obj2, obj3, bg3b};
       // priority sorting (take topmost non-transparent pixel)
-      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
+      //      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
+      std::vector<LayerSpec> prio {
+//          {2, 0},
+//          {Layers::OBJ, 0},
+//          {Layers::OBJ, 1},
+          {1, 0},
+          {0, 0},
+//          {Layers::OBJ, 2},
+//          {1, 1},
+//          {0, 1},
+//          {Layers::OBJ, 3},
+//          {2, 1}
+      };
+
+//      for (int i = 0; i < 256; ++i) {
+//        pals[i] = lookup(l.bg[1].pal[0][i]);
+//      }
+//      break;
+
+      // need to use colour math Layers::MATH (how?)
+      // Colour math is enabled on backdrop (2131). What does this mean?
+      // pixels inside the window which are on the backdrop layer should be set to black
       for (int i = 0; i < 256; ++i) {
-        pals[i] = std::reduce(prio.rbegin(), prio.rend(), 0, [i](auto acc, auto l2) {
-          return acc % 8 != 0 ? acc : l2[i];
-        });
+        // Each pixel goes into one and only one layer here (is this right?) No.
+        // Each layer is turned on or off for MAIN or SUB by TM/TS.
+        // One MAIN topmost pixel will be computed
+        // One SUB topmost pixel will be computed
+        // If a layer is disabled for MAIN or SUB, it will not be considered in the prio list
+        auto prio_result = std::reduce(prio.rbegin(), prio.rend(),
+                                       std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
+                                       [this, i, &l](auto acc,
+                                                     auto layer_spec) -> std::tuple<byte, word, bool> {
+                                         auto& [prio_layer, prio_pal, _] = acc;
+                                         auto& [layer, prio] = layer_spec;
+                                         auto l2 = get_pal_row(l, layer, prio);
+                                         auto mask = get_mask_row(l, layer);
+
+                                         if (prio_pal % 8 != 0) {
+                                           return {prio_layer, prio_pal, mask[i]};
+                                         } else {
+                                           if (mask[i]) {
+                                             return {prio_layer, 257, mask[i]};
+                                           } else {
+                                             if (l2[i] % 8 != 0) {
+                                               return {layer, l2[i], mask[i]};
+                                             } else {
+                                               return {prio_layer, prio_pal, mask[i]};
+                                             }
+                                           }
+                                         }
+                                       });
+
+        route_main_sub(prio_result, i);
+//main[i] = std::get<1>(prio_result);
       }
-//      pals = composite(bgs);
+
+      for (int i = 0; i < 256; ++i) {
+        // if backdrop colour, then main[i] or sub[i] will == 256
+        // in this case, if cgwsel.7 has 3, then set main[i] to black wherever it has 256
+        bool main_clear = main[i] % 8 == 0;
+        auto main_colour = main[i] == 257 ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+        bool sub_clear = sub[i] != 256 && sub[i] % 8 == 0;
+        auto sub_colour = sub[i] == 256 ? backdrop_colour : lookup(sub[i]);
+        if (sub_clear && main_clear) {
+          pals[i] = lookup(0);
+        } else if (sub_clear) {
+          pals[i] = main_colour;
+        } else if (main_clear) {
+          pals[i] = sub_colour;
+        } else {// !sub_clear && !main_clear
+
+          // in lttp,
+          // colour math is not applied when both layer bg1 (rain) and bg2 (world map) are
+          // displayed, because main_clear is considered true.
+          // what _should_ happen is that both bg1 and bg2 are considered non-clear
+          // when bg2 alone is being drawn, main_clear and sub_clear are both false, so
+          // colour math applies
+          // when bg1 and bg2 are being drawn,
+          // main[i] contains all 0s (WHY??)
+
+          // Need to take into account:
+          // 2130 (cgwsel)
+          // are we in the colour math window? (2130.4,5 - CGWSEL)
+          // 0: colour math always, 1: inside math window, 2: outside math window, 3: never
+          if (colour_math_applies(i, l)) {
+            // 2131 (colour_math)
+            // does the pixel correspond to a layer that has colour math enabled? (2131.0-5 - CGADSUB)
+            //   we have lost the layer information at this point
+            // operation add/subtract? (2131.7)
+            pals[i] = colour_math.subtract ? (main_colour - sub_colour) : (main_colour + sub_colour);
+            // operation halved? (2131.6)
+            if (colour_math.half_result) pals[i] = pals[i].div2();
+          } else {
+            pals[i] = main_colour;
+          }
+        }
+      }
+
+      // TM, TW
+      //      pals = composite(bgs);
       // resolve to 15-bit colours
       // masking with window using TMW/TSW
       // main/sub routing
@@ -132,12 +289,12 @@ void SPPU::render_row() {
     }
 
     case 3: {
-      auto bg1 = render_row(0, 0);
-      auto bg2 = render_row(1, 0);
-
-      std::vector bgs {bg1, bg2};
-      pals = composite(bgs);
-      break;
+      //      auto bg1 = render_row(0, 0);
+      //      auto bg2 = render_row(1, 0);
+      //
+      //      std::vector bgs {bg1, bg2};
+      //      pals = composite(bgs);
+      //      break;
     }
   }
   auto fb_ptr = screen->fb[0].data() + line * 256;
@@ -145,13 +302,13 @@ void SPPU::render_row() {
   // Need to compose the main and sub screens
   // before CM can be done
 
-  for (byte pal_idx : pals) {
-    Screen::colour_t rgb;
-    if (pal_idx == 0) {
-      rgb = backdrop_colour;
-    } else {
-      rgb = lookup(pal_idx);
-    }
+  for (Screen::colour_t rgb : pals) {
+    //    Screen::colour_t rgb;
+    //    if (pal_idx == 0) {
+    //      rgb = backdrop_colour;
+    //    } else {
+    //      rgb = lookup(pal_idx);
+    //    }
 
     fb_ptr->r = rgb.r;
     fb_ptr->g = rgb.g;
@@ -167,9 +324,9 @@ void SPPU::dump_colour_math() {
     return cgwsel[b];
   };
   static auto fmt_cgadsub = [](byte b) {
-    static constexpr const char* cgwsel[] = {"Main + Sub", "Main - Sub", "(Main + Sub) / 2",
-                                             "(Main - Sub) / 2"};
-    return cgwsel[b >> 6];
+    static constexpr const char* ops[] = {"Main + Sub", "Main - Sub", "(Main + Sub) / 2",
+                                          "(Main - Sub) / 2"};
+    return ops[b >> 6];
   };
   static auto fmt_wxlog = [](window_mask_op_t::MaskOp b) {
     static constexpr const char* op[] = {"Or", "And", "Xor", "Xnor"};
@@ -183,7 +340,13 @@ void SPPU::dump_colour_math() {
   char_table tb;
   tb.set_border_style(FT_SOLID_ROUND_STYLE);
   tb.column(0).set_cell_text_align(text_align::right);
-  tb << header << "" << "BG1" << "BG2" << "BG3" << "BG4" << "OBJ" << "BD" << endr;
+  tb << header << ""
+     << "BG1"
+     << "BG2"
+     << "BG3"
+     << "BG4"
+     << "OBJ"
+     << "BD" << endr;
   tb << "Main (212c)" << fmt_bool(main_scr.bg1) << fmt_bool(main_scr.bg2) << fmt_bool(main_scr.bg3)
      << fmt_bool(main_scr.bg4) << fmt_bool(main_scr.obj) << endr;
   tb << "Sub (212d)" << fmt_bool(sub_scr.bg1) << fmt_bool(sub_scr.bg2) << fmt_bool(sub_scr.bg3)
@@ -264,7 +427,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
@@ -273,7 +436,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 
     std::vector<byte> pixels;
     pixels.reserve(sprite_width);
-    auto tile_y = (line_ - entry->y) % 8; // the row (0..8) of the tile
+    auto tile_y = (line_ - entry->y) % 8;// the row (0..8) of the tile
     auto tile_no_y_offset = (line_ - entry->y) / 8;
     if (entry->attr.flip_y) {
       tile_y = 7 - tile_y;
@@ -304,8 +467,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   // TODO: need to look into priority for sprite pixels
   std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
     return t1.oam_index == t2.oam_index
-           ? (t1.oam.attr.prio > t2.oam.attr.prio)
-           : t1.oam_index < t2.oam_index;
+               ? (t1.oam.attr.prio > t2.oam.attr.prio)
+               : t1.oam_index < t2.oam_index;
   });
 
   int nvisible = 0;
@@ -333,6 +496,10 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
  */
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
+
+  if (bg == 1) {
+    ;
+  }
 
   auto line_ = line;
   if (mosaic.enabled_for_bg(bg)) {
@@ -399,12 +566,12 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   std::array<byte, 256> result {};
   auto result_ptr = result.begin();
   for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
-//    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
-//      *result_ptr++ = 3; // TODO: fake
-//    } else {
+    //    if (bg == 0 && (i > windows[0].l - fine_x_offset && i <= windows[0].r - fine_x_offset)) {
+    //      *result_ptr++ = 3; // TODO: fake
+    //    } else {
     *result_ptr++ = row[i];
-//    }
-//    *result_ptr++ = row[i];
+    //    }
+    //    *result_ptr++ = row[i];
   }
 
   // Horizontal mosaic
@@ -514,7 +681,8 @@ void SPPU::dump_oam_bytes() {
 
 void SPPU::dump_oam_table() {
   fort::char_table obsel_tb;
-  obsel_tb << fort::header << "Attr" << "Value" << fort::endr;
+  obsel_tb << fort::header << "Attr"
+           << "Value" << fort::endr;
   obsel_tb << "Size mode" << std::dec << int(obsel.obj_size) << fort::endr;
   obsel_tb << "Base addr" << std::hex << std::setw(4) << std::setfill('0')
            << obsel.obj_base_addr * 8192 << fort::endr;
@@ -524,9 +692,18 @@ void SPPU::dump_oam_table() {
   std::cout << obsel_tb.to_string() << std::endl;
 
   fort::char_table tb;
-  tb << fort::header << "#" << "X" << "Y" << "tile" << "pal" << "prio" << "flipx" << "flipy"
+  tb << fort::header << "#"
+     << "X"
+     << "Y"
+     << "tile"
+     << "pal"
+     << "prio"
+     << "flipx"
+     << "flipy"
      << "large"
-     << "w" << "h" << "v" << fort::endr;
+     << "w"
+     << "h"
+     << "v" << fort::endr;
 
   OAM* oam_ptr = (OAM*) oam.data();
   for (byte i = 0; i < 128; ++i) {
@@ -536,7 +713,7 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
 
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)
@@ -558,13 +735,12 @@ void SPPU::vblank_end() {
 }
 
 Layers::Win SPPU::compute_mask(byte layer) {
-  static std::array<std::function<bool(bool, bool)>, 4> ops
-      {
-          std::logical_or<bool>(),
-          std::logical_and<bool>(),
-          std::bit_xor<bool>(),
-          std::not_fn(std::bit_xor<bool>()),
-      };
+  static std::array<std::function<bool(bool, bool)>, 4> ops {
+      std::logical_or<bool>(),
+      std::logical_and<bool>(),
+      std::bit_xor<bool>(),
+      std::not_fn(std::bit_xor<bool>()),
+  };
   Layers::Win win {};
 
   for (int i = 0; i < 256; ++i) {
@@ -575,7 +751,7 @@ Layers::Win SPPU::compute_mask(byte layer) {
         w1_in = i >= windows[0].l && i <= windows[0].r;
         break;
       case window_t::AreaSetting::Outside:
-        w1_in = !(i >= windows[0].l && i <= windows[0].r);
+        w1_in = i < windows[0].l || i > windows[0].r;
         break;
       case window_t::AreaSetting::DisableInside:
       case window_t::AreaSetting::DisableOutside:
@@ -587,12 +763,20 @@ Layers::Win SPPU::compute_mask(byte layer) {
         w2_in = i >= windows[1].l && i <= windows[1].r;
         break;
       case window_t::AreaSetting::Outside:
-        w2_in = !(i >= windows[1].l && i <= windows[1].r);
+        w2_in = i < windows[1].l || i > windows[1].r;
         break;
       case window_t::AreaSetting::DisableInside:
       case window_t::AreaSetting::DisableOutside:
         w2_in = false;
         break;
+    }
+
+    // TODO: this seems incorrect
+    if (windows[0].r <= windows[0].l) {
+      w1_in = false;
+    }
+    if (windows[1].r <= windows[1].l) {
+      w2_in = false;
     }
     // combine the two windows using the op
     switch (layer) {
@@ -618,4 +802,39 @@ Layers::Win SPPU::compute_mask(byte layer) {
   }
 
   return win;
+}
+
+bool SPPU::colour_math_applies(int i, const Layers& layers) {
+  // does the colour math window apply?
+  auto enabled_by_math_window = [&]() -> bool {
+    switch (cgwsel.colour_math_enabled) {
+      case 0:
+        return true;
+      case 1:
+        return layers.math[i];
+      case 2:
+        return !layers.math[i];
+      case 3:
+        return false;
+    }
+    return false;
+  };
+  auto math_window_enabled_for_layer = [&]() -> bool {
+    auto layer = source_layer[i];
+    switch (layer) {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+        // in lttp, bg2 doesn't display because colour math is enabled on bg2
+        return colour_math.on_main_screen & (1 << layer);
+      case Layers::OBJ:
+        // TODO: this gives wrong results for palettes 0-3, so disabling until we can address
+        return false;//colour_math.on_obj_4_to_7;
+      case Layers::BACKDROP:
+        return colour_math.on_backdrop;
+    }
+    return false;
+  };
+  return enabled_by_math_window() && math_window_enabled_for_layer();
 }

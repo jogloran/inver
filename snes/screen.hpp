@@ -25,6 +25,27 @@ public:
     void serialize(Ar& ar) {
       ar(reg);
     }
+
+    colour_t operator+(const colour_t& other) {
+      return {
+          .r = static_cast<byte>(std::max((this->r + other.r), 31)),
+          .g = static_cast<byte>(std::max((this->g + other.g), 31)),
+          .b = static_cast<byte>(std::max((this->b + other.b), 31))};
+    }
+
+    colour_t operator-(const colour_t& other) {
+      return {
+          .r = static_cast<byte>(this->r < other.r ? 0 : this->r - other.r),
+          .g = static_cast<byte>(this->g < other.r ? 0 : this->g - other.g),
+          .b = static_cast<byte>(this->b < other.b ? 0 : this->b - other.b)};
+    }
+
+    colour_t div2() {
+      return {
+          .r = static_cast<byte>(this->r / 2),
+          .g = static_cast<byte>(this->g / 2),
+          .b = static_cast<byte>(this->b / 2)};
+    }
   };
 
   SDL_Texture* make_raster_texture(size_t dx, size_t dy) {

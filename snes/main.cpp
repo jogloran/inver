@@ -28,6 +28,8 @@ DEFINE_string(change_watches, "", "Memory locations to watch for changes at");
 DEFINE_bool(fake_sprites, false, "Displays a red rectangle at the top left of each sprite");
 DEFINE_int32(sram, 0x10000, "Size of the first SRAM bank (70-7d:0000-ffff)");
 DEFINE_bool(load_save, false, "Load save immediately");
+DEFINE_bool(show_main, true, "");
+DEFINE_bool(show_sub, true, "");
 
 std::set<std::string> active_tags;
 std::map<dword, PCWatchSpec> dis_pcs;

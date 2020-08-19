@@ -20,6 +20,8 @@ class BusSNES;
 
 class Screen;
 
+class Layers;
+
 class SPPU : public Logger<SPPU> {
 public:
   void connect(BusSNES* b) {
@@ -292,20 +294,20 @@ public:
         windows[1].mask_for_math = static_cast<window_t::AreaSetting>((value >> 2) & 3);
         break;
       case 0x2126: // WH0     - Window 1 Left Position (X1)
-        log_with_tag("win", "win %d l pos %02x\n", 0, value);
+        log_with_tag("win", "line %d win %d l pos %02x\n", line, 0, value);
         windows[0].l = value;
         break;
       case 0x2127: // WH1     - Window 1 Right Position (X2)
-        log_with_tag("win", "win %d r pos %02x\n", 0, value);
+        log_with_tag("win", "line %d win %d r pos %02x\n", line, 0, value);
         windows[0].r = value;
         break;
 
       case 0x2128: // WH2     - Window 2 Left Position (X1)
-        log_with_tag("win", "win %d l pos %02x\n", 1, value);
+        log_with_tag("win", "line %d win %d l pos %02x\n", line, 1, value);
         windows[1].l = value;
         break;
       case 0x2129: // WH3     - Window 2 Right Position (X2)
-        log_with_tag("win", "win %d r pos %02x\n", 1, value);
+        log_with_tag("win", "line %d win %d r pos %02x\n", line, 1, value);
         windows[1].r = value;
         break;
 
@@ -459,6 +461,8 @@ private:
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
   std::array<BGScroll, 4> scr {};
+  std::array<word, 256> main {};
+  std::array<word, 256> sub {};
 
   byte oam_lsb = 0;
 
@@ -512,4 +516,14 @@ private:
   Screen::colour_t lookup(byte);
 
   void vblank_end();
+
+  auto get_pal_row(Layers& l, byte layer, byte prio);
+
+  auto get_mask_row(Layers& l, byte layer);
+
+  void route_main_sub(std::tuple<byte, word, bool> result, int i);
+
+  bool colour_math_applies(int i, const Layers& layers);
+
+  std::array<byte, 256> source_layer {};
 };
