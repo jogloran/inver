@@ -108,6 +108,10 @@ void Screen::blit() {
         case SDLK_e:
           ppu->bus->unpickle("save.state");
           break;
+
+        case SDLK_r:
+          ppu->bus->reset();
+          break;
       }
     }
   }
