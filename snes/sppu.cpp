@@ -37,6 +37,91 @@ std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
     {0, 0, 0, 0},
 }};
 
+using LayerPriorityTable = std::vector<LayerSpec>;
+std::array<LayerPriorityTable, 8> prios_for_mode =
+    {{// Mode 0
+      {
+          {3, 0},
+          {2, 0},
+          {Layers::OBJ, 0},
+          {3, 1},
+          {2, 1},
+          {Layers::OBJ, 1},
+          {1, 0},
+          {0, 0},
+          {Layers::OBJ, 2},
+          {1, 1},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 1
+      {
+          {2, 0},
+          {Layers::OBJ, 0},
+          {Layers::OBJ, 1},
+          {1, 0},
+          {0, 0},
+          {Layers::OBJ, 2},
+          {1, 1},
+          {0, 1},
+          {Layers::OBJ, 3},
+          {2, 1}},
+      // Mode 2
+      {
+          {1, 0},
+          {Layers::OBJ, 0},
+          {0, 0},
+          {Layers::OBJ, 1},
+          {1, 1},
+          {Layers::OBJ, 2},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 3
+      {
+          {1, 0},
+          {Layers::OBJ, 0},
+          {0, 0},
+          {Layers::OBJ, 1},
+          {1, 1},
+          {Layers::OBJ, 2},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 4
+      {
+          {1, 0},
+          {Layers::OBJ, 0},
+          {0, 0},
+          {Layers::OBJ, 1},
+          {1, 1},
+          {Layers::OBJ, 2},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 5
+      {
+          {1, 0},
+          {Layers::OBJ, 0},
+          {0, 0},
+          {Layers::OBJ, 1},
+          {1, 1},
+          {Layers::OBJ, 2},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 6
+      {
+          {Layers::OBJ, 0},
+          {0, 0},
+          {Layers::OBJ, 1},
+          {Layers::OBJ, 2},
+          {0, 1},
+          {Layers::OBJ, 3},
+      },
+      // Mode 7
+      {}}};
+
 auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
     return l.obj.pal[prio];
@@ -215,143 +300,57 @@ void SPPU::render_row() {
   std::fill(sub.begin(), sub.end(), 256);
 
   Layers l {mode_fns[bgmode.mode](*this)};
-  switch (bgmode.mode) {
-    case 0: {
-      //      auto bg1 = render_row(0, 0);
-      //      auto bg2 = render_row(1, 0);
-      //      auto bg3 = render_row(2, 0);
-      //      auto bg4 = render_row(3, 0);
-      //
-      //      std::vector bgs {bg3, bg1, bg2, bg4};
-      //      pals = composite(bgs);
-      //      break;
-    }
-    case 1: {
-      // priority sorting (take topmost non-transparent pixel)
-      //      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
-      std::vector<LayerSpec> prio {
-          {2, 0},
-          {Layers::OBJ, 0},
-          {Layers::OBJ, 1},
-          {1, 0},
-          {0, 0},
-          {Layers::OBJ, 2},
-          {1, 1},
-          {0, 1},
-          {Layers::OBJ, 3},
-          {2, 1}};
+  auto prio = prios_for_mode[bgmode.mode];
 
-      //      for (int i = 0; i < 256; ++i) {
-      //        pals[i] = lookup(l.bg[1].pal[0][i]);
-      //      }
-      //      break;
+  // Filter prio into MAIN and SUB
+  auto [main_layers, sub_layers] = route_main_sub(prio);
 
-      // Filter prio into MAIN and SUB
-      auto [main_layers, sub_layers] = route_main_sub(prio);
+  for (int i = 0; i < 256; ++i) {
+    auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
+    auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-      // need to use colour math Layers::MATH (how?)
-      // Colour math is enabled on backdrop (2131). What does this mean?
-      // pixels inside the window which are on the backdrop layer should be set to black
-      for (int i = 0; i < 256; ++i) {
-        // Each pixel goes into one and only one layer here (is this right?) No.
-        // Each layer is turned on or off for MAIN or SUB by TM/TS.
-        // One MAIN topmost pixel will be computed
-        // One SUB topmost pixel will be computed
-        // If a layer is disabled for MAIN or SUB, it will not be considered in the prio list
-        auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
-        auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+    bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
+    bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
 
-        bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
-        bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
+    main[i] = main_masked && main_window_masked ? 0 : main_pal;
+    sub[i] = sub_masked && sub_window_masked ? 256 : sub_pal;
+    main_source_layer[i] = main_layer;
+    sub_source_layer[i] = sub_layer;
+  }
 
-        main[i] = main_masked && main_window_masked ? 0 : main_pal;
-        sub[i] = sub_masked && sub_window_masked ? 256 : sub_pal;
-        main_source_layer[i] = main_layer;
-        sub_source_layer[i] = sub_layer;
-      }
+  for (int i = 0; i < 256; ++i) {
+    bool main_clear = main[i] % 16 == 0;
+    auto main_colour =
+        main[i] == 257 ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
 
-      for (int i = 0; i < 256; ++i) {
-        // if backdrop colour, then main[i] or sub[i] will == 256
-        // in this case, if cgwsel.7 has 3, then set main[i] to black wherever it has 256
-        bool main_clear = main[i] % 16 == 0;
-        auto main_colour =
-            main[i] == 257 ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
-
-        bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && sub[i] % 16 == 0;
-        auto sub_colour =
-            sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
-        if (main[i] == 257) { // TODO: clearly not right, but the SMW dialog box needs a black bkgd
-          pals[i] = lookup(0);
-        } else if (sub_clear && main_clear) {
-          pals[i] = lookup(0);
-        } else if (sub_clear) {
+    bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && sub[i] % 16 == 0;
+    auto sub_colour =
+        sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
+    if (main[i] == 257) {// TODO: clearly not right, but the SMW dialog box needs a black bkgd
+      pals[i] = lookup(0);
+    } else if (sub_clear && main_clear) {
+      pals[i] = lookup(0);
+    } else if (sub_clear) {
+      pals[i] = main_colour;
+    } else if (main_clear) {
+      pals[i] = sub_colour;
+    } else {// !sub_clear && !main_clear
+      if (colour_math_applies(i, l)) {
+        if (FLAGS_show_main) {
           pals[i] = main_colour;
-        } else if (main_clear) {
+        } else if (FLAGS_show_sub) {
           pals[i] = sub_colour;
-        } else {// !sub_clear && !main_clear
-
-          // in lttp,
-          // colour math is not applied when both layer bg1 (rain) and bg2 (world map) are
-          // displayed, because main_clear is considered true.
-          // what _should_ happen is that both bg1 and bg2 are considered non-clear
-          // when bg2 alone is being drawn, main_clear and sub_clear are both false, so
-          // colour math applies
-          // when bg1 and bg2 are being drawn,
-          // main[i] contains all 0s (WHY??)
-
-          // Need to take into account:
-          // 2130 (cgwsel)
-          // are we in the colour math window? (2130.4,5 - CGWSEL)
-          // 0: colour math always, 1: inside math window, 2: outside math window, 3: never
-          if (colour_math_applies(i, l)) {
-            // 2131 (colour_math)
-            // does the pixel correspond to a layer that has colour math enabled? (2131.0-5 - CGADSUB)
-            //   we have lost the layer information at this point
-            // operation add/subtract? (2131.7)
-            if (FLAGS_show_main) {
-              pals[i] = main_colour;
-            } else if (FLAGS_show_sub) {
-              pals[i] = sub_colour;
-            } else {
-              pals[i] = cm_op[colour_math.reg >> 6](main_colour, sub_colour);
-            }
-          } else {
-            pals[i] = main_colour;
-          }
+        } else {
+          pals[i] = cm_op[colour_math.reg >> 6](main_colour, sub_colour);
         }
+      } else {
+        pals[i] = main_colour;
       }
-
-      // TM, TW
-      //      pals = composite(bgs);
-      // resolve to 15-bit colours
-      // masking with window using TMW/TSW
-      // main/sub routing
-      // colour math to obtain final pixel
-      break;
-    }
-
-    case 3: {
-      //      auto bg1 = render_row(0, 0);
-      //      auto bg2 = render_row(1, 0);
-      //
-      //      std::vector bgs {bg1, bg2};
-      //      pals = composite(bgs);
-      //      break;
     }
   }
   auto fb_ptr = screen->fb[0].data() + line * 256;
 
-  // Need to compose the main and sub screens
-  // before CM can be done
-
   for (Screen::colour_t rgb : pals) {
-    //    Screen::colour_t rgb;
-    //    if (pal_idx == 0) {
-    //      rgb = backdrop_colour;
-    //    } else {
-    //      rgb = lookup(pal_idx);
-    //    }
-
     fb_ptr->r = rgb.r;
     fb_ptr->g = rgb.g;
     fb_ptr->b = rgb.b;
