@@ -24,7 +24,7 @@ class Layers;
 
 class LayerSpec;
 
-class SPPU : public Logger<SPPU> {
+class SPPU: public Logger<SPPU> {
 public:
   void connect(BusSNES* b) {
     bus = b;
