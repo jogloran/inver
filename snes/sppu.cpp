@@ -12,12 +12,14 @@ DECLARE_bool(show_main);
 DECLARE_bool(show_sub);
 
 static std::array<std::function<Screen::colour_t(Screen::colour_t,
-                                                 Screen::colour_t)>, 4> cm_op {
-    [](auto c1, auto c2) { return c1.add(c2, 1); },
-    [](auto c1, auto c2) { return c1.add(c2, 2); },
-    [](auto c1, auto c2) { return c1.sub(c2, 1); },
-    [](auto c1, auto c2) { return c1.sub(c2, 2); },
-};
+                                                 Screen::colour_t)>,
+                  4>
+    cm_op {
+        [](auto c1, auto c2) { return c1.add(c2, 1); },
+        [](auto c1, auto c2) { return c1.add(c2, 2); },
+        [](auto c1, auto c2) { return c1.sub(c2, 1); },
+        [](auto c1, auto c2) { return c1.sub(c2, 2); },
+    };
 
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
@@ -25,15 +27,15 @@ static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
 // table of (mode, layer) -> bpp?
 
 std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
-                                                        {2, 2, 2, 2},
-                                                        {4, 4, 2, 0},
-                                                        {4, 4, 0, 0},
-                                                        {8, 4, 0, 0},
-                                                        {8, 2, 0, 0},
-                                                        {4, 2, 0, 0},
-                                                        {4, 0, 0, 0},
-                                                        {0, 0, 0, 0},
-                                                    }};
+    {2, 2, 2, 2},
+    {4, 4, 2, 0},
+    {4, 4, 0, 0},
+    {8, 4, 0, 0},
+    {8, 2, 0, 0},
+    {4, 2, 0, 0},
+    {4, 0, 0, 0},
+    {0, 0, 0, 0},
+}};
 
 auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
@@ -56,8 +58,8 @@ auto SPPU::prio_sort(std::vector<LayerSpec> prio, const Layers& l, int i) {
                      std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
                      [this, i, &l](auto acc,
                                    auto layer_spec) -> std::tuple<byte, word, bool> {
-                       auto&[prio_layer, prio_pal, _] = acc;
-                       auto&[layer, prio] = layer_spec;
+                       auto& [prio_layer, prio_pal, _] = acc;
+                       auto& [layer, prio] = layer_spec;
                        auto l2 = get_pal_row(l, layer, prio);
                        auto mask = get_mask_row(l, layer);
 
@@ -127,13 +129,11 @@ void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
   // if main is on, set main to 0
   // if sub is on,  set sub to fixed colour
 
-  auto[layer, pal, masked] = prio_result;
-  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (
-      window_main_disable_mask.bg_disabled & (1 << layer));
-  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (
-      window_sub_disable_mask.bg_disabled & (1 << layer));
+  auto [layer, pal, masked] = prio_result;
+  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << layer));
+  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << layer));
 
-  main_source_layer[i] = layer; // This is the culprit
+  main_source_layer[i] = layer;// This is the culprit
 
   // TM, TS:
   // "If the layer data is prevented from propagating forward, the layer data is effectively
@@ -230,25 +230,24 @@ void SPPU::render_row() {
       // priority sorting (take topmost non-transparent pixel)
       //      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
       std::vector<LayerSpec> prio {
-          {2,           0},
+          {2, 0},
           {Layers::OBJ, 0},
           {Layers::OBJ, 1},
-          {1,           0},
-          {0,           0},
+          {1, 0},
+          {0, 0},
           {Layers::OBJ, 2},
-          {1,           1},
-          {0,           1},
+          {1, 1},
+          {0, 1},
           {Layers::OBJ, 3},
-          {2,           1}
-      };
+          {2, 1}};
 
-//      for (int i = 0; i < 256; ++i) {
-//        pals[i] = lookup(l.bg[1].pal[0][i]);
-//      }
-//      break;
+      //      for (int i = 0; i < 256; ++i) {
+      //        pals[i] = lookup(l.bg[1].pal[0][i]);
+      //      }
+      //      break;
 
       // Filter prio into MAIN and SUB
-      auto[main_layers, sub_layers] = route_main_sub(prio);
+      auto [main_layers, sub_layers] = route_main_sub(prio);
 
       // need to use colour math Layers::MATH (how?)
       // Colour math is enabled on backdrop (2131). What does this mean?
@@ -259,11 +258,14 @@ void SPPU::render_row() {
         // One MAIN topmost pixel will be computed
         // One SUB topmost pixel will be computed
         // If a layer is disabled for MAIN or SUB, it will not be considered in the prio list
-        auto[main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
-        auto[sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+        auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
+        auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-        main[i] = main_pal;
-        sub[i] = sub_pal;
+        bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
+        bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
+
+        main[i] = main_masked && main_window_masked ? 0 : main_pal;
+        sub[i] = sub_masked && sub_window_masked ? 256 : sub_pal;
         main_source_layer[i] = main_layer;
         sub_source_layer[i] = sub_layer;
       }
@@ -273,11 +275,14 @@ void SPPU::render_row() {
         // in this case, if cgwsel.7 has 3, then set main[i] to black wherever it has 256
         bool main_clear = main[i] % 16 == 0;
         auto main_colour =
-            main_source_layer[i] == Layers::BACKDROP ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+            main[i] == 257 ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+
         bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && sub[i] % 16 == 0;
         auto sub_colour =
             sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
-        if (sub_clear && main_clear) {
+        if (main[i] == 257) { // TODO: clearly not right, but the SMW dialog box needs a black bkgd
+          pals[i] = lookup(0);
+        } else if (sub_clear && main_clear) {
           pals[i] = lookup(0);
         } else if (sub_clear) {
           pals[i] = main_colour;
@@ -464,7 +469,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
@@ -504,8 +509,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   // TODO: need to look into priority for sprite pixels
   std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
     return t1.oam_index == t2.oam_index
-           ? (t1.oam.attr.prio > t2.oam.attr.prio)
-           : t1.oam_index < t2.oam_index;
+               ? (t1.oam.attr.prio > t2.oam.attr.prio)
+               : t1.oam_index < t2.oam_index;
   });
 
   int nvisible = 0;
@@ -534,7 +539,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
 
-  if (bg == 1) { ;
+  if (bg == 1) {
+    ;
   }
 
   auto line_ = line;
@@ -749,7 +755,7 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto [spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
 
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)

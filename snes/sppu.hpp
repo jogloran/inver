@@ -533,4 +533,6 @@ private:
 
   std::array<byte, 256> main_source_layer {};
   std::array<byte, 256> sub_source_layer {};
+
+  friend class Screen;
 };
