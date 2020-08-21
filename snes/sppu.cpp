@@ -207,61 +207,6 @@ void SPPU::dump_bg(byte layer) {
   }
 }
 
-void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
-  // applies TM, TS switch
-  // need to apply TMW, TSW:
-  // if TMW is set for BGx and _i_ is inside the window,
-  // if main is on, set main to 0
-  // if sub is on,  set sub to fixed colour
-
-  auto [layer, pal, masked] = prio_result;
-  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << layer));
-  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << layer));
-
-  main_source_layer[i] = layer;// This is the culprit
-
-  // TM, TS:
-  // "If the layer data is prevented from propagating forward, the layer data is effectively
-  //  disabled, and the layer is treated as transparent."
-
-  // TMW: TSW:
-  // Controls whether the window applies (after W1 and W2 are merged)
-
-  // CGWSEL.1 (subscreen_bg_obj_enabled)
-  // If false, SUB is treated as a solid background with the value of backdrop_colour
-
-  // we need to treat differently these cases:
-  // - backdrop pixel within window
-  // - backdrop pixel outside window
-
-  switch (layer) {
-    case 0:
-      if (main_scr.bg1) main[i] = (main_window_masked && masked) ? 0 : pal;
-      if (sub_scr.bg1) sub[i] = (sub_window_masked && masked) ? 256 : pal;
-      break;
-    case 1:
-      if (main_scr.bg2) main[i] = (main_window_masked && masked) ? 0 : pal;
-      if (sub_scr.bg2) sub[i] = (sub_window_masked && masked) ? 256 : pal;
-      break;
-    case 2:
-      if (main_scr.bg3) main[i] = (main_window_masked && masked) ? 0 : pal;
-      if (sub_scr.bg3) sub[i] = (sub_window_masked && masked) ? 256 : pal;
-      break;
-    case 3:
-      if (main_scr.bg4) main[i] = (main_window_masked && masked) ? 0 : pal;
-      if (sub_scr.bg4) sub[i] = (sub_window_masked && masked) ? 256 : pal;
-      break;
-    case Layers::OBJ:
-      if (main_scr.obj) main[i] = (main_window_masked && masked) ? 0 : pal;
-      if (sub_scr.obj) sub[i] = (sub_window_masked && masked) ? 256 : pal;
-      break;
-    case Layers::BACKDROP:
-      main[i] = 0;
-      sub[i] = 256;
-      break;
-  }
-}
-
 auto SPPU::route_main_sub(std::vector<LayerSpec> prios) {
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
 
@@ -878,4 +823,55 @@ bool SPPU::colour_math_applies(int i, const Layers& layers) {
     return false;
   };
   return enabled_by_math_window() && math_window_enabled_for_layer();
+}
+
+void SPPU::reset() {
+  // TODO: not working yet
+  main_scr.reg = 0;
+  sub_scr.reg = 0;
+  inidisp.reg = 0;
+  bgmode.reg = 0;
+  mosaic.reg = 0;
+  bg_base_size[0].reg = 0;
+  bg_base_size[1].reg = 0;
+  bg_base_size[2].reg = 0;
+  bg_base_size[3].reg = 0;
+  bg_char_data_addr[0].reg = 0;
+  bg_char_data_addr[1].reg = 0;
+  vram_addr_incr.reg = 0;
+  setini.reg = 0;
+  obsel.reg = 0;
+  oamadd.reg = 0;
+  htime.reg = 0;
+  vtime.reg = 0;
+  vram_addr.w = 0;
+//  windows[0].reg = 0;
+//  windows[1].reg = 0;
+  window_main_disable_mask.reg = 0;
+  window_sub_disable_mask.reg = 0;
+  bg_mask_op.reg = 0;
+  obj_math_mask_op.reg = 0;
+  cgwsel.reg = 0;
+  colour_math.reg = 0;
+  cgram_addr = 0;
+  cgram_rw_upper = false;
+  cgram_lsb = 0;
+  std::fill(oam.begin(), oam.end(), 0);
+  std::fill(vram.begin(), vram.end(), dual{});
+  std::fill(pal.begin(), pal.end(), 0);
+  std::fill(scr.begin(), scr.end(), BGScroll{});
+  oam_lsb = 0;
+  vram_prefetch.w = 0;
+  sprite_range_overflow = false;
+  hv_latched = false;
+  hloc.w = 0;
+  hloc_read_upper = false;
+  vloc.w = 0;
+  vloc_read_upper = false;
+  backdrop_colour.reg = 0;
+  last_mode = 0;
+  ncycles = 0;
+  line = 0;
+  x = 0;
+  visible.clear();
 }

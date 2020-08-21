@@ -44,6 +44,7 @@ void BusSNES::tick() {
 
 void BusSNES::reset() {
   cpu->reset();
+  ppu->reset();
 }
 
 byte BusSNES::read(dword address) {

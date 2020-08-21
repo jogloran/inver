@@ -34,6 +34,8 @@ public:
     screen = s;
   }
 
+  void reset();
+
   void tick(byte master_cycles = 1);
 
   byte read(word addr) {
@@ -499,7 +501,6 @@ private:
     byte oam_index;
     std::vector<byte> pixels;
 
-
     template<typename Ar>
     void serialize(Ar& ar) {
       ar(oam, oam_index, pixels);
@@ -524,8 +525,6 @@ private:
   auto get_pal_row(const Layers& l, byte layer, byte prio);
 
   auto get_mask_row(const Layers& l, byte layer);
-
-  void route_main_sub(std::tuple<byte, word, bool> result, int i);
 
   auto route_main_sub(std::vector<LayerSpec> prios);
 
