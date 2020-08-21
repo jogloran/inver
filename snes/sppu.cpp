@@ -11,21 +11,29 @@
 DECLARE_bool(show_main);
 DECLARE_bool(show_sub);
 
-std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
+static std::array<std::function<Screen::colour_t(Screen::colour_t,
+                                                 Screen::colour_t)>, 4> cm_op {
+    [](auto c1, auto c2) { return c1.add(c2, 1); },
+    [](auto c1, auto c2) { return c1.add(c2, 2); },
+    [](auto c1, auto c2) { return c1.sub(c2, 1); },
+    [](auto c1, auto c2) { return c1.sub(c2, 2); },
+};
+
+static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
 // table of (mode, layer) -> bpp?
 
 std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
-    {2, 2, 2, 2},
-    {4, 4, 2, 0},
-    {4, 4, 0, 0},
-    {8, 4, 0, 0},
-    {8, 2, 0, 0},
-    {4, 2, 0, 0},
-    {4, 0, 0, 0},
-    {0, 0, 0, 0},
-}};
+                                                        {2, 2, 2, 2},
+                                                        {4, 4, 2, 0},
+                                                        {4, 4, 0, 0},
+                                                        {8, 4, 0, 0},
+                                                        {8, 2, 0, 0},
+                                                        {4, 2, 0, 0},
+                                                        {4, 0, 0, 0},
+                                                        {0, 0, 0, 0},
+                                                    }};
 
 auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
@@ -45,28 +53,28 @@ auto SPPU::get_mask_row(const Layers& l, byte layer) {
 
 auto SPPU::prio_sort(std::vector<LayerSpec> prio, const Layers& l, int i) {
   return std::reduce(prio.rbegin(), prio.rend(),
-              std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
-              [this, i, &l](auto acc,
-                            auto layer_spec) -> std::tuple<byte, word, bool> {
-                auto& [prio_layer, prio_pal, _] = acc;
-                auto& [layer, prio] = layer_spec;
-                auto l2 = get_pal_row(l, layer, prio);
-                auto mask = get_mask_row(l, layer);
+                     std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
+                     [this, i, &l](auto acc,
+                                   auto layer_spec) -> std::tuple<byte, word, bool> {
+                       auto&[prio_layer, prio_pal, _] = acc;
+                       auto&[layer, prio] = layer_spec;
+                       auto l2 = get_pal_row(l, layer, prio);
+                       auto mask = get_mask_row(l, layer);
 
-                if (prio_pal % 16 != 0) {
-                  return {prio_layer, prio_pal, mask[i]};
-                } else {
-                  if (mask[i]) {
-                    return {prio_layer, 257, mask[i]};
-                  } else {
-                    if (l2[i] % 16 != 0) {
-                      return {layer, l2[i], mask[i]};
-                    } else {
-                      return {prio_layer, prio_pal, mask[i]};
-                    }
-                  }
-                }
-              });
+                       if (prio_pal % 16 != 0) {
+                         return {prio_layer, prio_pal, mask[i]};
+                       } else {
+                         if (mask[i]) {
+                           return {prio_layer, 257, mask[i]};
+                         } else {
+                           if (l2[i] % 16 != 0) {
+                             return {layer, l2[i], mask[i]};
+                           } else {
+                             return {prio_layer, prio_pal, mask[i]};
+                           }
+                         }
+                       }
+                     });
 }
 
 void SPPU::dump_sprite() {
@@ -119,9 +127,11 @@ void SPPU::route_main_sub(std::tuple<byte, word, bool> prio_result, int i) {
   // if main is on, set main to 0
   // if sub is on,  set sub to fixed colour
 
-  auto [layer, pal, masked] = prio_result;
-  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << layer));
-  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << layer));
+  auto[layer, pal, masked] = prio_result;
+  bool main_window_masked = layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (
+      window_main_disable_mask.bg_disabled & (1 << layer));
+  bool sub_window_masked = layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (
+      window_sub_disable_mask.bg_disabled & (1 << layer));
 
   main_source_layer[i] = layer; // This is the culprit
 
@@ -220,16 +230,16 @@ void SPPU::render_row() {
       // priority sorting (take topmost non-transparent pixel)
       //      std::vector prio {bg3, obj0, obj1, bg2, bg1, obj2, bg21, bg11, obj3, bg3b};
       std::vector<LayerSpec> prio {
-          {2, 0},
+          {2,           0},
           {Layers::OBJ, 0},
           {Layers::OBJ, 1},
-          {1, 0},
-          {0, 0},
+          {1,           0},
+          {0,           0},
           {Layers::OBJ, 2},
-          {1, 1},
-          {0, 1},
+          {1,           1},
+          {0,           1},
           {Layers::OBJ, 3},
-          {2, 1}
+          {2,           1}
       };
 
 //      for (int i = 0; i < 256; ++i) {
@@ -238,7 +248,7 @@ void SPPU::render_row() {
 //      break;
 
       // Filter prio into MAIN and SUB
-      auto [main_layers, sub_layers] = route_main_sub(prio);
+      auto[main_layers, sub_layers] = route_main_sub(prio);
 
       // need to use colour math Layers::MATH (how?)
       // Colour math is enabled on backdrop (2131). What does this mean?
@@ -249,8 +259,8 @@ void SPPU::render_row() {
         // One MAIN topmost pixel will be computed
         // One SUB topmost pixel will be computed
         // If a layer is disabled for MAIN or SUB, it will not be considered in the prio list
-        auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
-        auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+        auto[main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
+        auto[sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
         main[i] = main_pal;
         sub[i] = sub_pal;
@@ -262,9 +272,11 @@ void SPPU::render_row() {
         // if backdrop colour, then main[i] or sub[i] will == 256
         // in this case, if cgwsel.7 has 3, then set main[i] to black wherever it has 256
         bool main_clear = main[i] % 16 == 0;
-        auto main_colour = main_source_layer[i] == Layers::BACKDROP ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+        auto main_colour =
+            main_source_layer[i] == Layers::BACKDROP ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
         bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && sub[i] % 16 == 0;
-        auto sub_colour = sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
+        auto sub_colour =
+            sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
         if (sub_clear && main_clear) {
           pals[i] = lookup(0);
         } else if (sub_clear) {
@@ -291,9 +303,13 @@ void SPPU::render_row() {
             // does the pixel correspond to a layer that has colour math enabled? (2131.0-5 - CGADSUB)
             //   we have lost the layer information at this point
             // operation add/subtract? (2131.7)
-            pals[i] = colour_math.add ? (main_colour + sub_colour) : (main_colour - sub_colour);
-            // operation halved? (2131.6)
-            if (colour_math.half_result) pals[i] = pals[i].div2();
+            if (FLAGS_show_main) {
+              pals[i] = main_colour;
+            } else if (FLAGS_show_sub) {
+              pals[i] = sub_colour;
+            } else {
+              pals[i] = cm_op[colour_math.reg >> 6](main_colour, sub_colour);
+            }
           } else {
             pals[i] = main_colour;
           }
@@ -345,7 +361,7 @@ void SPPU::dump_colour_math() {
     return cgwsel[b];
   };
   static auto fmt_cgadsub = [](byte b) {
-    static constexpr const char* ops[] = {"Main + Sub", "Main - Sub", "(Main + Sub) / 2",
+    static constexpr const char* ops[] = {"Main + Sub", "(Main + Sub) / 2", "Main - Sub",
                                           "(Main - Sub) / 2"};
     return ops[b >> 6];
   };
@@ -448,7 +464,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 
     OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
     auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto[sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
     auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
@@ -488,8 +504,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   // TODO: need to look into priority for sprite pixels
   std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
     return t1.oam_index == t2.oam_index
-               ? (t1.oam.attr.prio > t2.oam.attr.prio)
-               : t1.oam_index < t2.oam_index;
+           ? (t1.oam.attr.prio > t2.oam.attr.prio)
+           : t1.oam_index < t2.oam_index;
   });
 
   int nvisible = 0;
@@ -518,8 +534,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
 
-  if (bg == 1) {
-    ;
+  if (bg == 1) { ;
   }
 
   auto line_ = line;
@@ -734,7 +749,7 @@ void SPPU::dump_oam_table() {
     auto oam_ = compute_oam_extras(entry, oam2, i);
     if (oam_.x_full == 0 && (entry->y == 0 || entry->y == 240)) continue;
 
-    auto [spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    auto[spr_width, spr_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
 
     tb << std::dec << int(i) << int(oam_.x_full) << int(entry->y)
        << int(oam_.tile_no_full) << int(entry->attr.pal_no)

@@ -26,18 +26,18 @@ public:
       ar(reg);
     }
 
-    colour_t operator+(const colour_t& other) {
+    colour_t add(const colour_t& other, byte div) {
       return {
-          .r = static_cast<byte>(std::max((this->r + other.r), 31)),
-          .g = static_cast<byte>(std::max((this->g + other.g), 31)),
-          .b = static_cast<byte>(std::max((this->b + other.b), 31))};
+          .r = static_cast<byte>(std::min((this->r / div + other.r / div), 31)),
+          .g = static_cast<byte>(std::min((this->g / div + other.g / div), 31)),
+          .b = static_cast<byte>(std::min((this->b / div + other.b / div), 31))};
     }
 
-    colour_t operator-(const colour_t& other) {
+    colour_t sub(const colour_t& other, byte div) {
       return {
-          .r = static_cast<byte>(this->r < other.r ? 0 : this->r - other.r),
-          .g = static_cast<byte>(this->g < other.r ? 0 : this->g - other.g),
-          .b = static_cast<byte>(this->b < other.b ? 0 : this->b - other.b)};
+          .r = static_cast<byte>(this->r / div <= other.r / div ? 0 : (this->r - other.r) / div),
+          .g = static_cast<byte>(this->g / div <= other.g / div ? 0 : (this->g - other.g) / div),
+          .b = static_cast<byte>(this->b / div <= other.b / div ? 0 : (this->b - other.b) / div)};
     }
 
     colour_t div2() {

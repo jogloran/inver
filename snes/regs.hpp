@@ -90,7 +90,7 @@ union cgadsub_t {
     byte on_obj_4_to_7 : 1;
     byte on_backdrop : 1;
     byte half_result : 1;
-    byte add : 1;
+    byte subtract : 1;
   };
   byte reg;
   template <typename Ar>
