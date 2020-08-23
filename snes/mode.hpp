@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "sppu.hpp"
 #include "types.h"
 

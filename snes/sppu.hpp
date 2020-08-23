@@ -456,6 +456,8 @@ private:
   std::array<word, 256> main {};
   std::array<word, 256> sub {};
 
+  std::vector<byte> pixels {};
+
   byte oam_lsb = 0;
 
   dual vram_prefetch {};
@@ -481,7 +483,6 @@ private:
   long x {};
 
   // region PPU caches
-  std::array<bg_map_tile_t*, 33> tiles {};
   std::array<byte, 256 + 8> row {};
 
   struct RenderedSprite {

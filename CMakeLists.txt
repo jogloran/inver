@@ -74,7 +74,7 @@ add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
         snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp snes/sppu.cpp snes/sppu.hpp snes/dma.cpp snes/dma.hpp snes/logger.hpp
         snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp snes/ppu_utils.hpp snes/ppu_utils.cpp
-        src/peripheral.hpp snes/sdl_snes_input.hpp snes/debug.hpp snes/regs.hpp snes/debug.cpp snes/compositor.cpp snes/compositor.hpp snes/mode.cpp snes/mode.hpp snes/ppu_debug.hpp snes/ppu_debug.cpp)
+        src/peripheral.hpp snes/sdl_snes_input.hpp snes/debug.hpp snes/regs.hpp snes/debug.cpp snes/mode.cpp snes/mode.hpp snes/ppu_debug.hpp snes/ppu_debug.cpp)
 
 target_link_libraries(snes gflags)
 target_link_libraries(snes ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})

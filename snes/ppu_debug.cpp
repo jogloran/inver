@@ -52,12 +52,12 @@ void dump_colour_math(SPPU& sppu) {
      << fmt_bool(sppu.window_sub_disable_mask.bg_disabled & 4)
      << fmt_bool(sppu.window_sub_disable_mask.bg_disabled & 8)
      << fmt_bool(sppu.window_sub_disable_mask.obj_disabled) << "" << endr;
-  tb << "Win1+2 merge (2121a-b)" << fmt_wxlog(sppu.bg_mask_op.bg1_op)
-     << fmt_wxlog(sppu.bg_mask_op.bg2_op)
-     << fmt_wxlog(sppu.bg_mask_op.bg3_op)
-     << fmt_wxlog(sppu.bg_mask_op.bg4_op)
-     << fmt_wxlog(sppu.obj_math_mask_op.bg1_op)
-     << fmt_wxlog(sppu.obj_math_mask_op.bg2_op)
+  tb << "Win1+2 merge (2121a-b)" << fmt_wxlog(sppu.bg_mask_op.bg_op(0))
+     << fmt_wxlog(sppu.bg_mask_op.bg_op(1))
+     << fmt_wxlog(sppu.bg_mask_op.bg_op(2))
+     << fmt_wxlog(sppu.bg_mask_op.bg_op(3))
+     << fmt_wxlog(sppu.obj_math_mask_op.bg_op(0))
+     << fmt_wxlog(sppu.obj_math_mask_op.bg_op(1))
      << endr;
   tb << "Win1 mask (2123-5)" << fmt_wxsel(sppu.windows[0].mask_for_bg[0])
      << fmt_wxsel(sppu.windows[0].mask_for_bg[1])
