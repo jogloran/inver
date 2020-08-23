@@ -114,6 +114,7 @@ void CPU5A22::tick() {
   if (cycles_left == 0) {
     byte opcode = bus->read(pc.addr);
 
+#ifndef NDEBUG
     auto dis_pc_cmd = dis_pcs.find(pc.addr);
     bool dis_here = false;
     if (dis_pc_cmd != dis_pcs.end() && (dis_pc_cmd->second.action & PCWatchSpec::X)) {
@@ -121,15 +122,19 @@ void CPU5A22::tick() {
         FLAGS_dis = true;
       dis_here = true;
     }
+
 //    bool ignored = pc.addr == 0x8075 || pc.addr == 0x8077 || pc.addr == 0x806b || pc.addr == 0x806d;
     bool ignored = ignored_pcs.find(pc.addr) != ignored_pcs.end();
     if ((FLAGS_dis || dis_here) && !ignored) dump_pc();
+#endif
     ++pc.addr;
+#ifndef NDEBUG
     if ((FLAGS_dis || dis_here) && !ignored) dump();
 
     for (ChangeWatchSpec& spec : change_watches) {
       spec(bus->read(spec.addr));
     }
+#endif
 
     auto op = ops_65c816[opcode];
     cycle_count_t extra_cycles = op.f(*this);

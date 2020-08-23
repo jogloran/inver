@@ -31,10 +31,6 @@ void BusSNES::tick() {
     dma_state = DMAState::Idle;
   }
 
-  if (cpu->pc.addr == 0x8468) {
-//    ppu->dump_pal();
-//    std::exit(0);
-  }
   // whyyyyyyy.
   spc_read_port(spc, spc_time++, 0);
   spc_read_port(spc, spc_time++, 1);
@@ -164,11 +160,13 @@ byte BusSNES::read(dword address) {
 }
 
 void BusSNES::write(dword address, byte value) {
+#ifndef NDEBUG
   if (auto it = dis_pcs.find(address); it != dis_pcs.end() &&
                                        (it->second.action & PCWatchSpec::Action::W)) {
     cpu->dump_pc();
     cpu->dump();
   }
+#endif
 
   auto bank = address >> 16;
   auto offs = address & 0xffff;
