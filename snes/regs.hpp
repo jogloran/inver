@@ -278,14 +278,16 @@ union inidisp_t {
 
 union layer_ctrl_t {
   struct {
-    byte bg1: 1;
-    byte bg2: 1;
-    byte bg3: 1;
-    byte bg4: 1;
+    byte bg: 4;
     byte obj: 1;
     byte unused: 3;
   };
   byte reg;
+
+  bool operator()(byte bg_layer) {
+    return bg & (1 << bg_layer);
+  }
+
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
 };
