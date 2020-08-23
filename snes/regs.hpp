@@ -35,13 +35,12 @@ union window_mask_op_t {
   enum class MaskOp : byte {
     Or = 0, And = 1, Xor = 2, Xnor = 3
   };
-  struct {
-    MaskOp bg1_op: 2;
-    MaskOp bg2_op: 2;
-    MaskOp bg3_op: 2;
-    MaskOp bg4_op: 2;
-  };
   byte reg;
+
+  MaskOp bg_op(byte bg_layer) {
+    return static_cast<MaskOp>((reg >> (2 * bg_layer)) & 3);
+  }
+
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
 };

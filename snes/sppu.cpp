@@ -2,12 +2,9 @@
 #include <numeric>
 
 #include "bus_snes.hpp"
-#include "fort.hpp"
 #include "mode.hpp"
-#include "ppu_debug.hpp"
 #include "ppu_utils.hpp"
 #include "sppu.hpp"
-#include "utils.hpp"
 
 DECLARE_bool(show_main);
 DECLARE_bool(show_sub);
@@ -27,8 +24,6 @@ static std::array<std::function<Screen::colour_t(Screen::colour_t,
 
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
-
-// table of (mode, layer) -> bpp?
 
 std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
     {2, 2, 2, 2},
@@ -268,6 +263,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   // Draw onto row in that order
   OAM* oam_ptr = (OAM*) oam.data();
   for (byte i = 0; i < 128; ++i) {
+    pixels.clear();
+
     OAM* entry = &oam_ptr[i];
     if (entry->attr.prio != prio) continue;
 
@@ -280,8 +277,6 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       continue;
     }
 
-    std::vector<byte> pixels;
-    pixels.reserve(sprite_width);
     auto tile_y = (line_ - entry->y) % 8;// the row (0..8) of the tile
     auto tile_no_y_offset = (line_ - entry->y) / 8;
     if (entry->attr.flip_y) {
@@ -364,16 +359,12 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   byte fine_x_offset = scr[bg].x_reg % 8;
   auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row, bg_base_size[bg].sc_size);
 
-  // no need to clear _tiles_ since we overwrite each one
-  std::transform(addrs.begin(), addrs.end(), tiles.begin(), [this](auto addr) {
-    return (bg_map_tile_t*) &vram[addr];
-  });
-
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
   auto ptr = row.begin();
-  std::for_each(tiles.begin(), tiles.end(),
-                [&](bg_map_tile_t* t) {
+  std::for_each(addrs.begin(), addrs.end(),
+                [&](word addr) {
+                  bg_map_tile_t* t = (bg_map_tile_t*) &vram[addr];
                   if (t->bg_prio != prio) {
                     for (int i = 0; i < 8; ++i) {
                       *ptr++ = 0;
@@ -547,22 +538,16 @@ Layers::Win SPPU::compute_mask(byte layer) {
     // combine the two windows using the op
     switch (layer) {
       case 0:
-        win[i] = ops[static_cast<byte>(bg_mask_op.bg1_op)](w1_in, w2_in);
-        break;
       case 1:
-        win[i] = ops[static_cast<byte>(bg_mask_op.bg2_op)](w1_in, w2_in);
-        break;
       case 2:
-        win[i] = ops[static_cast<byte>(bg_mask_op.bg3_op)](w1_in, w2_in);
-        break;
       case 3:
-        win[i] = ops[static_cast<byte>(bg_mask_op.bg4_op)](w1_in, w2_in);
+        win[i] = ops[static_cast<byte>(bg_mask_op.bg_op(layer))](w1_in, w2_in);
         break;
       case Layers::OBJ:
-        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg1_op)](w1_in, w2_in);
+        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg_op(0))](w1_in, w2_in);
         break;
       case Layers::MATH:
-        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg2_op)](w1_in, w2_in);
+        win[i] = ops[static_cast<byte>(obj_math_mask_op.bg_op(1))](w1_in, w2_in);
         break;
     }
   }
