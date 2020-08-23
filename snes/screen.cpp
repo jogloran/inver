@@ -2,6 +2,7 @@
 #include "sppu.hpp"
 #include "bus_snes.hpp"
 #include "ppu_utils.hpp"
+#include "ppu_debug.hpp"
 
 DECLARE_bool(show_raster);
 DECLARE_bool(dis);
@@ -65,26 +66,26 @@ void Screen::blit() {
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
-//          ppu->dump_bg(0);
+//          dump_bg(*ppu0);
 //          std::printf("\n");
-          ppu->dump_bg(1);
+          dump_bg(*ppu, 1);
           std::printf("\n");
-//          ppu->dump_bg(2);
+//          dump_bg(*ppu, 2);
 //          std::printf("\n");
 //          std::exit(0);
           break;
         case SDLK_c:
-          ppu->dump_colour_math();
+          dump_colour_math(*ppu);
           break;
         case SDLK_p:
-          ppu->dump_pal();
+          dump_pal(*ppu);
           break;
         case SDLK_s:
-          ppu->dump_sprite();
+          dump_sprite(*ppu);
           break;
         case SDLK_o: {
           bool dump_bytes = event.key.keysym.mod & KMOD_LCTRL;
-          ppu->dump_oam(dump_bytes);
+          dump_oam(*ppu, dump_bytes);
           break;
         }
         case SDLK_m:

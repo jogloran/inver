@@ -38,6 +38,8 @@ public:
 
   void tick(byte master_cycles = 1);
 
+  bool is_pal_clear(byte p) { return p % 16 == 0; }
+
   byte read(word addr) {
     switch (addr) {
       case 0x2134: // MPYL    - PPU1 Signed Multiply Result   (lower 8bit)
@@ -419,14 +421,6 @@ public:
 
   BusSNES* bus;
 
-  void dump_oam(bool dump_bytes = false);
-
-  void dump_sprite();
-
-  void dump_bg(byte layer);
-
-  void dump_pal();
-
   template<typename Ar>
   void serialize(Ar& ar) {
     ar(main_scr, sub_scr,
@@ -448,8 +442,6 @@ public:
 
   Screen* screen;
 
-  void dump_colour_math();
-
   std::array<byte, 256> render_row(byte bg, byte prio);
 
   std::array<byte, 256> render_obj(byte prio);
@@ -457,10 +449,6 @@ public:
   std::array<byte, 256> compute_mask(byte layer);
 
 private:
-  void dump_oam_table();
-
-  void dump_oam_bytes();
-
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
@@ -533,5 +521,18 @@ private:
   std::array<byte, 256> main_source_layer {};
   std::array<byte, 256> sub_source_layer {};
 
+  static word PAL_MASKED_IN_WINDOW;
+  static word PAL_SUB_SCREEN_TRANSPARENT;
+
   friend class Screen;
+
+  friend void dump_colour_math(SPPU& sppu);
+
+  friend void dump_oam(SPPU& sppu, bool dump_bytes);
+
+  friend void dump_sprite(SPPU& sppu);
+
+  friend void dump_bg(SPPU& sppu, byte layer);
+
+  friend void dump_pal(SPPU& sppu);
 };
