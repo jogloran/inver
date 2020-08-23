@@ -126,7 +126,9 @@ void CPU5A22::tick() {
 //    bool ignored = pc.addr == 0x8075 || pc.addr == 0x8077 || pc.addr == 0x806b || pc.addr == 0x806d;
     bool ignored = ignored_pcs.find(pc.addr) != ignored_pcs.end();
     if ((FLAGS_dis || dis_here) && !ignored) dump_pc();
+#endif
     ++pc.addr;
+#ifndef NDEBUG
     if ((FLAGS_dis || dis_here) && !ignored) dump();
 
     for (ChangeWatchSpec& spec : change_watches) {
