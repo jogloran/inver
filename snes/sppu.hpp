@@ -509,7 +509,7 @@ private:
 
   friend class TD2;
 
-  auto prio_sort(std::vector<LayerSpec> layers, const Layers& l, int i);
+  auto prio_sort(const std::vector<LayerSpec>& layers, const Layers& l, int i);
 
   void render_row();
 
@@ -517,9 +517,9 @@ private:
 
   void vblank_end();
 
-  auto get_pal_row(const Layers& l, byte layer, byte prio);
+  const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio);
 
-  auto get_mask_row(const Layers& l, byte layer);
+  const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer);
 
   auto& route_main_sub(std::vector<LayerSpec> prios);
 

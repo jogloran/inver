@@ -121,7 +121,7 @@ std::array<LayerPriorityTable, 8> prios_for_mode =
       // Mode 7
       {}}};
 
-auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
+const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
     return l.obj.pal[prio];
   } else {
@@ -129,7 +129,7 @@ auto SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   }
 }
 
-auto SPPU::get_mask_row(const Layers& l, byte layer) {
+const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
   if (layer == Layers::OBJ) {
     return l.obj.mask;
   } else {
@@ -137,15 +137,15 @@ auto SPPU::get_mask_row(const Layers& l, byte layer) {
   }
 }
 
-auto SPPU::prio_sort(std::vector<LayerSpec> prio, const Layers& l, int i) {
+auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i) {
   return std::reduce(prio.rbegin(), prio.rend(),
                      std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
                      [this, i, &l](auto acc,
                                    auto layer_spec) -> std::tuple<byte, word, bool> {
                        auto& [prio_layer, prio_pal, _] = acc;
                        auto& [layer, prio] = layer_spec;
-                       auto l2 = get_pal_row(l, layer, prio);
-                       auto mask = get_mask_row(l, layer);
+                       auto& l2 = get_pal_row(l, layer, prio);
+                       auto& mask = get_mask_row(l, layer);
 
                        if (!is_pal_clear(prio_pal)) {
                          return {prio_layer, prio_pal, mask[i]};
