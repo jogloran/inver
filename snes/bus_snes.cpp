@@ -332,7 +332,7 @@ BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()),
   if (FLAGS_td) td2.show();
 
   auto gen_rand_byte = [this]() { return memory_filler(generator); };
-  std::generate(ram.begin(), ram.end(), gen_rand_byte);
+//  std::generate(ram.begin(), ram.end(), gen_rand_byte);
   std::generate(sram1.begin(), sram1.end(), gen_rand_byte);
   std::generate(sram2.begin(), sram2.end(), gen_rand_byte);
 
