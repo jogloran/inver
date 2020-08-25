@@ -192,10 +192,10 @@ void SPPU::render_row() {
   std::fill(sub.begin(), sub.end(), PAL_SUB_SCREEN_TRANSPARENT);
 
   Layers l {mode_fns[bgmode.mode](*this)};
-  auto prio = prios_for_mode[bgmode.mode];
+  auto& prio = prios_for_mode[bgmode.mode];
 
   // Filter prio into MAIN and SUB
-  auto [main_layers, sub_layers] = route_main_sub(prio);
+  auto& [main_layers, sub_layers] = route_main_sub(prio);
 
   for (int i = 0; i < 256; ++i) {
     auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
