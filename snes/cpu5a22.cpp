@@ -114,8 +114,7 @@ void CPU5A22::tick() {
   if (cycles_left == 0) {
     byte opcode = bus->read(pc.addr);
 
-
-
+    auto dis_pc_cmd = dis_pcs.find(pc.addr);
     bool dis_here = false;
     bool ignored = false;
 #ifndef NDEBUG

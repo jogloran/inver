@@ -477,7 +477,6 @@ void SPPU::tick(byte master_cycles) {
             vblank_end();
             screen->blit();
             state = State::VISIBLE;
-            //            log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
             line = 0;
 
             bus->frame_start();
