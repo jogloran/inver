@@ -32,11 +32,6 @@ struct Layers {
   Win math;
 };
 
-struct LayerSpec {
-  byte layer;
-  byte prio;
-};
-
 template <byte M>
 constexpr Layers mode(SPPU& ppu) {
   Layers result {};

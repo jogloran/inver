@@ -22,7 +22,10 @@ class Screen;
 
 class Layers;
 
-class LayerSpec;
+struct LayerSpec {
+  byte layer;
+  byte prio;
+};
 
 class SPPU: public Logger<SPPU> {
 public:
@@ -448,6 +451,8 @@ public:
 
   std::array<byte, 256> compute_mask(byte layer);
 
+  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
+
 private:
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
@@ -516,7 +521,7 @@ private:
 
   auto get_mask_row(const Layers& l, byte layer);
 
-  auto route_main_sub(std::vector<LayerSpec> prios);
+  auto& route_main_sub(std::vector<LayerSpec> prios);
 
   bool colour_math_applies(int i, const Layers& layers);
 

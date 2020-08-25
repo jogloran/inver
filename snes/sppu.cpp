@@ -163,27 +163,28 @@ auto SPPU::prio_sort(std::vector<LayerSpec> prio, const Layers& l, int i) {
                      });
 }
 
-auto SPPU::route_main_sub(std::vector<LayerSpec> prios) {
-  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
-
+auto& SPPU::route_main_sub(std::vector<LayerSpec> prios) {
+//  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
+  main_sub.first.clear();
+  main_sub.second.clear();
   for (LayerSpec l : prios) {
     switch (l.layer) {
       case 0:
       case 1:
       case 2:
       case 3:
-        if (main_scr(l.layer)) result.first.push_back(l);
-        if (sub_scr(l.layer)) result.second.push_back(l);
+        if (main_scr(l.layer)) main_sub.first.push_back(l);
+        if (sub_scr(l.layer)) main_sub.second.push_back(l);
         break;
 
       case Layers::OBJ:
-        if (main_scr.obj) result.first.push_back(l);
-        if (sub_scr.obj) result.second.push_back(l);
+        if (main_scr.obj) main_sub.first.push_back(l);
+        if (sub_scr.obj) main_sub.second.push_back(l);
         break;
     }
   }
 
-  return result;
+  return main_sub;
 }
 
 void SPPU::render_row() {
