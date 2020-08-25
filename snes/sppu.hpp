@@ -536,4 +536,6 @@ private:
   friend void dump_bg(SPPU& sppu, byte layer);
 
   friend void dump_pal(SPPU& sppu);
+
+  auto get_tile_pos(byte bg);
 };

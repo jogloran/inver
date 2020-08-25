@@ -121,6 +121,8 @@ void DMA::hdma_init(bool indirect) {
   in_transfer = true;
 }
 
+
+
 cycle_count_t DMA::run() {
   // while length counter > 0
   // transfer one unit from source to destination
@@ -147,128 +149,69 @@ cycle_count_t DMA::run() {
 
     if (das.addr == 0) das.addr = 0x10000;
     while ((das.addr & 0xffff) > 0) { // TODO: what if addr < 4 and we transfer 4 bytes?
-//      bool same =
-//          dst == last_dst && value == last_value && (src == last_src || src == last_src + 1);
-//      if (suppressed && same) { ;
-//      } else {
-//        log("\tdst %06x <- %06x [%02x] (0x%x bytes left)\n", dst, src, value, das.addr & 0xffff);
-////        if (dst == 0x2118 || dst == 0x2119) {
-////          log("vram address before: %04x\n", bus->ppu.vram_addr.w);
-////        }
-//        if (suppressed && !same) suppressed = false;
-//        else if (!suppressed && same) {
-//          log("\t...\n");
-//          suppressed = true;
-//          skipped_since = das.addr;
-//        }
-//      }
-
-//      last_dst = dst;
-//      last_src = src;
-//      last_value = value;
-
-      byte value;
       switch (dma_params.tx_type) {
         case 0:
-          value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
-              value, das.addr & 0xffff);
-          bus->write(dst, bus->read(src));
-          a1.addr += incr;
-          --das.addr;
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
           break;
+
         case 1:
-          value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
-              value, das.addr & 0xffff);
-          bus->write(dst, bus->read(src));
-          a1.addr += incr;
-          --das.addr;
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
 
-          value = bus->read(src);
-          maybe_vram_address = update_vram_address(dst, bus->ppu.get());
-          log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst + 1, src,
-              maybe_vram_address, value, das.addr & 0xffff);
-          bus->write(dst + 1, bus->read(src));
-          a1.addr += incr;
-          --das.addr;
+          write_unit(src, dst + 1, incr);
           if (das.addr == 0) goto out;
           break;
+
         case 2:
-          // TODO: these need to be rewritten like case 1
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          break;
-        case 3:
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          break;
-        case 4:
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 2, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 3, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          break;
-        case 5:
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
-          if (das.addr == 0) goto out;
-          break;
         case 6:
-          bus->write(dst, bus->read(src));
-          --das.addr;
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
-          bus->write(dst, bus->read(src));
-          --das.addr;
+
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
           break;
+
+        case 3:
         case 7:
-          bus->write(dst, bus->read(src));
-          --das.addr;
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
-          bus->write(dst, bus->read(src));
-          --das.addr;
+
+          write_unit(src, dst, incr);
           if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
+
+          write_unit(src, dst + 1, incr);
           if (das.addr == 0) goto out;
-          bus->write(dst + 1, bus->read(src));
-          --das.addr;
+
+          write_unit(src, dst + 1, incr);
+          if (das.addr == 0) goto out;
+          break;
+
+        case 4:
+          write_unit(src, dst, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst + 1, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst + 2, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst + 3, incr);
+          if (das.addr == 0) goto out;
+          break;
+
+        case 5:
+          write_unit(src, dst, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst + 1, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst, incr);
+          if (das.addr == 0) goto out;
+
+          write_unit(src, dst + 1, incr);
           if (das.addr == 0) goto out;
           break;
       }
@@ -279,4 +222,20 @@ cycle_count_t DMA::run() {
   }
 
   return cycles;
+}
+
+void DMA::write_unit(const dword& src, dword dst, sbyte incr) {
+  byte value = bus->read(src);
+  log_write_unit(src, dst, value);
+  bus->write(dst, bus->read(src));
+  a1.addr += incr;
+  --das.addr;
+}
+
+void DMA::log_write_unit(dword src, dword dst, byte value) {
+#ifndef NDEBUG
+  auto* maybe_vram_address = update_vram_address(dst, bus->ppu.get());
+  log("\tdst %06x <- %06x [%-6s -> %02x] (0x%x bytes left)\n", dst, src, maybe_vram_address,
+      value, das.addr & 0xffff);
+#endif
 }
