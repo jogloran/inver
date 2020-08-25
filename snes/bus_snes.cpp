@@ -330,6 +330,12 @@ BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()),
   ppu->connect(this);
   td2.connect(this);
   if (FLAGS_td) td2.show();
+
+  auto gen_rand_byte = [this]() { return memory_filler(generator); };
+  std::generate(ram.begin(), ram.end(), gen_rand_byte);
+  std::generate(sram1.begin(), sram1.end(), gen_rand_byte);
+  std::generate(sram2.begin(), sram2.end(), gen_rand_byte);
+
   byte ch_no = 0;
   std::for_each(dma.begin(), dma.end(), [this, &ch_no](auto& ch) {
     ch.connect(this);
