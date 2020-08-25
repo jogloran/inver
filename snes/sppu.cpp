@@ -330,6 +330,30 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 }
 
 /**
+ * Returns [cur_row, tile_row, line_] where:
+ * - 0 <= cur_row < 64 is the vertical tile index of the current line, accounting for vertical scroll
+ * - 0 <= tile_row < 7 is the y-offset into the 8 rows of the tile
+ * - line_ is the vertical line number after adjusting for mosaicing
+ * @param bg The background layer to evaluate
+ */
+auto SPPU::get_tile_pos(byte bg) {
+  auto line_ = line;
+  if (mosaic.enabled_for_bg(bg)) {
+    line_ = (line / mosaic.size()) * (mosaic.size());
+  }
+
+  word y_offset = (line_ + scr[bg].y_reg) % 512;
+  byte cur_row = y_offset / 8;
+  byte tile_row = y_offset % 8;
+
+  word x_offset = scr[bg].x_reg;
+  byte cur_col = x_offset / 8;
+  byte tile_col = x_offset % 8;
+
+  return std::make_tuple(cur_row, tile_row, cur_col, tile_col, line_);
+}
+
+/**
  * prio can take values: 0,1 (bg or obj) 2,3 (obj)
  * in mode 1, BG3 can have priorities 0a, 0b as well as 1a, 1b.
  *   0, 1 refers to per-tile priority flag
@@ -337,11 +361,6 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
  */
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
-
-  auto line_ = line;
-  if (mosaic.enabled_for_bg(bg)) {
-    line_ = (line / mosaic.size()) * (mosaic.size());
-  }
 
   // get bg mode
   byte mode = bgmode.mode;
@@ -352,18 +371,14 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  byte cur_row = ((line_ + scr[bg].y_reg) % 512) / 8;
-  byte tile_row = ((line_ + scr[bg].y_reg) % 512) % 8;
-
-  word start_x_index = scr[bg].x_reg / 8;
-  byte fine_x_offset = scr[bg].x_reg % 8;
-  auto addrs = addrs_for_row(tilemap_base_addr, start_x_index, cur_row, bg_base_size[bg].sc_size);
+  auto [cur_row, tile_row, cur_col, tile_col, line_] = get_tile_pos(bg);
+  auto addrs = addrs_for_row(tilemap_base_addr, cur_col, cur_row, bg_base_size[bg].sc_size);
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;
   auto ptr = row.begin();
   std::for_each(addrs.begin(), addrs.end(),
-                [&](word addr) {
+                [&, tile_row = tile_row](word addr) {
                   bg_map_tile_t* t = (bg_map_tile_t*) &vram[addr];
                   if (t->bg_prio != prio) {
                     for (int i = 0; i < 8; ++i) {
@@ -398,7 +413,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
 
   std::array<byte, 256> result {};
   auto result_ptr = result.begin();
-  for (int i = fine_x_offset; i < 256 + fine_x_offset; ++i) {
+  for (int i = tile_col; i < 256 + tile_col; ++i) {
     *result_ptr++ = row[i];
   }
 
@@ -462,7 +477,7 @@ void SPPU::tick(byte master_cycles) {
             vblank_end();
             screen->blit();
             state = State::VISIBLE;
-//            log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
+            //            log("%-3ld x=%d line=%-3d vbl -> vis\n", x, ncycles, line);
             line = 0;
 
             bus->frame_start();

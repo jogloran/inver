@@ -363,10 +363,6 @@ void BusSNES::auto_joypad_read_start() {
   joypad_sample_lo = input & 0xff;
 }
 
-void BusSNES::dump_mem() {
-  std::printf("1425 = %02x\n", read(0x1425));
-}
-
 void BusSNES::pickle(std::string filename) {
   std::ofstream ofs(filename);
   {

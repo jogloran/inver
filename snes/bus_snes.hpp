@@ -145,8 +145,6 @@ public:
   byte joypad_sample_hi = 0;
   byte joypad_sample_lo = 0;
 
-  void dump_mem();
-
   template<typename Ar>
   void serialize(Ar& ar) {
     ar(ram, cpu, ppu, rom, sram1, sram2, dma, dma_state,

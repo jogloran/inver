@@ -88,9 +88,7 @@ void Screen::blit() {
           dump_oam(*ppu, dump_bytes);
           break;
         }
-        case SDLK_m:
-          ppu->bus->dump_mem();
-          break;
+
         case SDLK_BACKQUOTE:
           FLAGS_dis = !FLAGS_dis;
           break;
