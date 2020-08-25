@@ -15,9 +15,10 @@
 #include "logger.hpp"
 #include "td.hpp"
 
-#include <gflags/gflags.h>
-#include <SDL2/SDL.h>
 #include "peripheral.hpp"
+#include <SDL2/SDL.h>
+#include <gflags/gflags.h>
+#include <random>
 
 DECLARE_bool(audio);
 
@@ -114,6 +115,9 @@ public:
   bool timeup = false;
 
   constexpr static const char* TAG = "bus";
+
+  std::default_random_engine generator;
+  std::uniform_int_distribution<byte> memory_filler;
 
   void frame_start() {
     std::for_each(dma.begin(), dma.end(), [](DMA& ch) {
