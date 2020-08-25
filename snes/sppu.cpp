@@ -187,8 +187,6 @@ auto SPPU::route_main_sub(std::vector<LayerSpec> prios) {
 }
 
 void SPPU::render_row() {
-  std::array<Screen::colour_t, 256> pals;
-
   std::fill(main.begin(), main.end(), 0);
   std::fill(sub.begin(), sub.end(), PAL_SUB_SCREEN_TRANSPARENT);
 

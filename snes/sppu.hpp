@@ -484,6 +484,7 @@ private:
 
   // region PPU caches
   std::array<byte, 256 + 8> row {};
+  std::array<Screen::colour_t, 256> pals {};
 
   struct RenderedSprite {
     OAM oam;
