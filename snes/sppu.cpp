@@ -163,7 +163,7 @@ auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i)
                      });
 }
 
-auto& SPPU::route_main_sub(std::vector<LayerSpec> prios) {
+auto& SPPU::route_main_sub(const std::vector<LayerSpec>& prios) {
 //  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
   main_sub.first.clear();
   main_sub.second.clear();

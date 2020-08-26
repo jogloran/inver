@@ -451,8 +451,6 @@ public:
 
   std::array<byte, 256> compute_mask(byte layer);
 
-  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
-
 private:
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
@@ -491,6 +489,8 @@ private:
   std::array<byte, 256 + 8> row {};
   std::array<Screen::colour_t, 256> pals {};
   std::array<word, 33> addrs {};
+
+  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
   struct RenderedSprite {
     OAM oam;
@@ -533,7 +533,7 @@ private:
 
   const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer);
 
-  auto& route_main_sub(std::vector<LayerSpec> prios);
+  auto& route_main_sub(const std::vector<LayerSpec>& prios);
 
   bool colour_math_applies(int i, const Layers& layers);
 
