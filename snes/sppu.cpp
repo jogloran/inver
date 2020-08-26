@@ -352,6 +352,23 @@ auto SPPU::get_tile_pos(byte bg) {
   return std::make_tuple(cur_row, tile_row, cur_col, tile_col, line_);
 }
 
+void SPPU::compute_addrs_for_row(word base, word start_x, word start_y,
+                                 byte sc_size) {
+  //                sx,    sy
+  // sc_size = 0 => false, false
+  // sc_size = 1 => true, false
+  // sc_size = 2 => false, true
+  // sc_size = 3 => true, true
+  auto sx = sc_size & 1;
+  auto sy = sc_size >> 1;
+
+  auto it = addrs.begin();
+  for (int i = 0; i < 33; ++i) {
+    *it++ = addr(base, (start_x + i) % 64, start_y, sx, sy);
+  }
+}
+
+
 /**
  * prio can take values: 0,1 (bg or obj) 2,3 (obj)
  * in mode 1, BG3 can have priorities 0a, 0b as well as 1a, 1b.
@@ -371,7 +388,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
   auto [cur_row, tile_row, cur_col, tile_col, line_] = get_tile_pos(bg);
-  auto addrs = addrs_for_row(tilemap_base_addr, cur_col, cur_row, bg_base_size[bg].sc_size);
+  compute_addrs_for_row(tilemap_base_addr, cur_col, cur_row, bg_base_size[bg].sc_size);
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
   int col = 0;

@@ -490,6 +490,7 @@ private:
   // region PPU caches
   std::array<byte, 256 + 8> row {};
   std::array<Screen::colour_t, 256> pals {};
+  std::array<word, 33> addrs {};
 
   struct RenderedSprite {
     OAM oam;
@@ -516,6 +517,17 @@ private:
   Screen::colour_t lookup(byte);
 
   void vblank_end();
+
+/*
+ * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
+ * a fine scroll offset, it may return part of tile 0 and part of tile 32.
+ * @param base The base BG tile address
+ * @param start_x The leftmost tile 0 <= start_x < 64
+ * @param start_y The row of the tile 0 <= start_y < 64
+ * @param sc_size The mirroring mode from BGxSC 0 <= sc_size < 4
+ * @return An array of 33 VRAM addresses for the BG tile data
+ */
+  void compute_addrs_for_row(word base, word start_x, word start_y, byte sc_size);
 
   const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio);
 

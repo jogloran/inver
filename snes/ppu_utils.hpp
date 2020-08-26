@@ -31,17 +31,6 @@ struct OAMExtras {
  */
 OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i);
 
-/*
- * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
- * a fine scroll offset, it may return part of tile 0 and part of tile 32.
- * @param base The base BG tile address
- * @param start_x The leftmost tile 0 <= start_x < 64
- * @param start_y The row of the tile 0 <= start_y < 64
- * @param sc_size The mirroring mode from BGxSC 0 <= sc_size < 4
- * @return An array of 33 VRAM addresses for the BG tile data
- */
-std::array<word, 33> addrs_for_row(word base, word start_x, word start_y, byte sc_size);
-
 /**
  * Compute the VRAM address for a BG tile.
  * @param base The base BG tile address
