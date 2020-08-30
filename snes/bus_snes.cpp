@@ -1,12 +1,12 @@
 #include "bus_snes.hpp"
-#include "snes_spc/spc.h"
 #include "cpu5a22.hpp"
-#include "sdl_snes_input.hpp"
 #include "debug.hpp"
+#include "sdl_snes_input.hpp"
+#include "snes_spc/spc.h"
 
+#include <cereal/archives/binary.hpp>
 #include <gflags/gflags.h>
 #include <map>
-#include <cereal/archives/binary.hpp>
 
 DECLARE_bool(td);
 DECLARE_int32(sram);
@@ -45,11 +45,11 @@ void BusSNES::reset() {
 
 byte BusSNES::read(dword address) {
   // causes stack overflow because dump_pc does bus->read
-//  if (auto it = dis_pcs.find(address); it != dis_pcs.end() &&
-//                                       (it->second.action & PCWatchSpec::Action::R)) {
-//    cpu->dump_pc();
-//    cpu->dump();
-//  }
+  //  if (auto it = dis_pcs.find(address); it != dis_pcs.end() &&
+  //                                       (it->second.action & PCWatchSpec::Action::R)) {
+  //    cpu->dump_pc();
+  //    cpu->dump();
+  //  }
 
   auto bank = address >> 16;
   auto offs = address & 0xffff;
@@ -102,9 +102,21 @@ byte BusSNES::read(dword address) {
       if (offs == 0x4212) {
         // HVBJOY
         bool vblank = ppu->state == SPPU::State::VBLANK;
-        bool hblank = ppu->state
-            == SPPU::State::HBLANK;
+        bool hblank = ppu->state == SPPU::State::HBLANK;
         return (vblank << 7) | (hblank << 6) | auto_joypad_read_busy;
+      }
+      if (offs == 0x4214) {
+        // RDDIVL
+        return rddiv.l;
+      } else if (offs == 0x4215) {
+        // RDDIVH
+        return rddiv.h;
+      } else if (offs == 0x4216) {
+        // RDMPYL
+        return rdmpy.l;
+      } else if (offs == 0x4217) {
+        // RDMPYH
+        return rdmpy.h;
       }
       if (offs == 0x4218) {
         log_with_tag("ctrl", "sample lo %02x\n", joypad_sample_lo);
@@ -133,7 +145,7 @@ byte BusSNES::read(dword address) {
     }
   } else if (address <= 0x7d'ffff) {
     if (offs <= 0x7fff) {
-      return sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram]; // sram
+      return sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram];// sram
     } else {
       return rom[bank * 0x8000 + (offs - 0x8000)];
     }
@@ -147,7 +159,7 @@ byte BusSNES::read(dword address) {
     // mirrors
   } else if (address <= 0xff'ffff) {
     if (offs <= 0x7fff) {
-      return sram2[(bank - 0xf0) * 0x8000 + offs]; // sram
+      return sram2[(bank - 0xf0) * 0x8000 + offs];// sram
     } else {
       if (bank == 0x7fe) {
         return rom[0x3f'0000 + (offs - 0x8000)];
@@ -219,6 +231,35 @@ void BusSNES::write(dword address, byte value) {
           log("joypad\n");
         }
       }
+      if (offs == 0x4202) {
+        // WRMPYA
+        wrmpya = value;
+      } else if (offs == 0x4203) {
+        // WRMPYB
+        wrmpyb = value;
+        // "For some reason, the hardware does additionally set RDDIVL=WRMPYB, and RDDIVH=00h."
+        rddiv.l = wrmpyb;
+        rddiv.h = 0x0;
+        // TODO: no delay
+        rdmpy.w = wrmpya * wrmpyb;
+      } else if (offs == 0x4204) {
+        // WRDIVL
+        wrdivx.l = value;
+      } else if (offs == 0x4205) {
+        // WRDIVH
+        wrdivx.h = value;
+      } else if (offs == 0x4206) {
+        // WRDIVB
+        wrdivb = value;
+
+        if (wrdivb == 0x0) {
+          rddiv.w = 0xffff;
+          rdmpy = wrdivx;
+        } else {
+          rddiv.w = wrdivx.w / wrdivb;
+          rdmpy.w = wrdivx.w % wrdivb;
+        }
+      }
       // HTIMEL/HTIMEH
       if (offs == 0x4207) {
         ppu->htime.l = value;
@@ -234,7 +275,7 @@ void BusSNES::write(dword address, byte value) {
 
       if (offs == 0x420b) {
         // MDMAEN
-//        log("MDMAEN %d\n", value);
+        //        log("MDMAEN %d\n", value);
         for (int i = 0; i < 8; ++i) {
           if (value & (1 << i)) {
             log("DMA start %d\n", i);
@@ -277,7 +318,7 @@ void BusSNES::write(dword address, byte value) {
     if (offs <= 0x7fff) {
       sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram] = value;
     } else {
-//      return rom[bank * 0x8000 + (offs - 0x8000)];
+      //      return rom[bank * 0x8000 + (offs - 0x8000)];
     }
   } else if (address <= 0x7e'ffff) {
     // WRAM (first 64k)
@@ -292,9 +333,9 @@ void BusSNES::write(dword address, byte value) {
       sram2[(bank - 0xf0) * 0x8000 + offs] = value;
     } else {
       if (bank == 0x7fe) {
-//        return rom[0x3f'0000 + (offs - 0x8000)];
+        //        return rom[0x3f'0000 + (offs - 0x8000)];
       } else {
-//        return rom[0x3f'8000 + (offs - 0x8000)];
+        //        return rom[0x3f'8000 + (offs - 0x8000)];
       }
     }
   }
@@ -315,7 +356,7 @@ void BusSNES::vblank_nmi() {
   in_nmi = true;
   if (nmi.vblank_nmi)
     cpu->irq<NMI>();
-//  std::printf("show\n");
+  //  std::printf("show\n");
 }
 
 void BusSNES::vblank_end() {
@@ -323,16 +364,16 @@ void BusSNES::vblank_end() {
   if (FLAGS_td) td2.show();
 }
 
-BusSNES::BusSNES() : cpu(std::make_unique<CPU5A22>()),
-  ppu(std::make_unique<SPPU>()),
-  io1(std::make_unique<SDLSNESController>()) {
+BusSNES::BusSNES(): cpu(std::make_unique<CPU5A22>()),
+                    ppu(std::make_unique<SPPU>()),
+                    io1(std::make_unique<SDLSNESController>()) {
   cpu->connect(this);
   ppu->connect(this);
   td2.connect(this);
   if (FLAGS_td) td2.show();
 
   auto gen_rand_byte = [this]() { return memory_filler(generator); };
-//  std::generate(ram.begin(), ram.end(), gen_rand_byte);
+  //  std::generate(ram.begin(), ram.end(), gen_rand_byte);
   std::generate(sram1.begin(), sram1.end(), gen_rand_byte);
   std::generate(sram2.begin(), sram2.end(), gen_rand_byte);
 
@@ -359,7 +400,7 @@ void BusSNES::raise_timeup() {
   if (!cpu->p.I) {
     cpu->irq<IRQ>();
   }
-  timeup = true; // should this be delayed, per the docs?
+  timeup = true;// should this be delayed, per the docs?
 }
 
 void BusSNES::auto_joypad_read_start() {

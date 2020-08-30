@@ -558,13 +558,6 @@ Layers::Win SPPU::compute_mask(byte layer) {
         break;
     }
 
-    // TODO: this seems incorrect
-    if (windows[0].r <= windows[0].l) {
-      w1_in = false;
-    }
-    if (windows[1].r <= windows[1].l) {
-      w2_in = false;
-    }
     // combine the two windows using the op
     switch (layer) {
       case 0:

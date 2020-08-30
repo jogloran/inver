@@ -75,6 +75,14 @@ public:
   std::array<byte, 0x8000 * 0xd> sram1 {};
   std::array<byte, 0x8000 * 0x10> sram2 {};
 
+  byte wrmpya {};
+  byte wrmpyb {};
+  dual rdmpy {};
+
+  dual wrdivx {};
+  byte wrdivb {};
+  dual rddiv {};
+
   [[noreturn]] void run();
 
   std::array<DMA, 8> dma {};
