@@ -46,9 +46,11 @@ public:
   byte read(word addr) {
     switch (addr) {
       case 0x2134: // MPYL    - PPU1 Signed Multiply Result   (lower 8bit)
+        return mpyx.l;
       case 0x2135: // MPYM    - PPU1 Signed Multiply Result   (middle 8bit)
+        return mpyx.m;
       case 0x2136: // MPYH    - PPU1 Signed Multiply Result   (upper 8bit)
-        break;
+        return mpyx.h;
 
       case 0x2137: // SLHV    - PPU1 Latch H/V-Counter by Software (Read=Strobe)
         hv_latched = true;
@@ -260,8 +262,18 @@ public:
         break;
 
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
+        break;
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
+        if (m7a_write_upper) {
+          m7a.h = value;
+        } else {
+          m7a.l = value;
+        }
+        break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
+        m7b = value;
+        mpyx.w = m7a.w * m7b;
+        break;
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
@@ -491,6 +503,11 @@ private:
   std::array<word, 33> addrs {};
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
+
+  dual m7a {};
+  bool m7a_write_upper = false;
+  byte m7b {};
+  s24_t mpyx {};
 
   struct RenderedSprite {
     OAM oam;
