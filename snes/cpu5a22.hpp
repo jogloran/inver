@@ -189,117 +189,97 @@ public:
     return read(addr) | (read(addr + 1) << 8) | (read(addr + 2) << 16);
   }
 
-  word deref_abs(bool op16) {
-    if (op16) {
-      return read_word(addr_abs());
-    } else {
-      return read(addr_abs());
-    }
-  }
+#define ADDR_MODE(mode, body) word deref_##mode(bool op16) { \
+  if (op16) { \
+    return read_word(addr_##mode()); \
+  } else { \
+    return read(addr_##mode()); \
+  } \
+} \
+dword addr_##mode() body
 
-  word deref_zpg(bool op16) {
-    if (op16) {
-      return read_word(addr_zpg());
-    } else {
-      return read(addr_zpg());
-    }
-  }
+  ADDR_MODE(abs, {
+    dword lobyte_addr = (db << 16) | read_word();
+    return lobyte_addr;
+  })
 
-  word deref_zpg_plus_x(bool op16) {
-    if (op16) {
-      return read_word(addr_zpg_plus_x());
-    } else {
-      return read(addr_zpg_plus_x());
-    }
-  }
+  ADDR_MODE(zpg, {
+    return dp + read_byte(); // TODO: what if the e flag is 1 and the DL register is $00
+  })
 
-  word deref_zpg_plus_y(bool op16) {
-    if (op16) {
-      return read_word(addr_zpg_plus_y());
+  ADDR_MODE(zpg_plus_x, {
+    if (e && ((dp & 0xff) == 0)) {
+      return (read_byte() + x) % 256;
     } else {
-      return read(addr_zpg_plus_y());
+      return dp + read_byte() + x;
     }
-  }
+  })
 
-  word deref_abs_plus_x(bool op16) {
-    if (op16) {
-      return read_word(addr_abs_plus_x());
+  ADDR_MODE(zpg_plus_y, {
+    if (e && ((dp & 0xff) == 0)) {
+      return (read_byte() + y) % 256;
     } else {
-      return read(addr_abs_plus_x());
+      return dp + read_byte() + y;
     }
-  }
+  })
 
-  word deref_abs_plus_y(bool op16) {
-    if (op16) {
-      return read_word(addr_abs_plus_y());
-    } else {
-      return read(addr_abs_plus_y());
-    }
-  }
+  ADDR_MODE(abs_plus_x, {
+    dword addr = read_word();
+    check_page_crossing(addr, addr + x);
+    return (db << 16) | (addr + x);
+  })
 
-  word deref_indirect(bool op16) {
-    if (op16) {
-      return read_word(addr_indirect());
-    } else {
-      return read(addr_indirect());
-    }
-  }
+  ADDR_MODE(abs_plus_y, {
+    dword addr = read_word();
+    check_page_crossing(addr, addr + y);
+    return (db << 16) | (addr + y);
+  })
 
-  word deref_x_indirect(bool op16) {
-    if (op16) {
-      return read_word(addr_x_indirect());
-    } else {
-      return read(addr_x_indirect());
-    }
-  }
+  ADDR_MODE(x_indirect, {
+    byte zp_offset = read_byte();
+    // Pointer is always in bank 0, even if dp+zp_offset+x exceeds 0xffff
+    word ptr = read((dp + zp_offset + x) & 0xffff);
+    ptr |= read((dp + zp_offset + x + 1) & 0xffff) << 8;
+    return (db << 16) | ptr;
+  })
 
-  word deref_indirect_y(bool op16) {
-    if (op16) {
-      return read_word(addr_indirect_y());
-    } else {
-      return read(addr_indirect_y());
-    }
-  }
+  ADDR_MODE(indirect, {
+    return (db << 16) | read_word(dp + read_byte());
+  })
 
-  word deref_zpg_far(bool op16) {
-    if (op16) {
-      return read_word(addr_zpg_far());
-    } else {
-      return read(addr_zpg_far());
-    }
-  }
+  ADDR_MODE(indirect_y, {
+    byte zp_offset = read_byte();
+    // Pointer is always in bank 0, even if dp+zp_offset exceeds 0xffff
+    word ptr = read((dp + zp_offset) & 0xffff);
+    ptr |= read((dp + zp_offset + 1) & 0xffff) << 8;
+    return (db << 16) | (ptr + y);
+  })
 
-  word deref_stk_plus_imm_indirect_y(bool op16) {
-    if (op16) {
-      return read_word(addr_stk_plus_imm_indirect_y());
-    } else {
-      return read(addr_stk_plus_imm_indirect_y());
-    }
-  }
+  ADDR_MODE(zpg_far, {
+    dword addr = dp + read_byte();
+    return read_full_addr(addr);
+  })
 
-  word deref_sp_plus_imm(bool op16) {
-    if (op16) {
-      return read_word(addr_sp_plus_imm());
-    } else {
-      return read(addr_sp_plus_imm());
-    }
-  }
+  ADDR_MODE(stk_plus_imm_indirect_y, {
+    dword addr = read_word(addr_sp_plus_imm());
+    return (db << 16) | (addr + y);
+  })
 
-  word deref_zpg_far_plus_y(bool op16) {
-    if (op16) {
-      return read_word(addr_zpg_far_plus_y());
-    } else {
-      return read(addr_zpg_far_plus_y());
-    }
-  }
+  ADDR_MODE(sp_plus_imm, {
+    byte offset = read_byte();
+    return sp.w + offset;
+  })
 
-  word deref_abs_plus_x_indirect(bool op16) {
-    if (op16) {
-      return read_word(addr_abs_plus_x_indirect());
-    } else {
-      return read(addr_abs_plus_x_indirect());
-    }
-  }
+  ADDR_MODE(zpg_far_plus_y, {
+    dword base = dp + read_byte();
+    dword addr = read_dword(base);
+    return addr + y;
+  })
+
+  ADDR_MODE(abs_plus_x_indirect, {
+    dword base = (pc.b << 16) | (read_word() + x);
+    return (pc.b << 16) | read_word(base);
+  })
 
   dword addr_same_bank_abs() {
     return (pc.b << 16) | read_word();
@@ -311,85 +291,6 @@ public:
 
   dword addr_same_bank_abs_plus_x_indirect() {
     return (pc.b << 16) | read_word((pc.b << 16) | (read_word() + x));
-  }
-
-  dword addr_abs() {
-    dword lobyte_addr = (db << 16) | read_word();
-    return lobyte_addr;
-  }
-
-  dword addr_zpg() {
-    return dp + read_byte(); // TODO: what if the e flag is 1 and the DL register is $00
-  }
-
-  dword addr_zpg_plus_x() {
-    if (e && ((dp & 0xff) == 0)) {
-      return (read_byte() + x) % 256;
-    } else {
-      return dp + read_byte() + x;
-    }
-  }
-
-  dword addr_zpg_plus_y() {
-    if (e && ((dp & 0xff) == 0)) {
-      return (read_byte() + y) % 256;
-    } else {
-      return dp + read_byte() + y;
-    }
-  }
-
-  dword addr_abs_plus_x() {
-    dword addr = read_word();
-    check_page_crossing(addr, addr + x);
-    return (db << 16) | (addr + x);
-  }
-
-  dword addr_abs_plus_y() {
-    dword addr = read_word();
-    check_page_crossing(addr, addr + y);
-    return (db << 16) | (addr + y);
-  }
-
-  dword addr_x_indirect() {
-    byte zp_offset = read_byte();
-    // Pointer is always in bank 0, even if dp+zp_offset+x exceeds 0xffff
-    word ptr = read((dp + zp_offset + x) & 0xffff);
-    ptr |= read((dp + zp_offset + x + 1) & 0xffff) << 8;
-    return (db << 16) | ptr;
-  }
-
-  dword addr_indirect_y() {
-    byte zp_offset = read_byte();
-    // Pointer is always in bank 0, even if dp+zp_offset exceeds 0xffff
-    word ptr = read((dp + zp_offset) & 0xffff);
-    ptr |= read((dp + zp_offset + 1) & 0xffff) << 8;
-    return (db << 16) | (ptr + y);
-  }
-
-  dword addr_zpg_far() {
-    dword addr = dp + read_byte();
-    return read_full_addr(addr);
-  }
-
-  dword addr_stk_plus_imm_indirect_y() {
-    dword addr = read_word(addr_sp_plus_imm());
-    return (db << 16) | (addr + y);
-  }
-
-  dword addr_sp_plus_imm() {
-    byte offset = read_byte();
-    return sp.w + offset;
-  }
-
-  dword addr_zpg_far_plus_y() {
-    dword base = dp + read_byte();
-    dword addr = read_dword(base);
-    return addr + y;
-  }
-
-  dword addr_abs_plus_x_indirect() {
-    dword base = (pc.b << 16) | (read_word() + x);
-    return (pc.b << 16) | read_word(base);
   }
 
   inline bool native() {
@@ -437,10 +338,6 @@ public:
 
   dword addr_abs_dword_plus_x() {
     return read_full_addr() + x;
-  }
-
-  dword addr_indirect() {
-    return (db << 16) | read_word(dp + read_byte());
   }
 
   dword addr_abs_indirect() {
