@@ -79,7 +79,7 @@ public:
       }
     }
   }
-  
+
   void reset() override {
   }
 };
