@@ -8,13 +8,6 @@ DECLARE_int32(sram);
 
 class LoROM: public Mapper {
 public:
-  LoROM() {
-  }
-
-  void map(std::vector<byte>&& data) override {
-    rom = data;
-  }
-
   byte read(dword address) override {
     auto bank = address >> 16;
     auto offs = address & 0xffff;

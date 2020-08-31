@@ -59,7 +59,9 @@ byte BusSNES::read(dword address) {
     bank = address >> 16;
   }
 
-  if (bank <= 0x3f && offs <= 0x7fff) {
+  if (bank >= 0x30 && bank <= 0x3f && offs >= 0x6000 && offs <= 0x7fff) {
+    return cart->read(address);
+  } else if (bank <= 0x3f && offs <= 0x7fff) {
     if (offs <= 0x1fff) {
       return ram[offs];
     } else if (offs <= 0x20ff) {

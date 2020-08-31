@@ -12,6 +12,7 @@
 
 #include "bus_snes.hpp"
 #include "debug.hpp"
+#include "hirom.hpp"
 #include "lorom.hpp"
 #include "types.h"
 
@@ -42,34 +43,77 @@ std::vector<byte> read_bytes(std::ifstream& f) {
           std::istreambuf_iterator<char>()};
 }
 
-word inspect(std::vector<byte> data) {
+struct Metadata {
+  enum class Mapper { FastROM, HiROM, LoROM } mapper;
+  char name[22] {};
+  byte rom {};
+  uint32_t rom_size {};
+  uint32_t sram_size {};
+  byte creator {};
+  byte version {};
+  byte checksum {};
+  byte checksum_comp {};
+  word nmi {};
+  word rst {};
+};
+
+void inspect(const Metadata& meta) {
+  std::printf("%.*s\n", 21, meta.name);
+  std::printf("Type: ");
+  switch (meta.mapper) {
+    case Metadata::Mapper::FastROM:
+      std::puts("FastROM");
+      break;
+    case Metadata::Mapper::HiROM:
+      std::puts("HiROM");
+      break;
+    case Metadata::Mapper::LoROM:
+      std::puts("LoROM");
+      break;
+  }
+
+  std::printf("ROM: %02x\n", meta.rom);
+  std::printf("ROM size:  %d\n", meta.rom_size);
+  std::printf("SRAM size: %d\n", meta.sram_size);
+  std::printf("Creator:   %02x\n", meta.creator);
+  std::printf("Version:   %02x\n", meta.version);
+  std::printf("Checksum:  %02x\n", meta.checksum);
+  std::printf("~Checksum: %02x\n", meta.checksum_comp);
+  std::printf("RST:       %04x\n", meta.rst);
+  std::printf("NMI:       %04x\n", meta.nmi);
+}
+
+Metadata interpret(const std::vector<byte>& data) {
+  Metadata meta {};
+
   word offset = 0x7000;
-  byte* name = &data[offset + 0xfc0];
+  char* name = (char*) &data[offset + 0xfc0];
   if (std::any_of(name, name + 21, [](char c) { return !isprint(c); })) {
     offset = 0xf000;
-    name = &data[offset + 0xfc0];
+    name = (char*) &data[offset + 0xfc0];
   }
 
-  std::printf("%.*s\n", 21, name);
-  std::printf("Type: ");
+  std::copy(name, name + 21, meta.name);
+
   byte rom_layout = data[offset + 0xfd5];
   if ((rom_layout & 0b110000) == 3) {
-    std::printf("FastROM\n");
+    meta.mapper = Metadata::Mapper::FastROM;
   } else {
-    if (rom_layout & 1) std::printf("HiROM\n");
-    else std::printf("LoROM\n");
+    if (rom_layout & 1) meta.mapper = Metadata::Mapper::HiROM;
+    else meta.mapper = Metadata::Mapper::LoROM;
   }
-  std::printf("ROM: %02x\n", data[offset + 0xfd6]);
-  std::printf("ROM size:  %d\n", 0x400 << data[offset + 0xfd7]);
-  std::printf("SRAM size: %d\n", 0x400 << data[offset + 0xfd8]);
-  std::printf("Creator:   %02x\n", byte(data[offset + 0xfd9]));
-  std::printf("Version:   %02x\n", byte(data[offset + 0xfdb]));
-  std::printf("Checksum:  %02x\n", byte(data[offset + 0xfde]));
-  std::printf("~Checksum: %02x\n", byte(data[offset + 0xfdc]));
-  std::printf("RST:       %04x\n", word(data[offset + 0xffc]) | word(data[offset + 0xffd] << 8));
-  std::printf("NMI:       %04x\n", word(data[offset + 0xfea]) | word(data[offset + 0xfeb] << 8));
 
-  return word(data[offset + 0xffc]) | word(data[offset + 0xffd] << 8);
+  meta.rom = data[offset + 0xfd6];
+  meta.rom_size = 0x400 << data[offset + 0xfd7];
+  meta.sram_size = 0x400 << data[offset + 0xfd8];
+  meta.creator = byte(data[offset + 0xfd9]);
+  meta.version = byte(data[offset + 0xfdb]);
+  meta.checksum = byte(data[offset + 0xfde]);
+  meta.checksum_comp = byte(data[offset + 0xfdc]);
+  meta.rst = word(data[offset + 0xffc]) | word(data[offset + 0xffd] << 8);
+  meta.nmi = word(data[offset + 0xfea]) | word(data[offset + 0xfeb] << 8);
+
+  return meta;
 }
 
 int main(int argc, char* argv[]) {
@@ -102,9 +146,21 @@ int main(int argc, char* argv[]) {
   bus.attach_screen(s);
 
   std::vector<byte> data = read_bytes(f);
-  word rst = inspect(data);
+  Metadata meta = interpret(data);
+  inspect(meta);
 
-  auto mapper = std::make_shared<LoROM>();
+  std::shared_ptr<Mapper> mapper;
+  switch (meta.mapper) {
+    case Metadata::Mapper::HiROM:
+      mapper = std::make_shared<HiROM>();
+      break;
+    case Metadata::Mapper::LoROM:
+      mapper = std::make_shared<LoROM>();
+      break;
+    default:
+      throw std::runtime_error("Unsupported mapper");
+  }
+
   mapper->map(std::move(data));
   bus.connect(mapper);
 
@@ -112,7 +168,7 @@ int main(int argc, char* argv[]) {
     bus.unpickle("save.state");
   } else {
     bus.reset();
-    bus.set_pc(rst);
+    bus.set_pc(meta.rst);
   }
   bus.run();
 }

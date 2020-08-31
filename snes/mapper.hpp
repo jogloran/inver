@@ -22,7 +22,9 @@ public:
 
   virtual void reset() = 0;
 
-  virtual void map(std::vector<byte>&& data) = 0;
+  void map(std::vector<byte>&& data) {
+    rom = data;
+  }
 
   byte* flash(byte* ptr, size_t len, std::vector<byte>& out) {
     std::copy(ptr, ptr + len, std::back_inserter(out));
