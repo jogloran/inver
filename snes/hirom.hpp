@@ -12,7 +12,6 @@ DECLARE_int32(sram);
 class HiROM: public Mapper, Logger<HiROM> {
 public:
   byte read(dword address) override {
-    log("%06x\n", address);
     auto bank = address >> 16;
     auto offs = address & 0xffff;
 
