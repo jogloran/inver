@@ -1,6 +1,10 @@
 #pragma once
 
+#include <gflags/gflags.h>
+
 #include "mapper.hpp"
+
+DECLARE_int32(sram);
 
 class HiROM: public Mapper, Logger<HiROM> {
 public:
@@ -15,8 +19,9 @@ public:
     //         80 <= bank <= bf, 0000-1fff (mirror of 00..3f)
     //         7e <= bank <= 7f, 0000-ffff
 
-    if (bank == 0x3e && offs >= 0x6000 && offs <= 0x7fff) {
-      return sram2[(bank - 0x30) * 8192 + (offs - 0x6000)];
+    if (bank >= 0x0 && bank <= 0x3f && offs >= 0x6000 && offs <= 0x7fff) {
+      bank %= 0x10;
+      return sram2[(bank * 8192) % FLAGS_sram + (offs - 0x6000)];
     } else if (bank <= 0x3f) {
       return rom[bank * 0x10000 + offs];
     } else if (bank <= 0x7f) {
@@ -30,10 +35,12 @@ public:
     auto bank = address >> 16;
     auto offs = address & 0xffff;
 
-    if (bank == 0x3e && offs >= 0x6000 && offs <= 0x7fff) {
-      sram2[(bank - 0x30) * 8192 + (offs - 0x6000)] = value;
+    if (bank >= 0x0 && bank <= 0x3f && offs >= 0x6000 && offs <= 0x7fff) {
+      bank %= 0x10;
+      sram2[(bank * 8192) % FLAGS_sram + (offs - 0x6000)] = value;
     }
   }
+
   void reset() override {
   }
 
