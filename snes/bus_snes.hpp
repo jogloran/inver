@@ -159,7 +159,7 @@ public:
   void serialize(Ar& ar) {
     ar(ram, cpu, ppu, dma, dma_state,
         wmadd, nmi, in_nmi, timeup,
-        auto_joypad_read_busy, joypad_sample_hi, joypad_sample_lo);
+        auto_joypad_read_busy, joypad_sample_hi, joypad_sample_lo, cart);
   }
 
   void pickle(std::string filename);

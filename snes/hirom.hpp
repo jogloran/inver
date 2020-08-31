@@ -2,6 +2,9 @@
 
 #include <gflags/gflags.h>
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "mapper.hpp"
 
 DECLARE_int32(sram);
@@ -46,3 +49,6 @@ public:
 
   constexpr static const char* TAG = "hirom";
 };
+
+CEREAL_REGISTER_TYPE(HiROM)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, HiROM)

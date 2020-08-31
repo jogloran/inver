@@ -2,6 +2,9 @@
 
 #include <gflags/gflags.h>
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/binary.hpp>
+
 #include "mapper.hpp"
 
 DECLARE_int32(sram);
@@ -79,3 +82,6 @@ public:
   void reset() override {
   }
 };
+
+CEREAL_REGISTER_TYPE(LoROM)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Mapper, LoROM)

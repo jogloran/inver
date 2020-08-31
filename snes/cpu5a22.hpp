@@ -352,16 +352,17 @@ public:
 
   dword addr_x_indirect() {
     byte zp_offset = read_byte();
-    // TODO: does wrapping make sense here?
-    word ptr = read((dp + zp_offset + x) % 256);
-    ptr |= read((dp + zp_offset + x + 1) % 256) << 8;
+    // Pointer is always in bank 0, even if dp+zp_offset+x exceeds 0xffff
+    word ptr = read((dp + zp_offset + x) & 0xffff);
+    ptr |= read((dp + zp_offset + x + 1) & 0xffff) << 8;
     return (db << 16) | ptr;
   }
 
   dword addr_indirect_y() {
     byte zp_offset = read_byte();
-    dword ptr = read(dp + zp_offset);
-    ptr |= read(dp + zp_offset + 1) << 8;
+    // Pointer is always in bank 0, even if dp+zp_offset exceeds 0xffff
+    word ptr = read((dp + zp_offset) & 0xffff);
+    ptr |= read((dp + zp_offset + 1) & 0xffff) << 8;
     return (db << 16) | (ptr + y);
   }
 
