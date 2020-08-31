@@ -14,6 +14,7 @@
 #include "dma.hpp"
 #include "logger.hpp"
 #include "td.hpp"
+#include "mapper.hpp"
 
 #include "peripheral.hpp"
 #include <SDL2/SDL.h>
@@ -58,22 +59,22 @@ public:
 
   void write(dword address, byte value);
 
-  void map(std::vector<byte>&& data);
+  void connect(std::shared_ptr<Mapper> c) {
+    cart = c;
+  }
 
   std::array<byte, 0x20000> ram {};
 
   std::shared_ptr<CPU5A22> cpu;
   std::shared_ptr<SPPU> ppu;
   std::shared_ptr<Screen> screen;
+  std::shared_ptr<Mapper> cart;
+
   TD2 td2;
   SNES_SPC* spc;
   size_t spc_time {};
 
   std::shared_ptr<Peripheral> io1;
-
-  std::vector<byte> rom;
-  std::array<byte, 0x8000 * 0xd> sram1 {};
-  std::array<byte, 0x8000 * 0x10> sram2 {};
 
   byte wrmpya {};
   byte wrmpyb {};
@@ -124,9 +125,6 @@ public:
 
   constexpr static const char* TAG = "bus";
 
-  std::default_random_engine generator;
-  std::uniform_int_distribution<byte> memory_filler;
-
   void frame_start() {
     std::for_each(dma.begin(), dma.end(), [](DMA& ch) {
       ch.hdma_init();
@@ -159,7 +157,7 @@ public:
 
   template<typename Ar>
   void serialize(Ar& ar) {
-    ar(ram, cpu, ppu, rom, sram1, sram2, dma, dma_state,
+    ar(ram, cpu, ppu, dma, dma_state,
         wmadd, nmi, in_nmi, timeup,
         auto_joypad_read_busy, joypad_sample_hi, joypad_sample_lo);
   }

@@ -59,7 +59,7 @@ byte BusSNES::read(dword address) {
     bank = address >> 16;
   }
 
-  if (address <= 0x3f'ffff) {
+  if (bank <= 0x3f && offs <= 0x7fff) {
     if (offs <= 0x1fff) {
       return ram[offs];
     } else if (offs <= 0x20ff) {
@@ -135,38 +135,16 @@ byte BusSNES::read(dword address) {
     } else if (offs <= 0x7fff) {
       // reserved
     } else {
-      return rom[bank * 0x8000 + (offs - 0x8000)];
+      // return rom[bank * 0x8000 + (offs - 0x8000)];
     }
-  } else if (address <= 0x6f'ffff) {
-    if (offs <= 0x7fff) {
-      return 0;
-    } else {
-      return rom[bank * 0x8000 + (offs - 0x8000)];
-    }
-  } else if (address <= 0x7d'ffff) {
-    if (offs <= 0x7fff) {
-      return sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram];// sram
-    } else {
-      return rom[bank * 0x8000 + (offs - 0x8000)];
-    }
-  } else if (address <= 0x7e'ffff) {
+  } else if (bank == 0x7e) {
     // WRAM (first 64k)
     return ram[offs];
-  } else if (address <= 0x7f'ffff) {
+  } else if (bank == 0x7f) {
     // WRAM (second 64k)
     return ram[0x10000 + offs];
-  } else if (address <= 0xfd'ffff) {
-    // mirrors
-  } else if (address <= 0xff'ffff) {
-    if (offs <= 0x7fff) {
-      return sram2[(bank - 0xf0) * 0x8000 + offs];// sram
-    } else {
-      if (bank == 0x7fe) {
-        return rom[0x3f'0000 + (offs - 0x8000)];
-      } else {
-        return rom[0x3f'8000 + (offs - 0x8000)];
-      }
-    }
+  } else {
+    return cart->read(address);
   }
   return 0;
 }
@@ -188,7 +166,7 @@ void BusSNES::write(dword address, byte value) {
     bank = address >> 16;
   }
 
-  if (address <= 0x3f'ffff) {
+  if (bank <= 0x3f && offs <= 0x7fff) {
     if (offs <= 0x1fff) {
       ram[offs] = value;
     } else if (offs <= 0x20ff) {
@@ -314,35 +292,15 @@ void BusSNES::write(dword address, byte value) {
     } else {
       // rom return rom[bank * 0x8000 + (offs - 0x8000)];
     }
-  } else if (address <= 0x7d'ffff) {
-    if (offs <= 0x7fff) {
-      sram1[((bank - 0x70) * 0x8000 + offs) % FLAGS_sram] = value;
-    } else {
-      //      return rom[bank * 0x8000 + (offs - 0x8000)];
-    }
-  } else if (address <= 0x7e'ffff) {
+  } else if (bank == 0x7e) {
     // WRAM (first 64k)
     ram[offs] = value;
-  } else if (address <= 0x7f'ffff) {
+  } else if (bank == 0x7f) {
     // WRAM (second 64k)
     ram[0x10000 + offs] = value;
-  } else if (address <= 0xfd'ffff) {
-    // mirrors
-  } else if (address <= 0xff'ffff) {
-    if (offs <= 0x7fff) {
-      sram2[(bank - 0xf0) * 0x8000 + offs] = value;
-    } else {
-      if (bank == 0x7fe) {
-        //        return rom[0x3f'0000 + (offs - 0x8000)];
-      } else {
-        //        return rom[0x3f'8000 + (offs - 0x8000)];
-      }
-    }
+  } else {
+    cart->write(address, value);
   }
-}
-
-void BusSNES::map(std::vector<byte>&& data) {
-  rom = data;
 }
 
 [[noreturn]] void BusSNES::run() {
@@ -371,11 +329,6 @@ BusSNES::BusSNES(): cpu(std::make_unique<CPU5A22>()),
   ppu->connect(this);
   td2.connect(this);
   if (FLAGS_td) td2.show();
-
-  auto gen_rand_byte = [this]() { return memory_filler(generator); };
-  //  std::generate(ram.begin(), ram.end(), gen_rand_byte);
-  std::generate(sram1.begin(), sram1.end(), gen_rand_byte);
-  std::generate(sram2.begin(), sram2.end(), gen_rand_byte);
 
   byte ch_no = 0;
   std::for_each(dma.begin(), dma.end(), [this, &ch_no](auto& ch) {

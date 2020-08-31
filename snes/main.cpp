@@ -10,9 +10,10 @@
 
 #include "rang.hpp"
 
-#include "types.h"
 #include "bus_snes.hpp"
 #include "debug.hpp"
+#include "lorom.hpp"
+#include "types.h"
 
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(xx, false, "Debug");
@@ -103,7 +104,9 @@ int main(int argc, char* argv[]) {
   std::vector<byte> data = read_bytes(f);
   word rst = inspect(data);
 
-  bus.map(std::move(data));
+  auto mapper = std::make_shared<LoROM>();
+  mapper->map(std::move(data));
+  bus.connect(mapper);
 
   if (FLAGS_load_save) {
     bus.unpickle("save.state");
