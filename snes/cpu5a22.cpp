@@ -52,7 +52,7 @@ void CPU5A22::dump_pc() {
 
 std::ostream& CPU5A22::dump_stack(std::ostream& out) {
   out << "〖 ";
-  for (word ptr = 0x1ff; ptr > sp; --ptr) {
+  for (word ptr = 0x1fff; ptr > sp; --ptr) {
     out << hex_byte << static_cast<int>(bus->read(ptr)) << ' ';
   }
   return out << "】";
@@ -97,8 +97,10 @@ void CPU5A22::dump() {
             << hex_byte << static_cast<int>(read(0x0003))
             << hex_byte << static_cast<int>(read(0x0004));
   std::cout << " mode:" << hex_byte << static_cast<int>(read(0x7e0100));
-  std::cout << " 81c5aa:" << hex_byte << static_cast<int>(read(0x81c5aa) | (read(0x81c5ab) << 8));
-  std::cout << " 700000:" << hex_byte << static_cast<int>(read(0x700000));
+  std::cout << " 01ff3:" << hex_byte << static_cast<int>(read(0x1ff3));
+  std::cout << " 01ff4:" << hex_byte << static_cast<int>(read(0x1ff4));
+  std::cout << " 04f3:" << hex_byte << static_cast<int>(read_full_addr(0x4f3));
+  std::cout << " 04f6:" << hex_byte << static_cast<int>(read(0x4f6));
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 

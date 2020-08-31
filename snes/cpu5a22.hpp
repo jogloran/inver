@@ -352,6 +352,7 @@ public:
 
   dword addr_x_indirect() {
     byte zp_offset = read_byte();
+    // TODO: does wrapping make sense here?
     word ptr = read((dp + zp_offset + x) % 256);
     ptr |= read((dp + zp_offset + x + 1) % 256) << 8;
     return (db << 16) | ptr;
@@ -360,7 +361,7 @@ public:
   dword addr_indirect_y() {
     byte zp_offset = read_byte();
     dword ptr = read(dp + zp_offset);
-    ptr |= read((dp + zp_offset + 1) % 256) << 8;
+    ptr |= read(dp + zp_offset + 1) << 8;
     return (db << 16) | (ptr + y);
   }
 
