@@ -527,6 +527,11 @@ private:
 
   friend class TD2;
 
+  /**
+   * Finds the first opaque pixel given the layer specs at a given
+   * horizontal position.
+   * @returns { layer index, pal, is_masked }
+   */
   auto prio_sort(const std::vector<LayerSpec>& layers, const Layers& l, int i);
 
   void render_row();
@@ -546,12 +551,35 @@ private:
  */
   void compute_addrs_for_row(word base, word start_x, word start_y, byte sc_size);
 
+  /**
+   * Get the appropriate row of palette indices from the layer data
+   * @param l Layer data
+   * @param layer Layer index
+   * @param prio Priority (0,1,2,3)
+   * @return Reference to palette indices
+   */
   const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio);
 
+  /**
+   * Get the appropriate window row mask from the layer data
+   * @param l Layer data
+   * @param layer Layer index
+   * @param prio Priority (0,1,2,3)
+   * @return Reference to window row mask
+   */
   const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer);
 
+  /**
+   * Given a the layer specs for this mode and the current PPU state,
+   * partitions the layer specs into MAIN and SUB.
+   * @param prios Layer specs
+   */
   auto& route_main_sub(const std::vector<LayerSpec>& prios);
 
+  /**
+   * Given the current PPU state and a horizontal position _i_,
+   * decides whether colour math should apply at this pixel.
+   */
   bool colour_math_applies(int i, const Layers& layers);
 
   std::array<byte, 256> main_source_layer {};
