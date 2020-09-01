@@ -139,34 +139,34 @@ const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
 
 auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i) {
   return reduce3(prio.rbegin(), prio.rend(),
-                     std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
-                     [this, i, &l](auto acc,
-                                   auto layer_spec,
-                                   auto& should_stop) -> std::tuple<byte, word, bool> {
-                       auto& [prio_layer, prio_pal, _] = acc;
-                       auto& [layer, prio] = layer_spec;
-                       auto& l2 = get_pal_row(l, layer, prio);
-                       auto& mask = get_mask_row(l, layer);
+                 std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
+                 [this, i, &l](auto acc,
+                               auto layer_spec,
+                               auto& should_stop) -> std::tuple<byte, word, bool> {
+                   auto& [prio_layer, prio_pal, _] = acc;
+                   auto& [layer, prio] = layer_spec;
+                   auto& l2 = get_pal_row(l, layer, prio);
+                   auto& mask = get_mask_row(l, layer);
 
-                       if (!is_pal_clear(prio_pal)) {
-                         return {prio_layer, prio_pal, mask[i]};
+                   if (!is_pal_clear(prio_pal)) {
+                     return {prio_layer, prio_pal, mask[i]};
+                   } else {
+                     if (mask[i]) {
+                       return {prio_layer, PAL_MASKED_IN_WINDOW, mask[i]};
+                     } else {
+                       if (!is_pal_clear(l2[i])) {
+                         should_stop = true;
+                         return {layer, l2[i], mask[i]};
                        } else {
-                         if (mask[i]) {
-                           return {prio_layer, PAL_MASKED_IN_WINDOW, mask[i]};
-                         } else {
-                           if (!is_pal_clear(l2[i])) {
-                             should_stop = true;
-                             return {layer, l2[i], mask[i]};
-                           } else {
-                             return {prio_layer, prio_pal, mask[i]};
-                           }
-                         }
+                         return {prio_layer, prio_pal, mask[i]};
                        }
-                     });
+                     }
+                   }
+                 });
 }
 
 auto& SPPU::route_main_sub(const std::vector<LayerSpec>& prios) {
-//  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
+  //  std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> result;
   main_sub.first.clear();
   main_sub.second.clear();
   for (LayerSpec l : prios) {
@@ -547,7 +547,7 @@ Layers::Win SPPU::compute_mask(byte layer) {
       std::bit_xor<bool>(),
       std::not_fn(std::bit_xor<bool>()),
   };
-  Layers::Win win; // no need to initialise
+  Layers::Win win;// no need to initialise
 
   for (int i = 0; i < 256; ++i) {
     bool w1_in = in_window(i, layer, windows[0]);
