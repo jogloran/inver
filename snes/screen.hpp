@@ -39,13 +39,6 @@ public:
           .g = static_cast<byte>(this->g / div <= other.g / div ? 0 : (this->g - other.g) / div),
           .b = static_cast<byte>(this->b / div <= other.b / div ? 0 : (this->b - other.b) / div)};
     }
-
-    colour_t div2() {
-      return {
-          .r = static_cast<byte>(this->r / 2),
-          .g = static_cast<byte>(this->g / 2),
-          .b = static_cast<byte>(this->b / 2)};
-    }
   };
 
   SDL_Texture* make_raster_texture(size_t dx, size_t dy) {
