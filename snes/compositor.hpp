@@ -1,8 +1,0 @@
-//
-// Created by Daniel Tse on 6/8/20.
-//
-
-#ifndef ASOBITOMO_COMPOSITOR_HPP
-#define ASOBITOMO_COMPOSITOR_HPP
-
-#endif //ASOBITOMO_COMPOSITOR_HPP
