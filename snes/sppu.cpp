@@ -138,10 +138,11 @@ const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
 }
 
 auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i) {
-  return std::reduce(prio.rbegin(), prio.rend(),
+  return reduce3(prio.rbegin(), prio.rend(),
                      std::make_tuple<byte, word, bool>(Layers::BACKDROP, 0, false),
                      [this, i, &l](auto acc,
-                                   auto layer_spec) -> std::tuple<byte, word, bool> {
+                                   auto layer_spec,
+                                   auto& should_stop) -> std::tuple<byte, word, bool> {
                        auto& [prio_layer, prio_pal, _] = acc;
                        auto& [layer, prio] = layer_spec;
                        auto& l2 = get_pal_row(l, layer, prio);
@@ -154,6 +155,7 @@ auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i)
                            return {prio_layer, PAL_MASKED_IN_WINDOW, mask[i]};
                          } else {
                            if (!is_pal_clear(l2[i])) {
+                             should_stop = true;
                              return {layer, l2[i], mask[i]};
                            } else {
                              return {prio_layer, prio_pal, mask[i]};
@@ -521,6 +523,23 @@ void SPPU::vblank_end() {
   bus->vblank_end();
 }
 
+bool in_window(int i, byte layer, const window_t& win) {
+  bool is_inside = false;
+  switch (win.mask_for_bg[layer]) {
+    case window_t::AreaSetting::Inside:
+      is_inside = i >= win.l && i <= win.r;
+      break;
+    case window_t::AreaSetting::Outside:
+      is_inside = i < win.l || i > win.r;
+      break;
+    case window_t::AreaSetting::DisableInside:
+    case window_t::AreaSetting::DisableOutside:
+      is_inside = false;
+      break;
+  }
+  return is_inside;
+}
+
 Layers::Win SPPU::compute_mask(byte layer) {
   static std::array<std::function<bool(bool, bool)>, 4> ops {
       std::logical_or<bool>(),
@@ -528,35 +547,11 @@ Layers::Win SPPU::compute_mask(byte layer) {
       std::bit_xor<bool>(),
       std::not_fn(std::bit_xor<bool>()),
   };
-  Layers::Win win {};
+  Layers::Win win; // no need to initialise
 
   for (int i = 0; i < 256; ++i) {
-    bool w1_in;
-    bool w2_in;
-    switch (windows[0].mask_for_bg[layer]) {
-      case window_t::AreaSetting::Inside:
-        w1_in = i >= windows[0].l && i <= windows[0].r;
-        break;
-      case window_t::AreaSetting::Outside:
-        w1_in = i < windows[0].l || i > windows[0].r;
-        break;
-      case window_t::AreaSetting::DisableInside:
-      case window_t::AreaSetting::DisableOutside:
-        w1_in = false;
-        break;
-    }
-    switch (windows[1].mask_for_bg[layer]) {
-      case window_t::AreaSetting::Inside:
-        w2_in = i >= windows[1].l && i <= windows[1].r;
-        break;
-      case window_t::AreaSetting::Outside:
-        w2_in = i < windows[1].l || i > windows[1].r;
-        break;
-      case window_t::AreaSetting::DisableInside:
-      case window_t::AreaSetting::DisableOutside:
-        w2_in = false;
-        break;
-    }
+    bool w1_in = in_window(i, layer, windows[0]);
+    bool w2_in = in_window(i, layer, windows[1]);
 
     // combine the two windows using the op
     switch (layer) {

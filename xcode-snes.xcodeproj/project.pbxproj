@@ -34,7 +34,6 @@
 		09D6D32224F5B75000163374 /* op_names_5a22.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D30C24F5B74F00163374 /* op_names_5a22.cpp */; };
 		09D6D32324F5B75000163374 /* ops_5a22.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D30E24F5B74F00163374 /* ops_5a22.cpp */; };
 		09D6D32424F5B75000163374 /* bus_snes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D30F24F5B74F00163374 /* bus_snes.cpp */; };
-		09D6D32524F5B75000163374 /* mode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D31124F5B75000163374 /* mode.cpp */; };
 		09D6D32624F5B75000163374 /* compositor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D31224F5B75000163374 /* compositor.cpp */; };
 		09D6D32724F5B75000163374 /* ppu_debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D31324F5B75000163374 /* ppu_debug.cpp */; };
 		09D6D32824F5B75000163374 /* ppu_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09D6D31624F5B75000163374 /* ppu_utils.cpp */; };
@@ -124,7 +123,6 @@
 		09D6D30E24F5B74F00163374 /* ops_5a22.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ops_5a22.cpp; path = snes/ops_5a22.cpp; sourceTree = "<group>"; };
 		09D6D30F24F5B74F00163374 /* bus_snes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bus_snes.cpp; path = snes/bus_snes.cpp; sourceTree = "<group>"; };
 		09D6D31024F5B75000163374 /* td.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = td.hpp; path = snes/td.hpp; sourceTree = "<group>"; };
-		09D6D31124F5B75000163374 /* mode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mode.cpp; path = snes/mode.cpp; sourceTree = "<group>"; };
 		09D6D31224F5B75000163374 /* compositor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = compositor.cpp; path = snes/compositor.cpp; sourceTree = "<group>"; };
 		09D6D31324F5B75000163374 /* ppu_debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ppu_debug.cpp; path = snes/ppu_debug.cpp; sourceTree = "<group>"; };
 		09D6D31424F5B75000163374 /* ppu_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ppu_utils.hpp; path = snes/ppu_utils.hpp; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 				09D6D2FF24F5B74F00163374 /* dma.hpp */,
 				09D6D30924F5B74F00163374 /* logger.hpp */,
 				09D6D31C24F5B75000163374 /* main.cpp */,
-				09D6D31124F5B75000163374 /* mode.cpp */,
 				09D6D30224F5B74F00163374 /* mode.hpp */,
 				09D6D30724F5B74F00163374 /* op_macros_5a22.hpp */,
 				09D6D30C24F5B74F00163374 /* op_names_5a22.cpp */,
@@ -363,7 +360,6 @@
 				09D6D32124F5B75000163374 /* dma.cpp in Sources */,
 				09D6D32224F5B75000163374 /* op_names_5a22.cpp in Sources */,
 				0985C79A24F5BEA1001B866A /* fort.c in Sources */,
-				09D6D32524F5B75000163374 /* mode.cpp in Sources */,
 				09D6D31D24F5B75000163374 /* sppu.cpp in Sources */,
 				09D6D32A24F5B75000163374 /* main.cpp in Sources */,
 				09D6D31F24F5B75000163374 /* screen.cpp in Sources */,

@@ -17,8 +17,8 @@ std::array<byte, 8> decode_planar(dual* ptr, byte wpp, bool flip_x);
 word compute_oam_x(OAM* oam, OAM2* oam2, int i);
 
 struct OAMExtras {
-  word x_full; // The full 9-bit x offset
-  word tile_no_full; // The full 9-bit tile number
+  word x_full;      // The full 9-bit x offset
+  word tile_no_full;// The full 9-bit tile number
   bool is_large;
 };
 
@@ -51,8 +51,7 @@ word addr(word base, word x, word y, bool sx, bool sy);
  * @param fine_y 0 <= fine_y < 8
  * @return 16-bit VRAM address
  */
-word
-obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
+word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
 
 /**
  * Compute the VRAM address for BG tile chr data.
@@ -71,3 +70,19 @@ word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp);
  * @return (width, height) in pixels
  */
 std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
+
+/**
+ * A reduce which allows the operation to decide when to terminate the reduction
+ * early.
+ * @param op A callable taking (_Tp, _Tp, bool&), where the third argument can
+ * be assigned _true_ if early termination is desired.
+ */
+template<class _InputIterator, class _Tp, class _Arg3>
+_Tp reduce3(_InputIterator first, _InputIterator last, _Tp init, _Arg3 op) {
+  bool should_stop = false;
+  for (; first != last; ++first) {
+    init = op(init, *first, should_stop);
+    if (should_stop) break;
+  }
+  return init;
+}
