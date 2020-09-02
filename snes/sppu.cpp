@@ -382,8 +382,6 @@ void SPPU::compute_addrs_for_row(word base, word start_x, word start_y,
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
 
-  std::fill(row.begin(), row.end(), 0);
-
   // get bg mode
   byte mode = bgmode.mode;
 
@@ -403,6 +401,9 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
                 [&, tile_row = tile_row](word addr) {
                   bg_map_tile_t* t = (bg_map_tile_t*) &vram[addr];
                   if (t->bg_prio != prio) {
+                    for (int i = 0; i < 8; ++i) {
+                      *ptr++ = 0;
+                    }
                     return;
                   }
 
