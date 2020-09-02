@@ -382,6 +382,8 @@ void SPPU::compute_addrs_for_row(word base, word start_x, word start_y,
 std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   if (inidisp.force_blank) return {};
 
+  std::fill(row.begin(), row.end(), 0);
+
   // get bg mode
   byte mode = bgmode.mode;
 
@@ -401,9 +403,6 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
                 [&, tile_row = tile_row](word addr) {
                   bg_map_tile_t* t = (bg_map_tile_t*) &vram[addr];
                   if (t->bg_prio != prio) {
-                    for (int i = 0; i < 8; ++i) {
-                      *ptr++ = 0;
-                    }
                     return;
                   }
 
@@ -432,10 +431,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
                 });
 
   std::array<byte, 256> result {};
-  auto result_ptr = result.begin();
-  for (int i = tile_col; i < 256 + tile_col; ++i) {
-    *result_ptr++ = row[i];
-  }
+  std::copy(row.begin() + tile_col, row.begin() + tile_col + 256, result.begin());
 
   // Horizontal mosaic
   if (mosaic.enabled_for_bg(bg)) {
