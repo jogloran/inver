@@ -55,6 +55,10 @@ public:
     zip_close(zip);
   }
 
+  operator bool() {
+    return zip != nullptr;
+  }
+
   iterator::entry entry_at(zip_uint64_t i);
 
   void unpack(iterator::entry entry, std::ostream& ofstream);
@@ -95,6 +99,10 @@ int main(int argc, char** argv) {
   static char buf[17] = {};
 
   Zip z {FLAGS_path};
+  if (!z) {
+    std::cerr << "Couldn't open zip file: '" << FLAGS_path << '\'' << std::endl;
+    std::exit(1);
+  }
 
   if (FLAGS_unzip != -1) {
     auto entry = z.entry_at(FLAGS_unzip);
