@@ -601,4 +601,5 @@ private:
   friend void dump_pal(SPPU& sppu);
 
   auto get_tile_pos(byte bg);
+  void blit();
 };

@@ -23,6 +23,7 @@ void Screen::blit() {
   int i = 0;
 //  for (auto& layer: fb) {
   auto &layer = fb[0];
+
   for (const colour_t &b: layer) {
     buf[i++] = b.b * scale;
     buf[i++] = b.g * scale;
