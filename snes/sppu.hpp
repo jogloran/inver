@@ -487,7 +487,7 @@ private:
   dual vloc {};
   bool vloc_read_upper = false;
 
-  Screen::colour_t backdrop_colour {};
+  colour_t backdrop_colour {};
 
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";
@@ -499,7 +499,7 @@ private:
 
   // region PPU caches
   std::array<byte, 256 + 8> row {};
-  std::array<Screen::colour_t, 256> pals {};
+  std::array<colour_t, 256> pals {};
   std::array<word, 33> addrs {};
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
@@ -536,7 +536,7 @@ private:
 
   void render_row();
 
-  Screen::colour_t lookup(byte);
+  colour_t lookup(byte);
 
   void vblank_end();
 

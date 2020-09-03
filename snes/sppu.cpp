@@ -12,15 +12,12 @@ DECLARE_bool(show_sub);
 word SPPU::PAL_MASKED_IN_WINDOW = 257;
 word SPPU::PAL_SUB_SCREEN_TRANSPARENT = 256;
 
-static std::array<std::function<Screen::colour_t(Screen::colour_t,
-                                                 Screen::colour_t)>,
-                  4>
-    cm_op {
-        [](auto c1, auto c2) { return c1.add(c2, 1); },
-        [](auto c1, auto c2) { return c1.add(c2, 2); },
-        [](auto c1, auto c2) { return c1.sub(c2, 1); },
-        [](auto c1, auto c2) { return c1.sub(c2, 2); },
-    };
+static std::array<std::function<colour_t(colour_t, colour_t)>, 4> cm_op {
+    [](auto c1, auto c2) { return c1.add(c2, 1); },
+    [](auto c1, auto c2) { return c1.add(c2, 2); },
+    [](auto c1, auto c2) { return c1.sub(c2, 1); },
+    [](auto c1, auto c2) { return c1.sub(c2, 2); },
+};
 
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
@@ -119,7 +116,7 @@ void SPPU::render_row() {
 
     bool main_clear = is_pal_clear(main[i]);
     auto main_colour =
-        main[i] == PAL_MASKED_IN_WINDOW ? Screen::colour_t {0, 0, 0} : lookup(main[i]);
+        main[i] == PAL_MASKED_IN_WINDOW ? Colours::BLACK : lookup(main[i]);
 
     bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]);
     auto sub_colour =
@@ -149,7 +146,7 @@ void SPPU::render_row() {
   }
   auto fb_ptr = screen->fb[0].data() + line * 256;
 
-  for (Screen::colour_t rgb : pals) {
+  for (colour_t rgb : pals) {
     fb_ptr->r = rgb.r;
     fb_ptr->g = rgb.g;
     fb_ptr->b = rgb.b;
@@ -349,7 +346,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   return result;
 }
 
-Screen::colour_t SPPU::lookup(byte i) {
+colour_t SPPU::lookup(byte i) {
   word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
   return {
       .r = static_cast<byte>(rgb & 0x1f),

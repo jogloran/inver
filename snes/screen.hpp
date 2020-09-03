@@ -1,46 +1,18 @@
 #pragma once
 
-#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
-#include <gflags/gflags.h>
 #include <array>
+#include <gflags/gflags.h>
+#include <iostream>
 
+#include "colour.hpp"
 #include "types.h"
 
 class SPPU;
 
 class Screen {
 public:
-  union colour_t {
-    struct {
-      byte r: 5;
-      byte g: 5;
-      byte b: 5;
-      byte unused: 1;
-    };
-    word reg;
-
-    template<typename Ar>
-    void serialize(Ar& ar) {
-      ar(reg);
-    }
-
-    colour_t add(const colour_t& other, byte div) {
-      return {
-          .r = static_cast<byte>(std::min((this->r / div + other.r / div), 31)),
-          .g = static_cast<byte>(std::min((this->g / div + other.g / div), 31)),
-          .b = static_cast<byte>(std::min((this->b / div + other.b / div), 31))};
-    }
-
-    colour_t sub(const colour_t& other, byte div) {
-      return {
-          .r = static_cast<byte>(this->r / div <= other.r / div ? 0 : (this->r - other.r) / div),
-          .g = static_cast<byte>(this->g / div <= other.g / div ? 0 : (this->g - other.g) / div),
-          .b = static_cast<byte>(this->b / div <= other.b / div ? 0 : (this->b - other.b) / div)};
-    }
-  };
-
   SDL_Texture* make_raster_texture(size_t dx, size_t dy) {
     SDL_Texture* raster = SDL_CreateTexture(renderer_, SDL_GetWindowPixelFormat(window_),
                                             SDL_TEXTUREACCESS_TARGET,
@@ -72,9 +44,7 @@ public:
 
     window_ = SDL_CreateWindow("Screen", 500, 0, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE,
                                SDL_WINDOW_HIDDEN);
-    renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED
-                                                | SDL_RENDERER_PRESENTVSYNC
-                                                | SDL_RENDERER_TARGETTEXTURE);
+    renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
     SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "2");
     SDL_RenderSetLogicalSize(renderer_, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE);
     texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, 1, SCREEN_WIDTH,
@@ -98,7 +68,7 @@ public:
 
   void connect(std::shared_ptr<SPPU> ppu);
 
-//private:
+  //private:
   constexpr static int SCREEN_WIDTH = 256;
   constexpr static int SCREEN_HEIGHT = 224;
   constexpr static int SCALE = 2;
@@ -106,9 +76,7 @@ public:
   static constexpr int OUTPUT_HEIGHT = SCREEN_HEIGHT * SCALE;
 
   std::array<byte, (SCREEN_WIDTH * SCREEN_HEIGHT) * 4> buf {};
-  std::array<
-      std::array<colour_t, SCREEN_WIDTH * SCREEN_HEIGHT>,
-      4> fb {};
+  std::array<std::array<colour_t, SCREEN_WIDTH * SCREEN_HEIGHT>, 4> fb {};
 
   SDL_Window* window_;
   SDL_Renderer* renderer_;

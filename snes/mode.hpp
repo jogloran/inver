@@ -3,20 +3,23 @@
 #include "sppu.hpp"
 #include "types.h"
 
-constexpr std::array<std::array<byte, 4>, 8> bpps = {{
-                                                        {2, 2, 2, 2},
-                                                        {4, 4, 2, 0},
-                                                        {4, 4, 0, 0},
-                                                        {8, 4, 0, 0},
-                                                        {8, 2, 0, 0},
-                                                        {4, 2, 0, 0},
-                                                        {4, 0, 0, 0},
-                                                        {0, 0, 0, 0},
-                                                    }};
+using BitDepths = std::array<byte, 4>;
+constexpr std::array<BitDepths, 8> bpps = {{
+    {2, 2, 2, 2},
+    {4, 4, 2, 0},
+    {4, 4, 0, 0},
+    {8, 4, 0, 0},
+    {8, 2, 0, 0},
+    {4, 2, 0, 0},
+    {4, 0, 0, 0},
+    {0, 0, 0, 0},
+}};
 
 struct Layers {
   enum {
-    BACKDROP = 0xfd, OBJ = 0xfe, MATH = 0xff
+    BACKDROP = 0xfd,
+    OBJ = 0xfe,
+    MATH = 0xff
   };
   using Pal = std::array<byte, 256>;
   using Win = std::array<byte, 256>;
@@ -26,7 +29,8 @@ struct Layers {
     Win mask;
   };
 
-  template <size_t T> using Layer = LayerData<T>;
+  template <size_t T>
+  using Layer = LayerData<T>;
   Layer<2> bg[4];
   Layer<4> obj;
   Win math;
