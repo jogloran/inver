@@ -2,15 +2,15 @@
 
 #include <array>
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/array.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
-#include <cereal/types/array.hpp>
-#include <cereal/archives/binary.hpp>
 
-#include "types.h"
 #include "logger.hpp"
-#include "screen.hpp"
 #include "regs.hpp"
+#include "screen.hpp"
+#include "types.h"
 
 #include <gflags/gflags.h>
 
@@ -244,20 +244,20 @@ public:
 
       case 0x2118: // VMDATAL - VRAM Data Write (lower 8bit)
         vram[vram_addr.w & 0x7fff].l = value;
-//        printf("2118 writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
-//        printf("2118 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
+        //        printf("2118 writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
+        //        printf("2118 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (!vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-//          printf("2118 incr to %04x\n", vram_addr.w & 0x7fff);
+          //          printf("2118 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
       case 0x2119: // VMDATAH - VRAM Data Write (upper 8bit)
         vram[vram_addr.w & 0x7fff].h = value;
-//        printf("2119 writing to %04x hi <- %02x\n", vram_addr.w & 0x7fff, value);
-//        printf("2119 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
+        //        printf("2119 writing to %04x hi <- %02x\n", vram_addr.w & 0x7fff, value);
+        //        printf("2119 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-//          printf("2119 incr to %04x\n", vram_addr.w & 0x7fff);
+          //          printf("2119 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
 
@@ -380,8 +380,12 @@ public:
   }
 
   enum class State {
-    VISIBLE, HBLANK, VBLANK
+    VISIBLE,
+    HBLANK,
+    VBLANK
   } state;
+
+  // region PPU registers
 
   // 212c,212d
   layer_ctrl_t main_scr = {}, sub_scr = {};
@@ -396,20 +400,6 @@ public:
 
   // 210b,210c (16 bits)
   bg_char_data_addr_t bg_char_data_addr[2] {};
-
-  word bg_chr_base_addr_for_bg(byte bg_no) const {
-    switch (bg_no) {
-      case 0:
-        return bg_char_data_addr[0].bg1_tile_base_addr << 12;
-      case 1:
-        return bg_char_data_addr[0].bg2_tile_base_addr << 12;
-      case 2:
-        return bg_char_data_addr[1].bg1_tile_base_addr << 12;
-      case 3:
-        return bg_char_data_addr[1].bg2_tile_base_addr << 12;
-    }
-    return 0;
-  }
 
   vram_addr_incr_t vram_addr_incr {};
   setini_t setini {};
@@ -432,28 +422,9 @@ public:
   bool cgram_rw_upper = false;
   byte cgram_lsb = 0;
 
-  std::array<byte, 512 + 32> oam {};
+  // endregion
 
   BusSNES* bus;
-
-  template<typename Ar>
-  void serialize(Ar& ar) {
-    ar(main_scr, sub_scr,
-       inidisp, bgmode, mosaic, bg_base_size,
-       bg_char_data_addr,
-       vram_addr_incr, setini, obsel, oamadd,
-       htime, vtime, vram_addr,
-       windows, window_main_disable_mask, window_sub_disable_mask,
-       bg_mask_op, obj_math_mask_op,
-       cgwsel, colour_math,
-       cgram_addr, cgram_rw_upper, cgram_lsb,
-       oam, vram, pal, scr, oam_lsb, vram_prefetch,
-       sprite_range_overflow,
-       hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
-       backdrop_colour, last_mode,
-       ncycles, line, x,
-       visible);
-  }
 
   Screen* screen;
 
@@ -464,6 +435,8 @@ public:
   std::array<byte, 256> compute_mask(byte layer) const;
 
 private:
+  std::array<byte, 512 + 32> oam {};
+
   // vram consists of bg_map_tile_t objects (16 bits)
   std::array<dual, 0x8000> vram {};
   std::array<byte, 512> pal {};
@@ -514,7 +487,7 @@ private:
     byte oam_index;
     std::vector<byte> pixels;
 
-    template<typename Ar>
+    template <typename Ar>
     void serialize(Ar& ar) {
       ar(oam, oam_index, pixels);
     }
@@ -534,13 +507,22 @@ private:
    */
   auto prio_sort(const std::vector<LayerSpec>& layers, const Layers& l, int i) const;
 
+  /**
+   * Computes the pixel output for the current row, and blits it to the frame buffer.
+   */
   void render_row();
 
+  /**
+   * Given the contents of CGRAM, converts a palette index into an RGB colour value.
+   */
   colour_t lookup(byte) const;
 
+  /**
+   * Signals the end of the vblank period.
+   */
   void vblank_end();
 
-/*
+  /*
  * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
  * a fine scroll offset, it may return part of tile 0 and part of tile 32.
  * @param base The base BG tile address
@@ -582,6 +564,24 @@ private:
    */
   bool colour_math_applies(int i, const Layers& layers) const;
 
+  /**
+   * Computes the base address for background tile character data.
+   * @param bg_no 0 <= bg_no < 4, the layer to compute the base address for
+   */
+  word bg_chr_base_addr_for_bg(byte bg_no) const {
+    switch (bg_no) {
+      case 0:
+        return bg_char_data_addr[0].bg1_tile_base_addr << 12;
+      case 1:
+        return bg_char_data_addr[0].bg2_tile_base_addr << 12;
+      case 2:
+        return bg_char_data_addr[1].bg1_tile_base_addr << 12;
+      case 3:
+        return bg_char_data_addr[1].bg2_tile_base_addr << 12;
+    }
+    return 0;
+  }
+
   std::array<byte, 256> main_source_layer {};
   std::array<byte, 256> sub_source_layer {};
 
@@ -598,4 +598,24 @@ private:
    * Blits the current line of composed RGB data to the corresponding line of the display.
    */
   void blit();
+
+public:
+  template <typename Ar>
+  void serialize(Ar& ar) {
+    ar(main_scr, sub_scr,
+       inidisp, bgmode, mosaic, bg_base_size,
+       bg_char_data_addr,
+       vram_addr_incr, setini, obsel, oamadd,
+       htime, vtime, vram_addr,
+       windows, window_main_disable_mask, window_sub_disable_mask,
+       bg_mask_op, obj_math_mask_op,
+       cgwsel, colour_math,
+       cgram_addr, cgram_rw_upper, cgram_lsb,
+       oam, vram, pal, scr, oam_lsb, vram_prefetch,
+       sprite_range_overflow,
+       hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
+       backdrop_colour, last_mode,
+       ncycles, line, x,
+       visible);
+  }
 };
