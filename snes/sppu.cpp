@@ -554,7 +554,7 @@ void SPPU::reset() {
 }
 
 void SPPU::blit() {
-  auto fb_ptr = screen->fb.data() + line * 256;
+  auto fb_ptr = screen->fb[0].data() + line * 256;
 
   for (colour_t rgb : pals) {
     fb_ptr->r = rgb.r;
