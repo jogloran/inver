@@ -15,6 +15,7 @@
 #include "output_null.hpp"
 #include "renderer_ntsc.hpp"
 #include "renderer_palette.hpp"
+#include "sdl_input.hpp"
 
 #include <gflags/gflags.h>
 
@@ -124,7 +125,7 @@ int main(int argc, char** argv) {
     if (FLAGS_kb) {
       bus.connect2(std::make_shared<FamilyBasicKeyboard>());
     } else {
-      bus.connect1(std::make_shared<SDLSNESController>());
+      bus.connect1(std::make_shared<SDLInput>());
     }
   }
 

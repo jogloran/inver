@@ -147,7 +147,7 @@ std::array<op_record, 256> ops {
     ST(x, abs), 4,                       // 0x8e
     XX(2, 4), 0,                         // 0x8f
     BRANCH((!cpu.p.C)), 2,               // 0x90
-    STA(indirect_y), 6,  // 0x91
+    ST_NO_PAGE_CHECK(a, indirect_y), 6,  // 0x91
     XXX, 0,                              // 0x92
     XX(1, 6), 0,                         // 0x93
     ST(y, zpg_plus_x), 4,                // 0x94
@@ -155,11 +155,11 @@ std::array<op_record, 256> ops {
     ST(x, zpg_plus_y), 4,                // 0x96
     XX(1, 4), 0,                         // 0x97
     T__(y, a), 2,                        // 0x98
-    STA(abs_plus_y), 5,  // 0x99
+    ST_NO_PAGE_CHECK(a, abs_plus_y), 5,  // 0x99
     TXS, 2,                              // 0x9a
     XX(2, 5), 0,                         // 0x9b
     XX(2, 5), 0,                         // 0x9c
-    STA(abs_plus_x), 5,  // 0x9d
+    ST_NO_PAGE_CHECK(a, abs_plus_x), 5,  // 0x9d
     XX(2, 5), 0,                         // 0x9e
     XX(2, 5), 0,                         // 0x9f
     LD(y, imm), 2,                       // 0xa0
