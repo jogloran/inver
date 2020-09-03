@@ -25,102 +25,6 @@ static std::array<std::function<Screen::colour_t(Screen::colour_t,
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
-std::array<std::array<byte, 4>, 8> bpps_for_mode = {{
-    {2, 2, 2, 2},
-    {4, 4, 2, 0},
-    {4, 4, 0, 0},
-    {8, 4, 0, 0},
-    {8, 2, 0, 0},
-    {4, 2, 0, 0},
-    {4, 0, 0, 0},
-    {0, 0, 0, 0},
-}};
-
-using LayerPriorityTable = std::vector<LayerSpec>;
-std::array<LayerPriorityTable, 8> prios_for_mode =
-    {{// Mode 0
-      {
-          {3, 0},
-          {2, 0},
-          {Layers::OBJ, 0},
-          {3, 1},
-          {2, 1},
-          {Layers::OBJ, 1},
-          {1, 0},
-          {0, 0},
-          {Layers::OBJ, 2},
-          {1, 1},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 1
-      {
-          {2, 0},
-          {Layers::OBJ, 0},
-          {Layers::OBJ, 1},
-          {1, 0},
-          {0, 0},
-          {Layers::OBJ, 2},
-          {1, 1},
-          {0, 1},
-          {Layers::OBJ, 3},
-          {2, 1}},
-      // Mode 2
-      {
-          {1, 0},
-          {Layers::OBJ, 0},
-          {0, 0},
-          {Layers::OBJ, 1},
-          {1, 1},
-          {Layers::OBJ, 2},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 3
-      {
-          {1, 0},
-          {Layers::OBJ, 0},
-          {0, 0},
-          {Layers::OBJ, 1},
-          {1, 1},
-          {Layers::OBJ, 2},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 4
-      {
-          {1, 0},
-          {Layers::OBJ, 0},
-          {0, 0},
-          {Layers::OBJ, 1},
-          {1, 1},
-          {Layers::OBJ, 2},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 5
-      {
-          {1, 0},
-          {Layers::OBJ, 0},
-          {0, 0},
-          {Layers::OBJ, 1},
-          {1, 1},
-          {Layers::OBJ, 2},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 6
-      {
-          {Layers::OBJ, 0},
-          {0, 0},
-          {Layers::OBJ, 1},
-          {Layers::OBJ, 2},
-          {0, 1},
-          {Layers::OBJ, 3},
-      },
-      // Mode 7
-      {}}};
-
 const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
     return l.obj.pal[prio];
@@ -386,7 +290,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
   byte mode = bgmode.mode;
 
   // 2bpp means one pixel is encoded in one word. wpp = words per pixel
-  byte wpp = bpps_for_mode[mode][bg] / 2;
+  byte wpp = bpps[mode][bg] / 2;
 
   dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
   dword chr_base_addr = bg_chr_base_addr_for_bg(bg);

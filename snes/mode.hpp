@@ -66,3 +66,6 @@ constexpr Layers mode(SPPU& ppu) {
   result.math = ppu.compute_mask(Layers::MATH);
   return result;
 }
+
+using LayerPriorityTable = std::vector<LayerSpec>;
+extern std::array<LayerPriorityTable, 8> prios_for_mode;
