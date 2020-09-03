@@ -76,7 +76,7 @@ public:
   static constexpr int OUTPUT_HEIGHT = SCREEN_HEIGHT * SCALE;
 
   std::array<byte, (SCREEN_WIDTH * SCREEN_HEIGHT) * 4> buf {};
-  std::array<colour_t, SCREEN_WIDTH * SCREEN_HEIGHT> fb {};
+  std::array<std::array<colour_t, SCREEN_WIDTH * SCREEN_HEIGHT>, 4> fb {};
 
   SDL_Window* window_;
   SDL_Renderer* renderer_;

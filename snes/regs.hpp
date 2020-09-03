@@ -37,7 +37,7 @@ union window_mask_op_t {
   };
   byte reg;
 
-  MaskOp bg_op(byte bg_layer) {
+  MaskOp bg_op(byte bg_layer) const {
     return static_cast<MaskOp>((reg >> (2 * bg_layer)) & 3);
   }
 
@@ -241,11 +241,11 @@ union mosaic_t {
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
 
-  bool enabled_for_bg(byte bg) {
+  bool enabled_for_bg(byte bg) const {
     return enable_for_bg & (1 << bg);
   }
 
-  byte size() {
+  byte size() const {
     return size_minus_one + 1;
   }
 };
@@ -283,7 +283,7 @@ union layer_ctrl_t {
   };
   byte reg;
 
-  bool operator()(byte bg_layer) {
+  bool operator()(byte bg_layer) const {
     return bg & (1 << bg_layer);
   }
 

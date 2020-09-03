@@ -103,23 +103,23 @@ void SPPU::render_row() {
   auto& [main_layers, sub_layers] = route_main_sub(prio);
 
   for (int i = 0; i < 256; ++i) {
-    auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
-    auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+    const auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
+    const auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-    bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
-    bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
+    const bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
+    const bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
 
     main[i] = main_masked && main_window_masked ? 0 : main_pal;
     sub[i] = sub_masked && sub_window_masked ? PAL_SUB_SCREEN_TRANSPARENT : sub_pal;
     main_source_layer[i] = main_layer;
     sub_source_layer[i] = sub_layer;
 
-    bool main_clear = is_pal_clear(main[i]);
-    auto main_colour =
+    const bool main_clear = is_pal_clear(main[i]);
+    const auto main_colour =
         main[i] == PAL_MASKED_IN_WINDOW ? Colours::BLACK : lookup(main[i]);
 
-    bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]);
-    auto sub_colour =
+    const bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]);
+    const auto sub_colour =
         sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
     // TODO: clearly not right, but the SMW dialog box needs a black bkgd
     if (main[i] == PAL_MASKED_IN_WINDOW) {
@@ -163,13 +163,13 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   for (byte i = 0; i < 128; ++i) {
     pixels.clear();
 
-    OAM* entry = &oam_ptr[i];
+    const OAM* entry = &oam_ptr[i];
     if (entry->attr.prio != prio) continue;
 
-    OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
-    auto oam_ = compute_oam_extras(entry, oam2, i);
-    auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
-    auto x_ = oam_.x_full;
+    const OAM2* oam2 = (OAM2*) oam.data() + 512 + i / 4;
+    const auto oam_ = compute_oam_extras(entry, oam2, i);
+    const auto [sprite_width, sprite_height] = get_sprite_dims(obsel.obj_size, oam_.is_large);
+    const auto x_ = oam_.x_full;
 
     if (!(x_ >= 0 && x_ <= 255 && line_ >= entry->y && line_ < entry->y + sprite_height)) {
       continue;
@@ -181,17 +181,17 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       tile_y = 7 - tile_y;
       tile_no_y_offset = sprite_height / 8 - tile_no_y_offset - 1;
     }
-    word tile_no = oam_.tile_no_full;
+    const word tile_no = oam_.tile_no_full;
 
-    word obj_char_data_base = obsel.obj_base_addr << 13;
+    const word obj_char_data_base = obsel.obj_base_addr << 13;
     for (int tile = 0; tile < sprite_width / 8; ++tile) {
       auto tile_no_x_offset = tile;
       if (entry->attr.flip_x) {
         tile_no_x_offset = sprite_width / 8 - tile - 1;
       }
-      word obj_char_data_addr = obj_addr(obj_char_data_base, tile_no, tile_no_x_offset,
+      const word obj_char_data_addr = obj_addr(obj_char_data_base, tile_no, tile_no_x_offset,
                                          tile_no_y_offset, tile_y);
-      auto pixel_array = decode_planar(&vram[obj_char_data_addr], 2, entry->attr.flip_x);
+      const auto pixel_array = decode_planar(&vram[obj_char_data_addr], 2, entry->attr.flip_x);
 
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
                      [&entry](auto pal_index) {
@@ -211,7 +211,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   });
 
   int nvisible = 0;
-  for (auto& sprite : visible) {
+  for (const auto& sprite : visible) {
     if (nvisible++ == 32) {
       sprite_range_overflow = true;
       break;
@@ -234,7 +234,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
  * - line_ is the vertical line number after adjusting for mosaicing
  * @param bg The background layer to evaluate
  */
-auto SPPU::get_tile_pos(byte bg) {
+auto SPPU::get_tile_pos(byte bg) const {
   auto line_ = line;
   if (mosaic.enabled_for_bg(bg)) {
     line_ = (line / mosaic.size()) * (mosaic.size());
@@ -252,7 +252,7 @@ auto SPPU::get_tile_pos(byte bg) {
 }
 
 void SPPU::compute_addrs_for_row(word base, word start_x, word start_y,
-                                 byte sc_size) {
+                                 byte sc_size) const {
   //                sx,    sy
   // sc_size = 0 => false, false
   // sc_size = 1 => true, false
@@ -274,19 +274,18 @@ void SPPU::compute_addrs_for_row(word base, word start_x, word start_y,
  *   0, 1 refers to per-tile priority flag
  *   a, b refers to BG3 screen priority flag
  */
-std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
+std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
   if (inidisp.force_blank) return {};
 
-  // get bg mode
-  byte mode = bgmode.mode;
+  const byte mode = bgmode.mode;
 
   // 2bpp means one pixel is encoded in one word. wpp = words per pixel
-  byte wpp = bpps[mode][bg] / 2;
+  const byte wpp = bpps[mode][bg] / 2;
 
-  dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
-  dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
+  const dword tilemap_base_addr = bg_base_size[bg].base_addr * 0x400;
+  const dword chr_base_addr = bg_chr_base_addr_for_bg(bg);
 
-  auto [cur_row, tile_row, cur_col, tile_col, line_] = get_tile_pos(bg);
+  const auto [cur_row, tile_row, cur_col, tile_col, line_] = get_tile_pos(bg);
   compute_addrs_for_row(tilemap_base_addr, cur_col, cur_row, bg_base_size[bg].sc_size);
 
   // coming into this, we get 32 tile ids. for each tile id, we want to decode 8 palette values:
@@ -302,17 +301,17 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) {
                     return;
                   }
 
-                  auto tile_id = t->char_no;
+                  const auto tile_id = t->char_no;
                   auto row_to_access = tile_row;
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
 
                   // get tile chr data
-                  word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
+                  const word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
 
                   // decode planar data
                   // produce 8 byte values (palette indices)
-                  std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
+                  const std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
                                                                 t->flip_x);
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
@@ -434,8 +433,8 @@ bool in_window(int i, byte layer, const window_t& win) {
   return is_inside;
 }
 
-Layers::Win SPPU::compute_mask(byte layer) {
-  static std::array<std::function<bool(bool, bool)>, 4> ops {
+Layers::Win SPPU::compute_mask(byte layer) const {
+  static const std::array<std::function<bool(bool, bool)>, 4> ops {
       std::logical_or(),
       std::logical_and(),
       std::bit_xor(),

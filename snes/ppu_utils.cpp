@@ -39,7 +39,7 @@ std::array<byte, 8> decode(word w1, word w2, word w3, word w4, bool flip_x) {
   return result;
 }
 
-std::array<byte, 8> decode_planar(dual* ptr, byte wpp, bool flip_x) {
+std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x) {
   switch (wpp) {
     case 1:
       return decode((*ptr).w, flip_x);
@@ -67,7 +67,7 @@ word compute_oam_x(OAM* oam, OAM2* oam2, int i) {
   return 0;
 }
 
-OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i) {
+OAMExtras compute_oam_extras(const OAM* oam, const OAM2* oam2, int i) {
   auto full_tile_no = static_cast<word>(oam->tile_no | (oam->attr.tile_no_h << 8));
 
   switch (i % 4) {

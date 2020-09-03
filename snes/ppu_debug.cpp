@@ -6,7 +6,7 @@
 #include "ppu_utils.hpp"
 #include "types.h"
 
-void dump_colour_math(SPPU& sppu) {
+void dump_colour_math(const SPPU& sppu) {
   static auto fmt_bool = [](byte b) { return b == 0 ? "" : "X"; };
   static auto fmt_cgwsel = [](byte b) {
     static constexpr const char* cgwsel[] = {"Always", "Math Window", "~Math Window", "Never"};
@@ -98,7 +98,7 @@ void dump_colour_math(SPPU& sppu) {
   std::cout << tb.to_string() << std::endl;
 }
 
-void dump_sprite(SPPU& sppu) {
+void dump_sprite(const SPPU& sppu) {
   word addr = 0x27c0 / 2;
   for (int i = 0; i < 32; ++i) {
     std::printf("%04x ", sppu.vram[addr + i].w);
@@ -113,7 +113,7 @@ void dump_sprite(SPPU& sppu) {
   }
 }
 
-void dump_pal(SPPU& sppu) {
+void dump_pal(const SPPU& sppu) {
   for (auto it = sppu.pal.begin(); it != sppu.pal.end(); it += 2) {
     if (std::distance(sppu.pal.begin(), it) % 32 == 0) {
       std::printf("\n%04x | ", std::distance(sppu.pal.begin(), it));
@@ -124,7 +124,7 @@ void dump_pal(SPPU& sppu) {
   std::printf("\n");
 }
 
-void dump_bg(SPPU& sppu, byte layer) {
+void dump_bg(const SPPU& sppu, byte layer) {
   dword tilemap_base_addr = sppu.bg_base_size[layer].base_addr * 0x400;
   for (int cur_row = 0; cur_row < 64; ++cur_row) {
     for (int cur_col = 0; cur_col < 64; ++cur_col) {
@@ -141,7 +141,7 @@ void dump_bg(SPPU& sppu, byte layer) {
   }
 }
 
-void dump_oam_bytes(SPPU& sppu) {
+void dump_oam_bytes(const SPPU& sppu) {
   for (word addr = 0; addr < 0x220; ++addr) {
     if (addr % 0x20 == 0)
       std::printf("%03x | ", addr);
@@ -154,7 +154,7 @@ void dump_oam_bytes(SPPU& sppu) {
   std::printf("\n");
 }
 
-void dump_oam_table(SPPU& sppu) {
+void dump_oam_table(const SPPU& sppu) {
   fort::char_table obsel_tb;
   obsel_tb << fort::header << "Attr"
            << "Value" << fort::endr;
@@ -204,7 +204,7 @@ void dump_oam_table(SPPU& sppu) {
   std::cout << tb.to_string() << std::endl;
 }
 
-void dump_oam(SPPU& sppu, bool dump_bytes) {
+void dump_oam(const SPPU& sppu, bool dump_bytes) {
   if (dump_bytes) {
     dump_oam_bytes(sppu);
   } else {

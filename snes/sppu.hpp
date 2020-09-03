@@ -41,7 +41,7 @@ public:
 
   void tick(byte master_cycles = 1);
 
-  bool is_pal_clear(byte p) { return p % 16 == 0; }
+  bool is_pal_clear(byte p) const { return p % 16 == 0; }
 
   byte read(word addr) {
     switch (addr) {
@@ -397,7 +397,7 @@ public:
   // 210b,210c (16 bits)
   bg_char_data_addr_t bg_char_data_addr[2] {};
 
-  word bg_chr_base_addr_for_bg(byte bg_no) {
+  word bg_chr_base_addr_for_bg(byte bg_no) const {
     switch (bg_no) {
       case 0:
         return bg_char_data_addr[0].bg1_tile_base_addr << 12;
@@ -457,11 +457,11 @@ public:
 
   Screen* screen;
 
-  std::array<byte, 256> render_row(byte bg, byte prio);
+  std::array<byte, 256> render_row(byte bg, byte prio) const;
 
   std::array<byte, 256> render_obj(byte prio);
 
-  std::array<byte, 256> compute_mask(byte layer);
+  std::array<byte, 256> compute_mask(byte layer) const;
 
 private:
   // vram consists of bg_map_tile_t objects (16 bits)
@@ -498,9 +498,9 @@ private:
   long x {};
 
   // region PPU caches
-  std::array<byte, 256 + 8> row {};
-  std::array<colour_t, 256> pals {};
-  std::array<word, 33> addrs {};
+  mutable std::array<byte, 256 + 8> row {};
+  mutable std::array<colour_t, 256> pals {};
+  mutable std::array<word, 33> addrs {};
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
@@ -549,7 +549,7 @@ private:
  * @param sc_size The mirroring mode from BGxSC 0 <= sc_size < 4
  * @return An array of 33 VRAM addresses for the BG tile data
  */
-  void compute_addrs_for_row(word base, word start_x, word start_y, byte sc_size);
+  void compute_addrs_for_row(word base, word start_x, word start_y, byte sc_size) const;
 
   /**
    * Get the appropriate row of palette indices from the layer data
@@ -590,17 +590,17 @@ private:
 
   friend class Screen;
 
-  friend void dump_colour_math(SPPU& sppu);
+  friend void dump_colour_math(const SPPU& sppu);
 
-  friend void dump_oam(SPPU& sppu, bool dump_bytes);
+  friend void dump_oam(const SPPU& sppu, bool dump_bytes);
 
-  friend void dump_sprite(SPPU& sppu);
+  friend void dump_sprite(const SPPU& sppu);
 
-  friend void dump_bg(SPPU& sppu, byte layer);
+  friend void dump_bg(const SPPU& sppu, byte layer);
 
-  friend void dump_pal(SPPU& sppu);
+  friend void dump_pal(const SPPU& sppu);
 
-  auto get_tile_pos(byte bg);
+  auto get_tile_pos(byte bg) const;
 
   /**
    * Blits the current line of composed RGB data to the corresponding line of the display.

@@ -12,7 +12,7 @@
  * @param flip_x Whether the tile is horizontally flipped
  * @return An array of 8 palette indices
  */
-std::array<byte, 8> decode_planar(dual* ptr, byte wpp, bool flip_x);
+std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x);
 
 word compute_oam_x(OAM* oam, OAM2* oam2, int i);
 
@@ -29,7 +29,7 @@ struct OAMExtras {
  * @param i OAM index for this sprite
  * @return OAMExtras struct
  */
-OAMExtras compute_oam_extras(OAM* oam, OAM2* oam2, int i);
+OAMExtras compute_oam_extras(const OAM* oam, const OAM2* oam2, int i);
 
 /**
  * Compute the VRAM address for a BG tile.
