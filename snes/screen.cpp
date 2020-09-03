@@ -1,8 +1,8 @@
 #include "screen.hpp"
-#include "sppu.hpp"
 #include "bus_snes.hpp"
-#include "ppu_utils.hpp"
 #include "ppu_debug.hpp"
+#include "ppu_utils.hpp"
+#include "sppu.hpp"
 
 DECLARE_bool(show_raster);
 DECLARE_bool(dis);
@@ -21,9 +21,9 @@ void Screen::blit() {
   float scale = static_cast<float>(brightness) / 2.0;
 
   int i = 0;
-//  for (auto& layer: fb) {
-  auto &layer = fb[0];
-  for (const colour_t &b: layer) {
+  //  for (auto& layer: fb) {
+  auto& layer = fb[0];
+  for (const colour_t& b : layer) {
     buf[i++] = b.b * scale;
     buf[i++] = b.g * scale;
     buf[i++] = b.r * scale;
@@ -66,13 +66,13 @@ void Screen::blit() {
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
-//          PPUDebug::dump_bg(*ppu0);
-//          std::printf("\n");
+          //          PPUDebug::dump_bg(*ppu0);
+          //          std::printf("\n");
           PPUDebug::dump_bg(*ppu, 1);
           std::printf("\n");
-//          PPUDebug::dump_bg(*ppu, 2);
-//          std::printf("\n");
-//          std::exit(0);
+          //          PPUDebug::dump_bg(*ppu, 2);
+          //          std::printf("\n");
+          //          std::exit(0);
           break;
         case SDLK_c:
           PPUDebug::dump_colour_math(*ppu);

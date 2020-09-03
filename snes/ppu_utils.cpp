@@ -1,8 +1,8 @@
 #include <array>
 
-#include "types.h"
-#include "sppu.hpp"
 #include "ppu_utils.hpp"
+#include "sppu.hpp"
+#include "types.h"
 
 // Decode planar data
 // Takes 2bpp, 4bpp or 8bpp data (1 word, 2 words or 4 words)
@@ -53,7 +53,7 @@ std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x) {
   return {};
 }
 
-word compute_oam_x(OAM* oam, OAM2* oam2, int i) {
+word compute_oam_x(const OAM* oam, const OAM2* oam2, int i) {
   switch (i % 4) {
     case 0:
       return oam->x + (oam2->obj0_xh << 8);
@@ -88,27 +88,35 @@ OAMExtras compute_oam_extras(const OAM* oam, const OAM2* oam2, int i) {
 }
 
 word addr(word base, word x, word y, bool sx, bool sy) {
-  return (base
-          + ((y & 0x1f) << 5)
-          + (x & 0x1f)
-          + (sy ? ((y & 0x20) << (sx ? 6 : 5)) : 0)
-          + (sx ? ((x & 0x20) << 5) : 0));
+  return (base + ((y & 0x1f) << 5) + (x & 0x1f) + (sy ? ((y & 0x20) << (sx ? 6 : 5)) : 0) + (sx ? ((x & 0x20) << 5) : 0));
 }
 
 std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large) {
-  static constexpr std::array<std::pair<byte, byte>, 16> table
-      {{
-           {8, 8}, {8, 8}, {8, 8}, {16, 16}, {16, 16}, {32, 32}, {16, 32}, {16, 32},
-           {16, 16}, {32, 32}, {64, 64}, {32, 32}, {64, 64}, {64, 64}, {32, 64}, {32, 32},
-       }};
+  static constexpr std::array<std::pair<byte, byte>, 16> table {{
+      {8, 8},
+      {8, 8},
+      {8, 8},
+      {16, 16},
+      {16, 16},
+      {32, 32},
+      {16, 32},
+      {16, 32},
+      {16, 16},
+      {32, 32},
+      {64, 64},
+      {32, 32},
+      {64, 64},
+      {64, 64},
+      {32, 64},
+      {32, 32},
+  }};
   return table[(is_large ? 8 : 0) + obsel_size];
 }
 
 word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset,
               long fine_y) {
-  return chr_base
-         + ((tile_no + tile_no_x_offset) << 4) // 8x8 tile row selector
-         + (tile_no_y_offset << 8) // 8x8 tile column selector
+  return chr_base + ((tile_no + tile_no_x_offset) << 4) // 8x8 tile row selector
+         + (tile_no_y_offset << 8)                      // 8x8 tile column selector
          + fine_y;
 }
 

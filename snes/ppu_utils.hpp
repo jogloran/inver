@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "regs.hpp"
 #include "types.h"
 
 /**
@@ -14,11 +15,11 @@
  */
 std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x);
 
-word compute_oam_x(OAM* oam, OAM2* oam2, int i);
+word compute_oam_x(const OAM* oam, const OAM2* oam2, int i);
 
 struct OAMExtras {
-  word x_full;      // The full 9-bit x offset
-  word tile_no_full;// The full 9-bit tile number
+  word x_full;       // The full 9-bit x offset
+  word tile_no_full; // The full 9-bit tile number
   bool is_large;
 };
 
@@ -77,7 +78,7 @@ std::pair<byte, byte> get_sprite_dims(byte obsel_size, byte is_large);
  * @param op A callable taking (_Tp, _Tp, bool&), where the third argument can
  * be assigned _true_ if early termination is desired.
  */
-template<class _InputIterator, class _Tp, class _Arg3>
+template <class _InputIterator, class _Tp, class _Arg3>
 _Tp reduce3(_InputIterator first, _InputIterator last, _Tp init, _Arg3 op) {
   bool should_stop = false;
   for (; first != last; ++first) {
