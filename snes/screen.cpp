@@ -66,26 +66,26 @@ void Screen::blit() {
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
         case SDLK_d:
-//          dump_bg(*ppu0);
+//          PPUDebug::dump_bg(*ppu0);
 //          std::printf("\n");
-          dump_bg(*ppu, 1);
+          PPUDebug::dump_bg(*ppu, 1);
           std::printf("\n");
-//          dump_bg(*ppu, 2);
+//          PPUDebug::dump_bg(*ppu, 2);
 //          std::printf("\n");
 //          std::exit(0);
           break;
         case SDLK_c:
-          dump_colour_math(*ppu);
+          PPUDebug::dump_colour_math(*ppu);
           break;
         case SDLK_p:
-          dump_pal(*ppu);
+          PPUDebug::dump_pal(*ppu);
           break;
         case SDLK_s:
-          dump_sprite(*ppu);
+          PPUDebug::dump_sprite(*ppu);
           break;
         case SDLK_o: {
           bool dump_bytes = event.key.keysym.mod & KMOD_LCTRL;
-          dump_oam(*ppu, dump_bytes);
+          PPUDebug::dump_oam(*ppu, dump_bytes);
           break;
         }
 

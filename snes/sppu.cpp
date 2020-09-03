@@ -22,7 +22,7 @@ static std::array<std::function<colour_t(colour_t, colour_t)>, 4> cm_op {
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
-const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
+const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) const {
   if (layer == Layers::OBJ) {
     return l.obj.pal[prio];
   } else {
@@ -30,7 +30,7 @@ const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte
   }
 }
 
-const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
+const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) const {
   if (layer == Layers::OBJ) {
     return l.obj.mask;
   } else {
@@ -38,7 +38,7 @@ const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
   }
 }
 
-auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i) {
+auto SPPU::prio_sort(const std::vector<LayerSpec>& prio, const Layers& l, int i) const {
   auto layer_reducer = [this, i, &l](auto acc,
                                      auto layer_spec,
                                      auto& should_stop) -> std::tuple<byte, word, bool> {
@@ -339,7 +339,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
   return result;
 }
 
-colour_t SPPU::lookup(byte i) {
+colour_t SPPU::lookup(byte i) const {
   word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
   return {
       .r = static_cast<byte>(rgb & 0x1f),
@@ -466,7 +466,7 @@ Layers::Win SPPU::compute_mask(byte layer) const {
   return win;
 }
 
-bool SPPU::colour_math_applies(int i, const Layers& layers) {
+bool SPPU::colour_math_applies(int i, const Layers& layers) const {
   // does the colour math window apply?
   auto enabled_by_math_window = [&]() -> bool {
     switch (cgwsel.colour_math_enabled) {

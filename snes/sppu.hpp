@@ -532,11 +532,11 @@ private:
    * horizontal position.
    * @returns { layer index, pal, is_masked }
    */
-  auto prio_sort(const std::vector<LayerSpec>& layers, const Layers& l, int i);
+  auto prio_sort(const std::vector<LayerSpec>& layers, const Layers& l, int i) const;
 
   void render_row();
 
-  colour_t lookup(byte);
+  colour_t lookup(byte) const;
 
   void vblank_end();
 
@@ -558,7 +558,7 @@ private:
    * @param prio Priority (0,1,2,3)
    * @return Reference to palette indices
    */
-  const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio);
+  const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio) const;
 
   /**
    * Get the appropriate window row mask from the layer data
@@ -567,7 +567,7 @@ private:
    * @param prio Priority (0,1,2,3)
    * @return Reference to window row mask
    */
-  const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer);
+  const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer) const;
 
   /**
    * Given a the layer specs for this mode and the current PPU state,
@@ -580,7 +580,7 @@ private:
    * Given the current PPU state and a horizontal position _i_,
    * decides whether colour math should apply at this pixel.
    */
-  bool colour_math_applies(int i, const Layers& layers);
+  bool colour_math_applies(int i, const Layers& layers) const;
 
   std::array<byte, 256> main_source_layer {};
   std::array<byte, 256> sub_source_layer {};
@@ -590,15 +590,7 @@ private:
 
   friend class Screen;
 
-  friend void dump_colour_math(const SPPU& sppu);
-
-  friend void dump_oam(const SPPU& sppu, bool dump_bytes);
-
-  friend void dump_sprite(const SPPU& sppu);
-
-  friend void dump_bg(const SPPU& sppu, byte layer);
-
-  friend void dump_pal(const SPPU& sppu);
+  friend class PPUDebug;
 
   auto get_tile_pos(byte bg) const;
 
