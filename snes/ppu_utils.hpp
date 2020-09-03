@@ -15,6 +15,9 @@
  */
 std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x);
 
+/**
+ * (legacy) Compute only the extended 9-bit x offset from OAM and extended OAM.
+ */
 word compute_oam_x(const OAM* oam, const OAM2* oam2, int i);
 
 struct OAMExtras {
