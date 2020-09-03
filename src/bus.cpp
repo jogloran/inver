@@ -192,8 +192,8 @@ void Bus::unpickle(std::string filename) {
   attach_screen(screen);
   ppu->connect(this);
   cpu->connect(this);
-  td->connect(this);
-  tm->connect(this);
+  if (td) td->connect(this);
+  if (tm) tm->connect(this);
 }
 
 void Bus::attach_screen(std::shared_ptr<Output> s) {

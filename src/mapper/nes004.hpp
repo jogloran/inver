@@ -179,7 +179,6 @@ private:
   bool irq_enabled;
   bool irq_requested_;
 
-  // TODO: not yet serialised
   int prg_pages = 0;
   int chr_pages = 0;
 
@@ -190,7 +189,7 @@ private:
     ar(rom, chr, ram, rom_8000_fixed,
        chr_a12_inversion, target_bank, bank_for_target,
        mirroring_mode,
-       irq_period, irq_counter, irq_enabled, irq_requested_);
+       irq_period, irq_counter, irq_enabled, irq_requested_, prg_pages, chr_pages);
   }
 
   friend class cereal::access;
