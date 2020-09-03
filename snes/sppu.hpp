@@ -601,4 +601,9 @@ private:
   friend void dump_pal(SPPU& sppu);
 
   auto get_tile_pos(byte bg);
+
+  /**
+   * Blits the current line of composed RGB data to the corresponding line of the display.
+   */
+  void blit();
 };

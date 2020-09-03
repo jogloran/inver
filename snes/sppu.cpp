@@ -144,14 +144,8 @@ void SPPU::render_row() {
       }
     }
   }
-  auto fb_ptr = screen->fb[0].data() + line * 256;
 
-  for (colour_t rgb : pals) {
-    fb_ptr->r = rgb.r;
-    fb_ptr->g = rgb.g;
-    fb_ptr->b = rgb.b;
-    ++fb_ptr;
-  }
+  blit();
 }
 
 std::array<byte, 256> SPPU::render_obj(byte prio) {
@@ -557,4 +551,15 @@ void SPPU::reset() {
   line = 0;
   x = 0;
   visible.clear();
+}
+
+void SPPU::blit() {
+  auto fb_ptr = screen->fb.data() + line * 256;
+
+  for (colour_t rgb : pals) {
+    fb_ptr->r = rgb.r;
+    fb_ptr->g = rgb.g;
+    fb_ptr->b = rgb.b;
+    ++fb_ptr;
+  }
 }
