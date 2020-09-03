@@ -436,10 +436,10 @@ bool in_window(int i, byte layer, const window_t& win) {
 
 Layers::Win SPPU::compute_mask(byte layer) {
   static std::array<std::function<bool(bool, bool)>, 4> ops {
-      std::logical_or<bool>(),
-      std::logical_and<bool>(),
-      std::bit_xor<bool>(),
-      std::not_fn(std::bit_xor<bool>()),
+      std::logical_or(),
+      std::logical_and(),
+      std::bit_xor(),
+      std::not_fn(std::bit_xor()),
   };
   Layers::Win win;// no need to initialise
 
