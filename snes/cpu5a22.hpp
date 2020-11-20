@@ -6,7 +6,7 @@
 #include "bus_snes.hpp"
 #include "logger.hpp"
 
-class CPU5A22 : public Logger<CPU5A22> {
+class CPU5A22: public Logger<CPU5A22> {
 public:
   void tick();
 
@@ -20,24 +20,24 @@ public:
     irq<BusSNES::Interrupt::COP>();
   }
 
-  template <BusSNES::Interrupt rupt>
+  template<BusSNES::Interrupt rupt>
   void irq() {
 //    if (rupt == BusSNES::NMI) {
-      log_with_tag("irq", "NMI\n");
-      push(pc.b);
-      push_word(pc.addr + ((rupt == BusSNES::BRK || rupt == BusSNES::COP) ? 1 : 0));
-      if (rupt == BusSNES::BRK) {
-        push((p.reg & ~0x30) | 0x30);
-      } else {
-        push(p.reg);
-      }
-      p.I = 1;
-      pc.b = 0x0;
-      pc.c = bus->read_vector<rupt>();
+    log_with_tag("irq", "NMI\n");
+    push(pc.b);
+    push_word(pc.addr + ((rupt == BusSNES::BRK || rupt == BusSNES::COP) ? 1 : 0));
+    if (rupt == BusSNES::BRK) {
+      push((p.reg & ~0x30) | 0x30);
+    } else {
+      push(p.reg);
+    }
+    p.I = 1;
+    pc.b = 0x0;
+    pc.c = bus->read_vector<rupt>();
 //    }
   }
 
-  cycle_count_t mvp() {
+  cycle_count_t mv_(bool mvp) {
     word count = a + 1;
     cycle_count_t ncycles {};
     word operand = read_word();
@@ -51,31 +51,10 @@ public:
       db = dst_bank;
       byte v = read((src_bank << 16) | src);
       write((dst_bank << 16) | dst, v);
-      --src;
-      --dst;
-      --a;
-      ncycles += 7;
-    }
 
-    return ncycles;
-  }
+      if (mvp) --src, --dst;
+      else ++src, ++dst;
 
-  cycle_count_t mvn() {
-    word count = a + 1;
-    cycle_count_t ncycles {};
-    word operand = read_word();
-    byte src_bank = operand >> 8;
-    byte dst_bank = operand & 0xff;
-
-    while (count--) {
-      dual& src = x;
-      dual& dst = y;
-
-      db = dst_bank;
-      byte v = read((src_bank << 16) | src);
-      write((dst_bank << 16) | dst, v);
-      ++src;
-      ++dst;
       --a;
       ncycles += 7;
     }
@@ -91,11 +70,9 @@ public:
 
   void rti() {
     pop_flags();
+    pc.c = pop_word();
     if (native()) {
-      pc.c = pop_word();
       pc.b = pop();
-    } else {
-      pc.c = pop_word();
     }
   }
 
@@ -418,7 +395,7 @@ dword addr_##mode() body
   template<typename Ar>
   void serialize(Ar& ar) {
     ar(a, x, y, sp, pc, p, ncycles, cycles_left, crossed_page,
-        e, dp, db);
+       e, dp, db);
   }
 
   static constexpr const char* TAG = "cpu";

@@ -244,8 +244,8 @@
 #define PLD [](CPU5A22& cpu) { cpu.check_zn_flags(cpu.dp = cpu.pop_word(), true); return 0; }
 #define PHK [](CPU5A22& cpu) { cpu.push(cpu.pc.b); return 0; }
 #define WDM XX(1, 2)
-#define MVP [](CPU5A22& cpu) { return cpu.mvp(); }
-#define MVN [](CPU5A22& cpu) { return cpu.mvn(); }
+#define MVP [](CPU5A22& cpu) { return cpu.mv_(true); }
+#define MVN [](CPU5A22& cpu) { return cpu.mv_(false); }
 #define WAI [](CPU5A22& cpu) { return 0; }
 #define XBA [](CPU5A22& cpu) { byte tmp = cpu.a.h; cpu.a.h = cpu.a.l; cpu.check_zn_flags(cpu.a.l = tmp, false); return 0; }
 #define XCE [](CPU5A22& cpu) { \
