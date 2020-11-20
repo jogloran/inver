@@ -111,9 +111,19 @@ public:
     pc.addr = ((hi << 16) | addr) + 1;
   }
 
-  word check_zn_flags(word operand, bool op16) {
+  word check_z_flag(word operand, bool op16) {
     p.Z = (operand & (op16 ? 0xffff : 0xff)) == 0;
+    return operand;
+  }
+
+  word check_n_flag(word operand, bool op16) {
     p.N = (operand & (op16 ? 0x8000 : 0x80)) != 0;
+    return operand;
+  }
+
+  word check_zn_flags(word operand, bool op16) {
+    check_z_flag(operand, op16);
+    check_n_flag(operand, op16);
     return operand;
   }
 

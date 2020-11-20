@@ -53,7 +53,7 @@
   bool lsb = operand & 0b1; \
   operand = (operand >> 1) & (op16 ? 0x7fff : 0x7f); \
   cpu.p.C = lsb; \
-  cpu.p.Z = ((operand & (op16 ? 0xffff : 0xff)) == 0); \
+  cpu.check_z_flag(operand, op16); \
   cpu.p.N = 0;
 
 #define ROL_BODY(operand, op16) \
@@ -84,7 +84,7 @@
     cpu.a.w = (cpu.a.w >> 1) & 0x7fff; \
   } \
   cpu.p.C = lsb; \
-  cpu.p.Z = ((cpu.a & (cpu.p.m ? 0xff : 0xffff)) == 0); \
+  cpu.check_z_flag(cpu.a, !cpu.p.m); \
   cpu.p.N = 0; \
   return cpu.observe_crossed_page(); \
 }
@@ -161,7 +161,7 @@
 
 #define BIT(mode) [](CPU5A22& cpu) {\
   word operand = cpu.deref_##mode(!cpu.p.m); \
-  cpu.p.N = (operand & (cpu.p.m ? 0x80 : 0x8000)) != 0; \
+  cpu.check_n_flag(operand, !cpu.p.m); \
   cpu.p.V = (operand & (cpu.p.m ? 0x40 : 0x4000)) != 0; \
   cpu.p.Z = (operand & (cpu.a & (cpu.p.m ? 0xff : 0xffff))) == 0; \
   return 0; \
