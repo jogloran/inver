@@ -377,6 +377,12 @@ void SPPU::tick(byte master_cycles) {
         }
         break;
       case State::VBLANK:
+      case State::HBLANK_IN_VBLANK:
+        if (line <= 0xe0) {
+          state = State::VBLANK;
+        } else {
+          state = State::HBLANK_IN_VBLANK;
+        }
         if (ncycles >= 4 * 340) {
           ncycles -= 4 * 340;
           ++line;

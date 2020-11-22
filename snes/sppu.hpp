@@ -379,10 +379,11 @@ public:
     }
   }
 
-  enum class State {
-    VISIBLE,
-    HBLANK,
-    VBLANK
+  enum State {
+    VISIBLE = 0,
+    HBLANK = 1,
+    VBLANK = 2,
+    HBLANK_IN_VBLANK = 3,
   } state;
 
   // region PPU registers

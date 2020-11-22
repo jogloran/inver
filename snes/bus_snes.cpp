@@ -103,8 +103,10 @@ byte BusSNES::read(dword address) {
       }
       if (offs == 0x4212) {
         // HVBJOY
-        bool vblank = ppu->state == SPPU::State::VBLANK;
-        bool hblank = ppu->state == SPPU::State::HBLANK;
+        bool vblank = ppu->state == SPPU::State::VBLANK ||
+                      ppu->state == SPPU::State::HBLANK_IN_VBLANK;
+        bool hblank = ppu->state == SPPU::State::HBLANK ||
+                      ppu->state == SPPU::State::HBLANK_IN_VBLANK;
         return (vblank << 7) | (hblank << 6) | auto_joypad_read_busy;
       }
       if (offs == 0x4214) {
