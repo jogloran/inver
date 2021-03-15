@@ -19,7 +19,7 @@ link_directories(${SDL2TTF_LIBRARY_DIRS})
 add_subdirectory(ntsc)
 link_directories(ntsc)
 
-include_directories(src ntsc cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.12_1/include /usr/local/Cellar/libzip/1.7.1/include)
+include_directories(src ntsc cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.14_1/include /usr/local/Cellar/libzip/1.7.1/include)
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2TTF_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc

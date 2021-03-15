@@ -1,7 +1,6 @@
 #include <array>
 
 #include "ppu_utils.hpp"
-#include "sppu.hpp"
 #include "types.h"
 
 // Decode planar data
