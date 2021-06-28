@@ -568,3 +568,41 @@ void SPPU::blit() {
     ++fb_ptr;
   }
 }
+
+std::array<byte, 256> SPPU::render_row_mode7(int bg) {
+  /* Mode 7 is nothing more than an additional indirection between the screen-space coordinates
+   * (x, y), and the coordinates into a 128x128 tile (1024x1024 pixel) texture (x', y').
+   *
+   * (x, y) = (i, line)
+   */
+  if (inidisp.force_blank) return {};
+
+  const auto a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
+      x0 = m7x.w, y0 = m7y.w,
+      h = scr[0].x_reg, v = scr[0].y_reg;
+  const auto y = line;
+
+  auto* ptr = row.begin();
+  for (int x_ = 0; x_ < 256; ++x_) {
+    // get tilemap x_', y'
+    int x_out = (a * (x_ + h - x0) + b * (y + v - y0));
+    int y_out = (c * (x_ + h - x0) + d * (y + v - y0));
+
+    if (x_out < 0 || x_out >= 1024 || y_out < 0 || y_out >= 1024) {
+      *ptr++ = 0;
+    } else {
+      auto offset = (x_out * 128) + y_out;
+      auto tile_id = vram[offset].l;
+      auto chr_data = vram[0x40 * tile_id].h;
+
+      *ptr++ = chr_data;
+    }
+  }
+
+  // decode tile map for current screen position
+  // y pos: line_
+  // x pos: start_x .. start_x + 32 ??
+  std::array<byte, 256> result {};
+  std::copy(row.begin(), row.begin() + 256, result.begin());
+  return result;
+}

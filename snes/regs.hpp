@@ -290,3 +290,20 @@ union layer_ctrl_t {
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
 };
+
+union m7sel_t {
+  struct {
+    /* Controls what happens to tiles exceeding the 128x128 tile boundary:
+     *   0, 1: Wrap
+     *   2:    Transparent
+     *   3:    Filled by tile ID 0x0 */
+    byte screen_over: 2;
+    byte unused: 4;
+    byte screen_vflip: 1;
+    byte screen_hflip: 1;
+  };
+  byte reg;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};

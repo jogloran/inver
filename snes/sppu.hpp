@@ -262,6 +262,7 @@ public:
         break;
 
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
+        m7sel.reg = value;
         break;
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
         if (m7a_write_upper) {
@@ -269,15 +270,48 @@ public:
         } else {
           m7a.l = value;
         }
+        m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
-        m7b = value;
+        if (m7a_write_upper) {
+          m7b.h = value;
+        } else {
+          m7b.l = value;
+        }
+        m7a_write_upper = !m7a_write_upper;
         mpyx.w = m7a.w * m7b;
         break;
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
+        if (m7a_write_upper) {
+          m7c.h = value;
+        } else {
+          m7c.l = value;
+        }
+        m7a_write_upper = !m7a_write_upper;
+        break;
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
+        if (m7a_write_upper) {
+          m7d.h = value;
+        } else {
+          m7d.l = value;
+        }
+        m7a_write_upper = !m7a_write_upper;
+        break;
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
+        if (m7a_write_upper) {
+          m7x.h = value;
+        } else {
+          m7x.l = value;
+        }
+        m7a_write_upper = !m7a_write_upper;
+        break;
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
+        if (m7a_write_upper) {
+          m7y.h = value;
+        } else {
+          m7y.l = value;
+        }
+        m7a_write_upper = !m7a_write_upper;
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
@@ -423,6 +457,8 @@ public:
   bool cgram_rw_upper = false;
   byte cgram_lsb = 0;
 
+  m7sel_t m7sel {};
+
   // endregion
 
   BusSNES* bus;
@@ -479,8 +515,14 @@ private:
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
   dual m7a {};
+  // TODO: this isn't correct -- should share state with other write-twice registers
   bool m7a_write_upper = false;
-  byte m7b {};
+  dual m7b {};
+  dual m7c {};
+  dual m7d {};
+  dual m7x {};
+  dual m7y {};
+
   s24_t mpyx {};
 
   struct RenderedSprite {
@@ -619,4 +661,6 @@ public:
        ncycles, line, x,
        visible);
   }
+
+  std::array<byte, 256> render_row_mode7(int bg);
 };

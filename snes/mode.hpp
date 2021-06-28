@@ -71,5 +71,11 @@ constexpr Layers mode(SPPU& ppu) {
   return result;
 }
 
+template<> constexpr Layers mode<7>(SPPU& ppu) {
+  Layers result {};
+  result.bg[0].pal[0] = ppu.render_row_mode7(0);
+  return result;
+}
+
 using LayerPriorityTable = std::vector<LayerSpec>;
 extern std::array<LayerPriorityTable, 8> prios_for_mode;
