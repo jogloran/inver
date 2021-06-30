@@ -44,7 +44,7 @@ target_link_libraries(inver nes_apu)
 target_link_libraries(inver ntsc)
 target_link_libraries(inver ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
-target_compile_options(inver PRIVATE -march=native)
+target_compile_options(inver PRIVATE)
 target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -Wreorder)
 
 add_executable(micro bench/micro.cpp src/ppu_utils.cpp)
