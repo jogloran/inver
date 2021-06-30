@@ -13,7 +13,7 @@ class M7 {
 public:
   std::shared_ptr<SPPU> ppu;
 
-  M7() {
+  M7(): mode_(Mode::Viewport) {
     SDL_Init(SDL_INIT_VIDEO);
 
     window_ = SDL_CreateWindow("M7", 500, 0,
@@ -41,6 +41,11 @@ public:
   SDL_Window* window_;
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
+
+  enum class Mode {
+    Viewport, Tiles
+  };
+  Mode mode_;
 
   std::array<byte, (M7_WIDTH * M7_HEIGHT) * 4> buf {};
 };
