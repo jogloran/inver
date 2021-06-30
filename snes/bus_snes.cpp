@@ -9,6 +9,7 @@
 #include <map>
 
 DECLARE_bool(td);
+DECLARE_bool(m7);
 DECLARE_int32(sram);
 
 extern std::map<dword, PCWatchSpec> dis_pcs;
@@ -326,6 +327,7 @@ void BusSNES::vblank_nmi() {
 void BusSNES::vblank_end() {
   in_nmi = false;
   if (FLAGS_td) td2.show();
+  if (FLAGS_m7) m7.show();
 }
 
 BusSNES::BusSNES(): cpu(std::make_unique<CPU5A22>()),
@@ -334,7 +336,9 @@ BusSNES::BusSNES(): cpu(std::make_unique<CPU5A22>()),
   cpu->connect(this);
   ppu->connect(this);
   td2.connect(this);
+  m7.connect(this);
   if (FLAGS_td) td2.show();
+  if (FLAGS_m7) m7.show();
 
   byte ch_no = 0;
   std::for_each(dma.begin(), dma.end(), [this, &ch_no](auto& ch) {

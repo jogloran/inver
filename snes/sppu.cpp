@@ -78,7 +78,7 @@ auto& SPPU::route_main_sub(const std::vector<LayerSpec>& prios) {
       case 1:
       case 2:
       case 3:
-        if (main_scr(l.layer)) main_sub.first.push_back(l);
+        if (true) main_sub.first.push_back(l);
         if (sub_scr(l.layer)) main_sub.second.push_back(l);
         break;
 
@@ -105,6 +105,9 @@ void SPPU::render_row() {
   for (int i = 0; i < 256; ++i) {
     const auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
     const auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+
+//    if (main_pal != 0)
+//    std::printf("%d: %d\n", i, main_pal);
 
     const bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
     const bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
@@ -577,26 +580,57 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
    */
   if (inidisp.force_blank) return {};
 
-  const auto a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
+  float a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
       x0 = m7x.w, y0 = m7y.w,
       h = scr[0].x_reg, v = scr[0].y_reg;
+  // all 8 parameters plus the (x, y) input must be interpreted as signed floating-point values
+  // as follows:
+  //  x [0x00, 0xff]
+  //    [0.0,   1.0)
+  //  y [0x00, 0xdf]
+  //    [0.0, 0.875)
+  // x0 [0x0000, 0x1fff]
+  // y0 [-16.0,    16.0)
+  //  v
+  //  h
+  x0 = remap(x0, -16., 16.);
+  y0 = remap(y0, -16., 16.);
+  v = remap(v, -16., 16.);
+  h = remap(h, -16., 16.);
+  //  a [0x0000, 0xffff]
+  //  b [-128.0,  128.0)
+  //  c
+  //  d
+  a = remap(a, -128., 128.);
+  b = remap(b, -128., 128.);
+  c = remap(c, -128., 128.);
+  d = remap(d, -128., 128.);
+
   const auto y = line;
 
   auto* ptr = row.begin();
   for (int x_ = 0; x_ < 256; ++x_) {
     // get tilemap x_', y'
-    int x_out = (a * (x_ + h - x0) + b * (y + v - y0));
-    int y_out = (c * (x_ + h - x0) + d * (y + v - y0));
+    float x_f = remap_byte(x_, 0., 1.);
+    float y_f = remap_byte(y, 0., 1.);
+    float x_out = (a * (x_f + h - x0) + b * (y_f + v - y0)) / 255.;
+    float y_out = (c * (x_f + h - x0) + d * (y_f + v - y0)) / 255.;
 
-    if (x_out < 0 || x_out >= 1024 || y_out < 0 || y_out >= 1024) {
-      *ptr++ = 0;
-    } else {
-      auto offset = (x_out * 128) + y_out;
-      auto tile_id = vram[offset].l;
-      auto chr_data = vram[0x40 * tile_id].h;
+//    if (x_out < 0 || x_out >= 1024 || y_out < 0 || y_out >= 1024) {
+//      *ptr++ = 0;
+//    } else {
+    if (x_out < 0) x_out += 1024.;
+    if (y_out < 0) y_out += 1024.;
+//    printf("(%d, %d) -> (%f, %f)\n", x_, line, x_out, y_out);
+    auto offset = (word(x_out) / 8 * 128) + word(y_out / 8);
+//    printf("mem loc %x\n", offset);
+    auto tile_id = vram[offset].h;
+//    printf("(%d, %d) -> tile_id %d\n", x_, line, tile_id);
+    auto chr_data = vram[0x40 * tile_id].l;
 
-      *ptr++ = chr_data;
-    }
+//    printf("chr %d\n", chr_data);
+    *ptr++ = chr_data;
+//    }
   }
 
   // decode tile map for current screen position

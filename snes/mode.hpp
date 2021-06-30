@@ -74,6 +74,7 @@ constexpr Layers mode(SPPU& ppu) {
 template<> constexpr Layers mode<7>(SPPU& ppu) {
   Layers result {};
   result.bg[0].pal[0] = ppu.render_row_mode7(0);
+  result.bg[0].mask = ppu.compute_mask(0);
   return result;
 }
 

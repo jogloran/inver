@@ -542,6 +542,7 @@ private:
   friend class Logger<SPPU>;
 
   friend class TD2;
+  friend class M7;
 
   /**
    * Finds the first opaque pixel given the layer specs at a given

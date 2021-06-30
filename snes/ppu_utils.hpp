@@ -90,3 +90,7 @@ _Tp reduce3(_InputIterator first, _InputIterator last, _Tp init, _Arg3 op) {
   }
   return init;
 }
+
+float remap_byte(float v, float min, float max);
+
+float remap(float v, float min, float max);

@@ -122,3 +122,20 @@ word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_
 word tile_chr_addr(word chr_base, word tile_id, byte fine_y, byte wpp) {
   return chr_base + (8 * wpp) * tile_id + fine_y;
 }
+
+float remap_byte(float v, float min, float max) {
+  // v = 0xff, min = 0., max = 0.875
+  // output = 0.875
+
+  // v = 0xdf, min = 0., max = 1.
+  // output = 0.875
+  // 223/255 = 0.87451
+
+  return (static_cast<float>(v) / 255.) * (max - min) + min;
+}
+
+float remap(float v, float min, float max) {
+  // v = 0xff, min = 0., max = 0.875
+  // output = 0.875
+  return (static_cast<float>(v) / 65535.) * (max - min) + min;
+}

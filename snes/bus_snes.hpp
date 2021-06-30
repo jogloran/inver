@@ -17,6 +17,7 @@
 #include "types.h"
 
 #include "peripheral.hpp"
+#include "td_m_7.hpp"
 #include <SDL2/SDL.h>
 #include <gflags/gflags.h>
 #include <random>
@@ -73,6 +74,7 @@ public:
   std::shared_ptr<Mapper> cart;
 
   TD2 td2;
+  M7 m7;
   SNES_SPC* spc;
   size_t spc_time {};
 
