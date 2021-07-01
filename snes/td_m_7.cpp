@@ -62,6 +62,7 @@ void M7::show() {
           if (mode_ == Mode::Viewport) { mode_ = Mode::Tiles; }
           else { mode_ = Mode::Viewport; }
           break;
+        }
       }
     }
   }

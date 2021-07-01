@@ -210,6 +210,27 @@ public:
       case 0x2113: // BG4HOFS - BG4 Horizontal Scroll (X) (write-twice)
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
       {
+        if (addr == 0x210d || addr == 0x210e) {
+          switch (addr) {
+            case 0x210d:
+              if (m7a_write_upper) {
+                m7h.l = value;
+              } else {
+                m7h.h = value;
+              }
+              break;
+            case 0x210e:
+              if (m7a_write_upper) {
+                m7v.l = value;
+              } else {
+                m7v.h = value;
+              }
+              break;
+          }
+
+          m7a_write_upper = !m7a_write_upper;
+        }
+
         auto& reg = scr[(addr - 0x210d) / 2];
         if (addr & 1) {
           reg.x(value);
@@ -265,6 +286,7 @@ public:
         m7sel.reg = value;
         break;
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
+//        log_with_tag("m7", "m7a %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7a.h = value;
         } else {
@@ -273,6 +295,7 @@ public:
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
+//        log_with_tag("m7", "m7b %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7b.h = value;
         } else {
@@ -282,6 +305,7 @@ public:
         mpyx.w = m7a.w * m7b;
         break;
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
+//        log_with_tag("m7", "m7c %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7c.h = value;
         } else {
@@ -290,6 +314,7 @@ public:
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
+//        log_with_tag("m7", "m7d %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7d.h = value;
         } else {
@@ -298,6 +323,7 @@ public:
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
+//        log_with_tag("m7", "m7x %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7x.h = value;
         } else {
@@ -306,6 +332,7 @@ public:
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
+//        log_with_tag("m7", "m7y %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
           m7y.h = value;
         } else {
@@ -522,6 +549,8 @@ private:
   dual m7d {};
   dual m7x {};
   dual m7y {};
+  dual m7h {};
+  dual m7v {};
 
   s24_t mpyx {};
 
@@ -530,7 +559,7 @@ private:
     byte oam_index;
     std::vector<byte> pixels;
 
-    template <typename Ar>
+    template<typename Ar>
     void serialize(Ar& ar) {
       ar(oam, oam_index, pixels);
     }
@@ -542,6 +571,7 @@ private:
   friend class Logger<SPPU>;
 
   friend class TD2;
+
   friend class M7;
 
   /**
@@ -644,7 +674,7 @@ private:
   void blit();
 
 public:
-  template <typename Ar>
+  template<typename Ar>
   void serialize(Ar& ar) {
     ar(main_scr, sub_scr,
        inidisp, bgmode, mosaic, bg_base_size,

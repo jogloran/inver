@@ -580,56 +580,60 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
    */
   if (inidisp.force_blank) return {};
 
-  float a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
-      x0 = m7x.w, y0 = m7y.w,
-      h = scr[0].x_reg, v = scr[0].y_reg;
-  // all 8 parameters plus the (x, y) input must be interpreted as signed floating-point values
-  // as follows:
-  //  x [0x00, 0xff]
-  //    [0.0,   1.0)
-  //  y [0x00, 0xdf]
-  //    [0.0, 0.875)
-  // x0 [0x0000, 0x1fff]
-  // y0 [-16.0,    16.0)
-  //  v
-  //  h
-  x0 = remap(x0, -16., 16.);
-  y0 = remap(y0, -16., 16.);
-  v = remap(v, -16., 16.);
-  h = remap(h, -16., 16.);
-  //  a [0x0000, 0xffff]
-  //  b [-128.0,  128.0)
-  //  c
-  //  d
-  a = remap(a, -128., 128.);
-  b = remap(b, -128., 128.);
-  c = remap(c, -128., 128.);
-  d = remap(d, -128., 128.);
+  static auto clip = [](sdword v) -> sdword { return v & 0x2000 ? v | ~0x3ff : v & 0x3ff; };
 
-  const auto y = line;
+  sdword a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
+      x0 = m7x.w, y0 = m7y.w,
+      h = m7h.w, v = m7v.w;
+
+  h = (h << 19) >> 19;
+  v = (v << 19) >> 19;
+  x0 = (x0 << 19) >> 19;
+  y0 = (y0 << 19) >> 19;
+  a = 0x100; b = c = 0; d = 0x100;
+  x0 = y0 = h = v = 0;
+//a = 0x0; b = 0xffff; c = 1; d = 0; x0 = y0 = 0x0a00; h = v = 0;
+
+  // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
+  // arithmetic needs to be done in 32 bits because we're multiplying things which are
+  // represented as 16 bit values (we need 24 bits, in particular)
+
+  const sdword y = line;
+  // x_out and y_out are to be interpreted as fixed point with 8 fractional bits
+  sdword x_out = ((a * clip(h - x0)) & ~63)
+                + ((b * y) & ~63)
+                + ((b * clip(v - y0)) & ~63)
+                + (x0 << 8);
+  sdword y_out = ((c * clip(h - x0)) & ~63)
+                + ((d * y) & ~63)
+                + ((d * clip(v - y0)) & ~63)
+                + (y0 << 8);
+
+  printf("a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y %04x\n", a, b, c, d, h, v, x, y);
 
   auto* ptr = row.begin();
-  for (int x_ = 0; x_ < 256; ++x_) {
-    // get tilemap x_', y'
-    float x_f = remap_byte(x_, 0., 1.);
-    float y_f = remap_byte(y, 0., 1.);
-    float x_out = (a * (x_f + h - x0) + b * (y_f + v - y0)) / 255.;
-    float y_out = (c * (x_f + h - x0) + d * (y_f + v - y0)) / 255.;
+  for (sdword x_ = 0; x_ < 256; ++x_) {
+    // Truncate the 8 fractional bits
+    sdword y_coarse = y_out >> 8;
+    sdword x_coarse = x_out >> 8;
+    if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
+      continue;
+    }
 
-//    if (x_out < 0 || x_out >= 1024 || y_out < 0 || y_out >= 1024) {
-//      *ptr++ = 0;
-//    } else {
-    if (x_out < 0) x_out += 1024.;
-    if (y_out < 0) y_out += 1024.;
-//    printf("(%d, %d) -> (%f, %f)\n", x_, line, x_out, y_out);
-    auto offset = (word(x_out) / 8 * 128) + word(y_out / 8);
-//    printf("mem loc %x\n", offset);
-    auto tile_id = vram[offset].h;
+    auto tile_id_y = y_coarse / 8;
+    auto tile_id_x = x_coarse / 8;
+    auto offset = tile_id_y * 128 + tile_id_x;
+//    printf("mem loc %04x\n", offset);
+//    printf("(%d, %d) -> (%d, %d)\n", x_, line, x_out >> 8, y_out >> 8);
+    auto tile_id = vram[offset].l;
 //    printf("(%d, %d) -> tile_id %d\n", x_, line, tile_id);
-    auto chr_data = vram[0x40 * tile_id].l;
+    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_ % 8)].h ;
 
 //    printf("chr %d\n", chr_data);
     *ptr++ = chr_data;
+
+    x_out += a;
+    y_out += c;
 //    }
   }
 
