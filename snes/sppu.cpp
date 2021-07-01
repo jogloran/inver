@@ -627,7 +627,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 //    printf("(%d, %d) -> (%d, %d)\n", x_, line, x_out >> 8, y_out >> 8);
     auto tile_id = vram[offset].l;
 //    printf("(%d, %d) -> tile_id %d\n", x_, line, tile_id);
-    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_ % 8)].h ;
+    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_coarse % 8)].h ;
 
 //    printf("chr %d\n", chr_data);
     *ptr++ = chr_data;
