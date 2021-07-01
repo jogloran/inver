@@ -231,7 +231,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 }
 
 /**
- * Returns [cur_row, tile_row, line_] where:
+ * Returns [cur_row, tile_row, cur_col, tile_col, line_] where:
  * - 0 <= cur_row < 64 is the vertical tile index of the current line, accounting for vertical scroll
  * - 0 <= tile_row < 7 is the y-offset into the 8 rows of the tile
  * - line_ is the vertical line number after adjusting for mosaicing

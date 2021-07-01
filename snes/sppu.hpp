@@ -594,6 +594,9 @@ private:
 
   friend class PPUDebug;
 
+  /**
+   * Returns adjusted positions after accounting for x- and y-scrolling and the mosaic effect.
+   */
   auto get_tile_pos(byte bg) const;
 
   /**
