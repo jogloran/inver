@@ -288,18 +288,18 @@ public:
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
 //        log_with_tag("m7", "m7a %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7a.h = value;
-        } else {
           m7a.l = value;
+        } else {
+          m7a.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
 //        log_with_tag("m7", "m7b %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7b.h = value;
-        } else {
           m7b.l = value;
+        } else {
+          m7b.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         mpyx.w = m7a.w * m7b;
@@ -307,36 +307,36 @@ public:
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
 //        log_with_tag("m7", "m7c %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7c.h = value;
-        } else {
           m7c.l = value;
+        } else {
+          m7c.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
 //        log_with_tag("m7", "m7d %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7d.h = value;
-        } else {
           m7d.l = value;
+        } else {
+          m7d.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
 //        log_with_tag("m7", "m7x %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7x.h = value;
-        } else {
           m7x.l = value;
+        } else {
+          m7x.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         break;
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
 //        log_with_tag("m7", "m7y %d <- %02x\n", m7a_write_upper, value);
         if (m7a_write_upper) {
-          m7y.h = value;
-        } else {
           m7y.l = value;
+        } else {
+          m7y.h = value;
         }
         m7a_write_upper = !m7a_write_upper;
         break;

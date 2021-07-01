@@ -590,8 +590,8 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
   v = (v << 19) >> 19;
   x0 = (x0 << 19) >> 19;
   y0 = (y0 << 19) >> 19;
-  a = 0x100; b = c = 0; d = 0x100;
-  x0 = y0 = h = v = 0;
+//  a = 0x100; b = c = 0; d = 0x100;
+//  x0 = y0 = h = v = 0;
 //a = 0x0; b = 0xffff; c = 1; d = 0; x0 = y0 = 0x0a00; h = v = 0;
 
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
