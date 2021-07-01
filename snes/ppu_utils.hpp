@@ -6,9 +6,9 @@
 #include "types.h"
 
 /**
- * Decodes 1, 2 or 4 words of chr data representing one row of 8 tile pixels
+ * Decodes 1, 2 or 4 words of m7_chr data representing one row of 8 tile pixels
  * into an array of 8 palette indices.
- * @param ptr The initial offset of the chr data
+ * @param ptr The initial offset of the m7_chr data
  * @param wpp Words per pixel (1, 2 or 4)
  * @param flip_x Whether the tile is horizontally flipped
  * @return An array of 8 palette indices
@@ -58,8 +58,8 @@ word addr(word base, word x, word y, bool sx, bool sy);
 word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
 
 /**
- * Compute the VRAM address for BG tile chr data.
- * @param chr_base The base BG chr tile address
+ * Compute the VRAM address for BG tile m7_chr data.
+ * @param chr_base The base BG m7_chr tile address
  * @param tile_id 0 <= tile_no < 256
  * @param fine_y 0 <= fine_y < 8
  * @param wpp Words per pixel (bpp / 2)

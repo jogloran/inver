@@ -220,7 +220,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       break;
     }
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
-      // Only replace non-transparent pixels. Since all sprite chr data is 4bpp, this means
+      // Only replace non-transparent pixels. Since all sprite m7_chr data is 4bpp, this means
       // a palette index of 0 within each palette.
       if (!is_pal_clear(sprite.pixels[i]))
         result[sprite.oam.x + i] = sprite.pixels[i];
@@ -309,7 +309,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
 
-                  // get tile chr data
+                  // get tile m7_chr data
                   const word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
 
                   // decode planar data
@@ -616,9 +616,10 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     auto tile_id_y = y_coarse / 8;
     auto tile_id_x = x_coarse / 8;
     auto offset = tile_id_y * 128 + tile_id_x;
-    auto tile_id = vram[offset].l;
-    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_coarse % 8)].h ;
+    auto tile_id = vram[offset].m7_tile_id;
+    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_coarse % 8)].m7_chr;
 
+    // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;
 
     x_out += a;
