@@ -604,6 +604,11 @@ private:
    */
   void blit();
 
+  /**
+   * Alternate rendering pipeline for mode 7.
+   */
+  std::array<byte, 256> render_row_mode7(int bg);
+
 public:
   template<typename Ar>
   void serialize(Ar& ar) {
@@ -623,6 +628,4 @@ public:
        ncycles, line, x,
        visible, m7, m7sel);
   }
-
-  std::array<byte, 256> render_row_mode7(int bg);
 };
