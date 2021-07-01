@@ -586,14 +586,6 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
       x0 = m7x.w, y0 = m7y.w,
       h = m7h.w, v = m7v.w;
 
-  h = (h << 19) >> 19;
-  v = (v << 19) >> 19;
-  x0 = (x0 << 19) >> 19;
-  y0 = (y0 << 19) >> 19;
-//  a = 0x100; b = c = 0; d = 0x100;
-//  x0 = y0 = h = v = 0;
-//a = 0x0; b = 0xffff; c = 1; d = 0; x0 = y0 = 0x0a00; h = v = 0;
-
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
   // arithmetic needs to be done in 32 bits because we're multiplying things which are
   // represented as 16 bit values (we need 24 bits, in particular)
@@ -609,7 +601,8 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
                 + ((d * clip(v - y0)) & ~63)
                 + (y0 << 8);
 
-  printf("a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y %04x\n", a, b, c, d, h, v, x, y);
+  log_with_tag("m7",
+               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y %04x\n", a, b, c, d, h, v, x, y);
 
   auto* ptr = row.begin();
   for (sdword x_ = 0; x_ < 256; ++x_) {
@@ -623,23 +616,15 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     auto tile_id_y = y_coarse / 8;
     auto tile_id_x = x_coarse / 8;
     auto offset = tile_id_y * 128 + tile_id_x;
-//    printf("mem loc %04x\n", offset);
-//    printf("(%d, %d) -> (%d, %d)\n", x_, line, x_out >> 8, y_out >> 8);
     auto tile_id = vram[offset].l;
-//    printf("(%d, %d) -> tile_id %d\n", x_, line, tile_id);
     auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_coarse % 8)].h ;
 
-//    printf("chr %d\n", chr_data);
     *ptr++ = chr_data;
 
     x_out += a;
     y_out += c;
-//    }
   }
 
-  // decode tile map for current screen position
-  // y pos: line_
-  // x pos: start_x .. start_x + 32 ??
   std::array<byte, 256> result {};
   std::copy(row.begin(), row.begin() + 256, result.begin());
   return result;
