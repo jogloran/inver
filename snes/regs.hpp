@@ -31,6 +31,41 @@ struct BGScroll {
   void serialize(Ar& ar) { ar(x_reg, y_reg, bg_write_upper); }
 };
 
+struct M7Params {
+  void set(word addr, byte value) {
+    if (write_upper) {
+      switch (addr) {
+        case 0x210d: h.l = value; break;
+        case 0x210e: v.l = value; break;
+        default:
+          p[addr - 0x211b].l = value; break;
+      }
+    } else {
+      switch (addr) {
+        case 0x210d: h.h = value; break;
+        case 0x210e: v.h = value; break;
+        default:
+          p[addr - 0x211b].h = value; break;
+      }
+    }
+    write_upper = !write_upper;
+  }
+  word a() { return p[0].w; }
+  word b() { return p[1].w; }
+  word c() { return p[2].w; }
+  word d() { return p[3].w; }
+  word x0() { return p[4].w; }
+  word y0() { return p[5].w; }
+
+  std::array<dual, 6> p;
+  dual h {};
+  dual v {};
+  bool write_upper = false;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(p, h, v, write_upper); }
+};
+
 union window_mask_op_t {
   enum class MaskOp : byte {
     Or = 0, And = 1, Xor = 2, Xnor = 3

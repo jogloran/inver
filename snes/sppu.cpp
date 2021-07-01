@@ -582,9 +582,10 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 
   static auto clip = [](sdword v) -> sdword { return v & 0x2000 ? v | ~0x3ff : v & 0x3ff; };
 
-  sdword a = m7a.w, b = m7b.w, c = m7c.w, d = m7d.w,
-      x0 = m7x.w, y0 = m7y.w,
-      h = m7h.w, v = m7v.w;
+  sdword a = m7.a(), b = m7.b(),
+      c = m7.c(), d = m7.d(),
+      x0 = m7.x0(), y0 = m7.y0(),
+      h = m7.h.w, v = m7.v.w;
 
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
   // arithmetic needs to be done in 32 bits because we're multiplying things which are

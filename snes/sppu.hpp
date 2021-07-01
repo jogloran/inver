@@ -211,24 +211,7 @@ public:
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
       {
         if (addr == 0x210d || addr == 0x210e) {
-          switch (addr) {
-            case 0x210d:
-              if (m7a_write_upper) {
-                m7h.l = value;
-              } else {
-                m7h.h = value;
-              }
-              break;
-            case 0x210e:
-              if (m7a_write_upper) {
-                m7v.l = value;
-              } else {
-                m7v.h = value;
-              }
-              break;
-          }
-
-          m7a_write_upper = !m7a_write_upper;
+          m7.set(addr, value);
         }
 
         auto& reg = scr[(addr - 0x210d) / 2];
@@ -285,60 +268,15 @@ public:
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
         m7sel.reg = value;
         break;
+
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
-//        log_with_tag("m7", "m7a %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7a.l = value;
-        } else {
-          m7a.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
-        break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
-//        log_with_tag("m7", "m7b %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7b.l = value;
-        } else {
-          m7b.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
-        mpyx.w = m7a.w * m7b;
-        break;
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
-//        log_with_tag("m7", "m7c %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7c.l = value;
-        } else {
-          m7c.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
-        break;
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
-//        log_with_tag("m7", "m7d %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7d.l = value;
-        } else {
-          m7d.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
-        break;
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
-//        log_with_tag("m7", "m7x %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7x.l = value;
-        } else {
-          m7x.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
-        break;
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
-//        log_with_tag("m7", "m7y %d <- %02x\n", m7a_write_upper, value);
-        if (m7a_write_upper) {
-          m7y.l = value;
-        } else {
-          m7y.h = value;
-        }
-        m7a_write_upper = !m7a_write_upper;
+        m7.set(addr, value);
+        if (addr == 0x211c) mpyx.w = m7.a() * m7.b();
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
@@ -541,17 +479,7 @@ private:
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
-  dual m7a {};
-  // TODO: this isn't correct -- should share state with other write-twice registers
-  bool m7a_write_upper = false;
-  dual m7b {};
-  dual m7c {};
-  dual m7d {};
-  dual m7x {};
-  dual m7y {};
-  dual m7h {};
-  dual m7v {};
-
+  M7Params m7 {};
   s24_t mpyx {};
 
   struct RenderedSprite {
@@ -690,7 +618,7 @@ public:
        hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
        backdrop_colour, last_mode,
        ncycles, line, x,
-       visible, m7a_write_upper, m7a, m7b, m7c, m7d, m7h, m7v, m7x, m7y, m7sel);
+       visible, m7, m7sel);
   }
 
   std::array<byte, 256> render_row_mode7(int bg);
