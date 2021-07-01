@@ -690,7 +690,7 @@ public:
        hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
        backdrop_colour, last_mode,
        ncycles, line, x,
-       visible);
+       visible, m7a_write_upper, m7a, m7b, m7c, m7d, m7h, m7v, m7x, m7y, m7sel);
   }
 
   std::array<byte, 256> render_row_mode7(int bg);
