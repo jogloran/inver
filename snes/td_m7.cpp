@@ -12,14 +12,6 @@ void M7::connect(BusSNES* b) {
 
 void M7::show() {
   SDL_SetRenderDrawColor(renderer_, 0, 127, 0, 255);
-//
-//  for (int i = 0; i < 8; ++i) {
-//      for (int j = 0; j < 8; ++j) {
-//          std::printf("%02x ", ppu->vram[0x40 * 1 + i*8+j].h);
-//      }
-//      std::printf("\n");
-//  }
-//  std::printf("\n");
 
   for (int row = 0; row < 1024; ++row) {
     for (int col = 0; col < 1024; ++col) {

@@ -430,10 +430,24 @@ public:
 
   Screen* screen;
 
+  /**
+   * Render a single row of background screen output.
+   * @param bg The layer to render (0, 1, 2, 3)
+   * @param prio 0,1,2,3
+   * @return An array of palette values for each pixel in this row
+   */
   std::array<byte, 256> render_row(byte bg, byte prio) const;
 
+  /**
+   * Render a single row of sprite output.
+   * @param prio 0,1,2,3
+   * @return An array of palette values for each pixel in this row
+   */
   std::array<byte, 256> render_obj(byte prio);
 
+  /**
+   * Compute the mask row for a given background layer.
+   */
   std::array<byte, 256> compute_mask(byte layer) const;
 
 private:
