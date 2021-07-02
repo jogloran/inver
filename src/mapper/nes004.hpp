@@ -26,7 +26,7 @@ public:
 
   void dump_mapper() override {
     for (int i = 0; i < bank_for_target.size(); ++i) {
-      log("R%d -> %s bank %02x\n", i, i >= 6 ? "rom" : "m7_chr", bank_for_target[i]);
+      log("R%d -> %s bank %02x\n", i, i >= 6 ? "rom" : "chr", bank_for_target[i]);
     }
   }
 

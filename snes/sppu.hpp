@@ -194,7 +194,7 @@ public:
       case 0x210B: // BG12NBA - BG Character Data Area Designation
       case 0x210C: // BG34NBA - BG Character Data Area Designation
         bg_char_data_addr[addr - 0x210b].reg = value;
-        log("bg m7_chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
+        log("bg chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
             bg_char_data_addr[0].bg1_tile_base_addr << 12,
             bg_char_data_addr[0].bg2_tile_base_addr << 12,
             bg_char_data_addr[1].bg1_tile_base_addr << 12,

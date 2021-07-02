@@ -58,8 +58,8 @@ word addr(word base, word x, word y, bool sx, bool sy);
 word obj_addr(word chr_base, word tile_no, int tile_no_x_offset, long tile_no_y_offset, long fine_y);
 
 /**
- * Compute the VRAM address for BG tile m7_chr data.
- * @param chr_base The base BG m7_chr tile address
+ * Compute the VRAM address for BG tile chr data.
+ * @param chr_base The base BG chr tile address
  * @param tile_id 0 <= tile_no < 256
  * @param fine_y 0 <= fine_y < 8
  * @param wpp Words per pixel (bpp / 2)
