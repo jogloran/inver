@@ -82,4 +82,10 @@ std::array<LayerPriorityTable, 8> prios_for_mode =
           {Layers::OBJ, 3},
       },
       // Mode 7
-      {}}};
+      {
+          { 0, 0 },
+          {Layers::OBJ, 0},
+          {Layers::OBJ, 1},
+          {Layers::OBJ, 2},
+          {Layers::OBJ, 3},
+      }}};

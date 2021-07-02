@@ -78,7 +78,7 @@ auto& SPPU::route_main_sub(const std::vector<LayerSpec>& prios) {
       case 1:
       case 2:
       case 3:
-        if (main_scr(l.layer)) main_sub.first.push_back(l);
+        if (true) main_sub.first.push_back(l);
         if (sub_scr(l.layer)) main_sub.second.push_back(l);
         break;
 
@@ -105,6 +105,9 @@ void SPPU::render_row() {
   for (int i = 0; i < 256; ++i) {
     const auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
     const auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
+
+//    if (main_pal != 0)
+//    std::printf("%d: %d\n", i, main_pal);
 
     const bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
     const bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
@@ -217,7 +220,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       break;
     }
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
-      // Only replace non-transparent pixels. Since all sprite chr data is 4bpp, this means
+      // Only replace non-transparent pixels. Since all sprite m7_chr data is 4bpp, this means
       // a palette index of 0 within each palette.
       if (!is_pal_clear(sprite.pixels[i]))
         result[sprite.oam.x + i] = sprite.pixels[i];
@@ -228,7 +231,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
 }
 
 /**
- * Returns [cur_row, tile_row, line_] where:
+ * Returns [cur_row, tile_row, cur_col, tile_col, line_] where:
  * - 0 <= cur_row < 64 is the vertical tile index of the current line, accounting for vertical scroll
  * - 0 <= tile_row < 7 is the y-offset into the 8 rows of the tile
  * - line_ is the vertical line number after adjusting for mosaicing
@@ -306,7 +309,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
 
-                  // get tile chr data
+                  // get tile m7_chr data
                   const word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
 
                   // decode planar data
@@ -567,4 +570,70 @@ void SPPU::blit() {
     fb_ptr->b = rgb.b;
     ++fb_ptr;
   }
+}
+
+std::array<byte, 256> SPPU::render_row_mode7(int bg) {
+  /* Mode 7 is nothing more than an additional indirection between the screen-space coordinates
+   * (x, y), and the coordinates into a 128x128 tile (1024x1024 pixel) texture (x', y').
+   *
+   * (x, y) = (i, line)
+   */
+  if (inidisp.force_blank) return {};
+
+  static auto clip = [](sdword v) -> sdword { return v & 0x2000 ? v | ~0x3ff : v & 0x3ff; };
+
+  sdword a = m7.a(), b = m7.b(),
+      c = m7.c(), d = m7.d(),
+      x0 = m7.x0(), y0 = m7.y0(),
+      h = m7.h.w, v = m7.v.w;
+
+  // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
+  // arithmetic needs to be done in 32 bits because we're multiplying things which are
+  // represented as 16 bit values (we need 24 bits, in particular)
+
+  const sdword y = line;
+  // x_out and y_out are to be interpreted as fixed point with 8 fractional bits
+  // implements:
+  // x_out = a * (x + h - x0) + b * (y + v - y0) + x0
+  // y_out = c * (x + h - x0) + d * (y + v - y0) + y0
+  sdword x_out = ((a * clip(h - x0)) & ~63)
+                + ((b * y) & ~63)
+                + ((b * clip(v - y0)) & ~63)
+                + (x0 << 8);
+  sdword y_out = ((c * clip(h - x0)) & ~63)
+                + ((d * y) & ~63)
+                + ((d * clip(v - y0)) & ~63)
+                + (y0 << 8);
+
+  log_with_tag("m7",
+               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y %04x\n", a, b, c, d, h, v, x, y);
+
+  auto* ptr = row.begin();
+  for (sdword x_ = 0; x_ < 256; ++x_) {
+    // Truncate the 8 fractional bits
+    sdword y_coarse = y_out >> 8;
+    sdword x_coarse = x_out >> 8;
+    if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
+      continue;
+    }
+
+    byte y_fine = y_coarse % 8;
+    byte x_fine = x_coarse % 8;
+    auto tile_id_y = y_coarse / 8;
+    auto tile_id_x = x_coarse / 8;
+    auto offset = tile_id_y * 128 + tile_id_x;
+    auto tile_id = vram[offset].m7_tile_id;
+    // Tile data is 8*8 = 64 = 0x40 bytes in size
+    auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
+
+    // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
+    *ptr++ = chr_data;
+
+    x_out += a;
+    y_out += c;
+  }
+
+  std::array<byte, 256> result {};
+  std::copy(row.begin(), row.begin() + 256, result.begin());
+  return result;
 }

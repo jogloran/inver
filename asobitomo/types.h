@@ -51,6 +51,13 @@ union dual {
     byte l: 8;
     byte h: 8;
   };
+  // Aliases for M7
+  struct {
+    byte m7_tile_id: 8;
+    // in direct colour mode, a value to be interpreted as a colour.
+    // otherwise, a palette index
+    byte m7_chr: 8;
+  };
   word w;
 
 

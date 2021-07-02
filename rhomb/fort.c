@@ -472,7 +472,7 @@ utf8_nonnull utf8_pure utf8_weak int utf8casecmp(const void *src1,
 utf8_nonnull utf8_weak void *utf8cat(void *utf8_restrict dst,
                                      const void *utf8_restrict src);
 
-// Find the first match of the utf8 codepoint chr in the utf8 string src.
+// Find the first match of the utf8 codepoint m7_chr in the utf8 string src.
 utf8_nonnull utf8_pure utf8_weak void *utf8chr(const void *src,
         utf8_int32_t chr);
 
@@ -543,7 +543,7 @@ utf8_nonnull utf8_weak void *utf8ndup(const void *src, size_t n);
 utf8_nonnull utf8_pure utf8_weak void *utf8pbrk(const void *str,
         const void *accept);
 
-// Find the last match of the utf8 codepoint chr in the utf8 string src.
+// Find the last match of the utf8 codepoint m7_chr in the utf8 string src.
 utf8_nonnull utf8_pure utf8_weak void *utf8rchr(const void *src, int chr);
 
 // Number of bytes in the utf8 string str,
@@ -686,7 +686,7 @@ void *utf8chr(const void *src, utf8_int32_t chr)
         c[0] = 0xe0 | (char)(chr >> 12);
         c[1] = 0x80 | (char)((chr >> 6) & 0x3f);
         c[2] = 0x80 | (char)(chr & 0x3f);
-    } else { // if (0 == ((int)0xffe00000 & chr)) {
+    } else { // if (0 == ((int)0xffe00000 & m7_chr)) {
         // 4-byte/21-bit utf8 code point
         // (0b11110xxx 0b10xxxxxx 0b10xxxxxx 0b10xxxxxx)
         c[0] = 0xf0 | (char)(chr >> 18);
@@ -695,7 +695,7 @@ void *utf8chr(const void *src, utf8_int32_t chr)
         c[3] = 0x80 | (char)(chr & 0x3f);
     }
 
-    // we've made c into a 2 utf8 codepoint string, one for the chr we are
+    // we've made c into a 2 utf8 codepoint string, one for the m7_chr we are
     // seeking, another for the null terminating byte. Now use utf8str to
     // search
     return utf8str(src, c);
@@ -1137,7 +1137,7 @@ void *utf8rchr(const void *src, int chr)
         c[0] = 0xe0 | (char)(chr >> 12);
         c[1] = 0x80 | (char)((chr >> 6) & 0x3f);
         c[2] = 0x80 | (char)(chr & 0x3f);
-    } else { // if (0 == ((int)0xffe00000 & chr)) {
+    } else { // if (0 == ((int)0xffe00000 & m7_chr)) {
         // 4-byte/21-bit utf8 code point
         // (0b11110xxx 0b10xxxxxx 0b10xxxxxx 0b10xxxxxx)
         c[0] = 0xf0 | (char)(chr >> 18);
@@ -1147,7 +1147,7 @@ void *utf8rchr(const void *src, int chr)
     }
 
     // we've created a 2 utf8 codepoint string in c that is
-    // the utf8 character asked for by chr, and a null
+    // the utf8 character asked for by m7_chr, and a null
     // terminating byte
 
     while ('\0' != *s) {
@@ -1489,7 +1489,7 @@ size_t utf8codepointsize(utf8_int32_t chr)
         return 2;
     } else if (0 == ((utf8_int32_t)0xffff0000 & chr)) {
         return 3;
-    } else { // if (0 == ((int)0xffe00000 & chr)) {
+    } else { // if (0 == ((int)0xffe00000 & m7_chr)) {
         return 4;
     }
 }
@@ -1525,7 +1525,7 @@ void *utf8catcodepoint(void *utf8_restrict str, utf8_int32_t chr, size_t n)
         s[1] = 0x80 | (char)((chr >> 6) & 0x3f);
         s[2] = 0x80 | (char)(chr & 0x3f);
         s += 3;
-    } else { // if (0 == ((int)0xffe00000 & chr)) {
+    } else { // if (0 == ((int)0xffe00000 & m7_chr)) {
         // 4-byte/21-bit utf8 code point
         // (0b11110xxx 0b10xxxxxx 0b10xxxxxx 0b10xxxxxx)
         if (n < 4) {

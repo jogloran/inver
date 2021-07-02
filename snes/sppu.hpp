@@ -194,7 +194,7 @@ public:
       case 0x210B: // BG12NBA - BG Character Data Area Designation
       case 0x210C: // BG34NBA - BG Character Data Area Designation
         bg_char_data_addr[addr - 0x210b].reg = value;
-        log("bg chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
+        log("bg m7_chr data bases: 0: %06x 1: %06x 2: %06x 3: %06x\n",
             bg_char_data_addr[0].bg1_tile_base_addr << 12,
             bg_char_data_addr[0].bg2_tile_base_addr << 12,
             bg_char_data_addr[1].bg1_tile_base_addr << 12,
@@ -210,6 +210,10 @@ public:
       case 0x2113: // BG4HOFS - BG4 Horizontal Scroll (X) (write-twice)
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
       {
+        if (addr == 0x210d || addr == 0x210e) {
+          m7.set(addr, value);
+        }
+
         auto& reg = scr[(addr - 0x210d) / 2];
         if (addr & 1) {
           reg.x(value);
@@ -262,22 +266,17 @@ public:
         break;
 
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
+        m7sel.reg = value;
         break;
+
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
-        if (m7a_write_upper) {
-          m7a.h = value;
-        } else {
-          m7a.l = value;
-        }
-        break;
       case 0x211C: // M7B     - Rotation/Scaling Parameter B & Maths 8bit operand
-        m7b = value;
-        mpyx.w = m7a.w * m7b;
-        break;
       case 0x211D: // M7C     - Rotation/Scaling Parameter C         (write-twice)
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
+        m7.set(addr, value);
+        if (addr == 0x211c) mpyx.w = m7.a() * m7.b();
         break;
 
       case 0x2121: // CGADD   - Palette CGRAM Address
@@ -423,6 +422,8 @@ public:
   bool cgram_rw_upper = false;
   byte cgram_lsb = 0;
 
+  m7sel_t m7sel {};
+
   // endregion
 
   BusSNES* bus;
@@ -478,9 +479,7 @@ private:
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
-  dual m7a {};
-  bool m7a_write_upper = false;
-  byte m7b {};
+  M7Params m7 {};
   s24_t mpyx {};
 
   struct RenderedSprite {
@@ -488,7 +487,7 @@ private:
     byte oam_index;
     std::vector<byte> pixels;
 
-    template <typename Ar>
+    template<typename Ar>
     void serialize(Ar& ar) {
       ar(oam, oam_index, pixels);
     }
@@ -500,6 +499,8 @@ private:
   friend class Logger<SPPU>;
 
   friend class TD2;
+
+  friend class M7;
 
   /**
    * Finds the first opaque pixel given the layer specs at a given
@@ -593,6 +594,9 @@ private:
 
   friend class PPUDebug;
 
+  /**
+   * Returns adjusted positions after accounting for x- and y-scrolling and the mosaic effect.
+   */
   auto get_tile_pos(byte bg) const;
 
   /**
@@ -600,8 +604,13 @@ private:
    */
   void blit();
 
+  /**
+   * Alternate rendering pipeline for mode 7.
+   */
+  std::array<byte, 256> render_row_mode7(int bg);
+
 public:
-  template <typename Ar>
+  template<typename Ar>
   void serialize(Ar& ar) {
     ar(main_scr, sub_scr,
        inidisp, bgmode, mosaic, bg_base_size,
@@ -617,6 +626,6 @@ public:
        hv_latched, hloc, hloc_read_upper, vloc, vloc_read_upper,
        backdrop_colour, last_mode,
        ncycles, line, x,
-       visible);
+       visible, m7, m7sel);
   }
 };

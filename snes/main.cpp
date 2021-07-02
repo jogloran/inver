@@ -33,6 +33,7 @@ DEFINE_int32(sram, 0x10000, "Size of the first SRAM bank (70-7d:0000-ffff)");
 DEFINE_bool(load_save, false, "Load save immediately");
 DEFINE_bool(show_main, false, "");
 DEFINE_bool(show_sub, false, "");
+DEFINE_bool(m7, false, "Show mode 7 visualisation");
 
 std::set<std::string> active_tags;
 std::map<dword, PCWatchSpec> dis_pcs;
