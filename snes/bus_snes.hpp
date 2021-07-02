@@ -14,10 +14,11 @@
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
 #include "td.hpp"
+#include "regs.hpp"
 #include "types.h"
 
 #include "peripheral.hpp"
-#include "td_m_7.hpp"
+#include "td_m7.hpp"
 #include <SDL2/SDL.h>
 #include <gflags/gflags.h>
 #include <random>
@@ -66,6 +67,7 @@ public:
     cart = c;
   }
 
+  // WRAM (128kB)
   std::array<byte, 0x20000> ram {};
 
   std::shared_ptr<CPU5A22> cpu;
@@ -95,35 +97,8 @@ public:
                         Next,
                         Dma } dma_state = DMAState::Idle;
 
-  union wmadd_t {
-    struct {
-      byte l : 8;
-      byte m : 8;
-      byte h : 1;
-    };
-    struct {
-      dword addr : 17;
-      word unused : 15;
-    };
-    dword reg;
-
-    template <typename Ar>
-    void serialize(Ar& ar) { ar(reg); }
-  } wmadd {};
-
-  union nmitimen_t {
-    struct {
-      byte joypad_enable : 1;
-      byte unused : 3;
-      byte hv_irq : 2;
-      byte unused2 : 1;
-      byte vblank_nmi : 1;
-    };
-    byte reg;
-
-    template <typename Ar>
-    void serialize(Ar& ar) { ar(reg); }
-  } nmi;
+  wmadd_t wmadd {};
+  nmitimen_t nmi {};
 
   bool in_nmi = false;
 

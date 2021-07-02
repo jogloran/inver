@@ -238,7 +238,7 @@ union setini_t {
 union vram_addr_incr_t {
   struct {
     byte step_mode: 2;
-    byte addr_trans: 2; // TODO:
+    byte addr_trans: 2; // TODO: address translation
     byte unused: 3;
     byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
   };
@@ -338,6 +338,36 @@ union m7sel_t {
     byte screen_hflip: 1;
   };
   byte reg;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
+
+union nmitimen_t {
+  struct {
+    byte joypad_enable : 1;
+    byte unused : 3;
+    byte hv_irq : 2;
+    byte unused2 : 1;
+    byte vblank_nmi : 1;
+  };
+  byte reg;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
+
+union wmadd_t {
+  struct {
+    byte l : 8;
+    byte m : 8;
+    byte h : 1;
+  };
+  struct {
+    dword addr : 17;
+    word unused : 15;
+  };
+  dword reg;
 
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
