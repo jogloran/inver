@@ -22,7 +22,7 @@ static std::array<std::function<colour_t(colour_t, colour_t)>, 4> cm_op {
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
     mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
-const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) const {
+const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
     return l.obj.pal[prio];
   } else {
@@ -30,7 +30,7 @@ const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte
   }
 }
 
-const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) const {
+const Layers::Win& SPPU::get_mask_row(const Layers& l, byte layer) {
   if (layer == Layers::OBJ) {
     return l.obj.mask;
   } else {

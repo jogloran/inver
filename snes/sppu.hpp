@@ -466,7 +466,7 @@ private:
 
   constexpr static byte vram_incr_step[] = {1, 32, 128, 128};
   constexpr static const char* TAG = "sppu";
-  byte last_mode = 0xff;
+  byte last_mode = 0xff; // last mode set, for debugging purposes
 
   long ncycles {};
   long line {};
@@ -542,7 +542,7 @@ private:
    * @param prio Priority (0,1,2,3)
    * @return Reference to palette indices
    */
-  const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio) const;
+  static const std::array<byte, 256>& get_pal_row(const Layers& l, byte layer, byte prio);
 
   /**
    * Get the appropriate window row mask from the layer data
@@ -551,7 +551,7 @@ private:
    * @param prio Priority (0,1,2,3)
    * @return Reference to window row mask
    */
-  const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer) const;
+  static const std::array<byte, 256>& get_mask_row(const Layers& l, byte layer);
 
   /**
    * Given a the layer specs for this mode and the current PPU state,
@@ -604,11 +604,6 @@ private:
    */
   void blit();
 
-  /**
-   * Alternate rendering pipeline for mode 7.
-   */
-  std::array<byte, 256> render_row_mode7(int bg);
-
 public:
   template<typename Ar>
   void serialize(Ar& ar) {
@@ -628,4 +623,9 @@ public:
        ncycles, line, x,
        visible, m7, m7sel);
   }
+
+  /**
+   * Alternate rendering pipeline for mode 7.
+   */
+  std::array<byte, 256> render_row_mode7(int bg);
 };
