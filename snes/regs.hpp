@@ -342,3 +342,33 @@ union m7sel_t {
   template <typename Ar>
   void serialize(Ar& ar) { ar(reg); }
 };
+
+union nmitimen_t {
+  struct {
+    byte joypad_enable : 1;
+    byte unused : 3;
+    byte hv_irq : 2;
+    byte unused2 : 1;
+    byte vblank_nmi : 1;
+  };
+  byte reg;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
+
+union wmadd_t {
+  struct {
+    byte l : 8;
+    byte m : 8;
+    byte h : 1;
+  };
+  struct {
+    dword addr : 17;
+    word unused : 15;
+  };
+  dword reg;
+
+  template <typename Ar>
+  void serialize(Ar& ar) { ar(reg); }
+};
