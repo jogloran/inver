@@ -10,7 +10,7 @@
 
 #include "dma.hpp"
 #include "logger.hpp"
-#include "mapper.hpp"
+#include "mapper/mapper.hpp"
 #include "snes_spc/spc.h"
 #include "sppu.hpp"
 #include "td.hpp"

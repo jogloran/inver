@@ -12,10 +12,10 @@
 
 #include "bus_snes.hpp"
 #include "debug.hpp"
-#include "hirom.hpp"
-#include "lorom.hpp"
-#include "types.h"
+#include "mapper/hirom.hpp"
+#include "mapper/lorom.hpp"
 #include "metadata.hpp"
+#include "types.h"
 
 DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(xx, false, "Debug");
