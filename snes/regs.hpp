@@ -238,7 +238,7 @@ union setini_t {
 union vram_addr_incr_t {
   struct {
     byte step_mode: 2;
-    byte addr_trans: 2; // TODO:
+    byte addr_trans: 2; // TODO: address translation
     byte unused: 3;
     byte after_accessing_high: 1; // Increment VRAM Address after accessing High/Low byte (0=Low, 1=High)
   };
