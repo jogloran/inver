@@ -39,7 +39,7 @@ void BusSNES::tick() {
   spc_read_port(spc, spc_time++, 3);
 }
 
-void BusSNES::reset() {
+void BusSNES::reset() const {
   cpu->reset();
   ppu->reset();
 }

@@ -37,6 +37,10 @@ public:
 //    }
   }
 
+  /**
+   * Implements the MVP/MVN (move positive/negative) opcodes.
+   * @param mvp MVP if true
+   */
   cycle_count_t mv_(bool mvp) {
     word count = a + 1;
     cycle_count_t ncycles {};
@@ -62,12 +66,18 @@ public:
     return ncycles;
   }
 
+  /**
+   * Implements JSL (jump to subroutine, long).
+   */
   void jsl() {
     push(pc.b);
     push_word(pc.addr + 2);
     pc.addr = read_full_addr();
   }
 
+  /**
+   * Implements the RTI (return from interrupt) instruction.
+   */
   void rti() {
     pop_flags();
     pc.c = pop_word();
@@ -78,33 +88,51 @@ public:
 
   void stp() {}
 
+  /**
+   * Implements RTS (return from subroutine), which matches JSR.
+   */
   void rts() {
     pc.c = pop_word() + 1; // Note the + 1 for the special behaviour of RTS
   }
 
+  /**
+   * Implements RTL (return long from subroutine), which matches JSL.
+   */
   void rtl() {
     dword addr = pop_word();
     byte hi = pop();
     pc.addr = ((hi << 16) | addr) + 1;
   }
 
+  /**
+   * Sets the Z flag according to whether the operand is zero.
+   */
   word check_z_flag(word operand, bool op16) {
     p.Z = (operand & (op16 ? 0xffff : 0xff)) == 0;
     return operand;
   }
 
+  /**
+   * Sets the N (negative) flag according to whether the operand is <0.
+   */
   word check_n_flag(word operand, bool op16) {
     p.N = (operand & (op16 ? 0x8000 : 0x80)) != 0;
     return operand;
   }
 
+  /**
+   * Potentially sets both Z and N flags based on the operand.
+   */
   word check_zn_flags(word operand, bool op16) {
     check_z_flag(operand, op16);
     check_n_flag(operand, op16);
     return operand;
   }
 
-  inline void store(dual& reg, word value, bool op16) {
+  /**
+   * Performs an 8-bit or 16-bit store.
+   */
+  static inline void store(dual& reg, word value, bool op16) {
     if (op16) {
       reg.w = value;
     } else {
@@ -116,14 +144,23 @@ public:
 
   word pop_word();
 
+  /**
+   * Pushes a byte onto the stack.
+   */
   void push(byte data);
 
+  /**
+   * Pushes a 16-bit value onto the stack with data starting from the given address.
+   */
   void push_word(word address);
 
+  /**
+   * Pops a byte from the stack into the flags register.
+   */
   void pop_flags();
 
   cycle_count_t branch_with_offset() {
-    sbyte offset = static_cast<sbyte>(read_byte());
+    auto offset = static_cast<sbyte>(read_byte());
     pc.addr += offset;
     return e
            ? (((pc.addr - offset) & 0xff00) == (pc.addr & 0xff00) ? 0 : 1)
@@ -131,7 +168,7 @@ public:
   }
 
   cycle_count_t branch_with_far_offset() {
-    sword offset = static_cast<sword>(read_word());
+    auto offset = static_cast<sword>(read_word());
     pc.addr += offset;
     return 0;
   }
@@ -140,9 +177,9 @@ public:
     if ((addr1 & 0xff00) != (addr2 & 0xff00)) crossed_page = true;
   }
 
-  void write(dword address, byte value);
+  void write(dword address, byte value) const;
 
-  byte read(dword address);
+  byte read(dword address) const;
 
   inline byte read_byte() {
     return read(pc.addr++);
@@ -154,6 +191,9 @@ public:
     return val;
   }
 
+  /**
+   * Reads a 24-bit address at the current pc value.
+   */
   inline dword read_full_addr() {
     byte lo = read_byte();
     byte md = read_byte();
@@ -161,6 +201,9 @@ public:
     return (hi << 16) | (md << 8) | lo;
   }
 
+  /**
+   * Reads a 24-bit address at a given memory location.
+   */
   inline dword read_full_addr(dword addr) {
     byte lo = read(addr);
     byte md = read(addr + 1);
@@ -168,10 +211,16 @@ public:
     return (hi << 16) | (md << 8) | lo;
   }
 
+  /**
+   * Reads a 16-bit value at a given memory location.
+   */
   inline word read_word(dword addr) {
     return read(addr) | (read(addr + 1) << 8);
   }
 
+  /**
+   * Reads a 32-bit value at a given memory location.
+   */
   inline dword read_dword(dword addr) {
     return read(addr) | (read(addr + 1) << 8) | (read(addr + 2) << 16);
   }
@@ -280,7 +329,10 @@ dword addr_##mode() body
     return (pc.b << 16) | read_word((pc.b << 16) | (read_word() + x));
   }
 
-  inline bool native() {
+  /**
+   * Returns whether we are in native (65c816) mode or emulation (6502) mode.
+   */
+  inline bool native() const {
     return e == 0;
   }
 
@@ -344,6 +396,7 @@ dword addr_##mode() body
   word dp {}; // Direct Page (aka D register)
   byte db {}; // Data Bank (aka DBR, rr)
 
+  // Program counter (pc), a 24-bit value
   union pc_t {
     struct {
       word c: 16;
@@ -358,6 +411,7 @@ dword addr_##mode() body
     }
   } pc {};
 
+  // Flags register
   union flags_t {
     struct {
       byte C: 1;
@@ -378,7 +432,7 @@ dword addr_##mode() body
   } p = {};
 
   bool crossed_page = false;
-  bool e = 1; // (0=native, 1=emulation)
+  bool e = true; // (false=native, true=emulation)
   long ncycles {};
   word cycles_left {};
 

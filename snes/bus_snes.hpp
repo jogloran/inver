@@ -56,7 +56,7 @@ public:
 
   void tick();
 
-  void reset();
+  void reset() const;
 
   byte read(dword address);
 
