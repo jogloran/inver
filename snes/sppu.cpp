@@ -593,6 +593,9 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 
   const sdword y = line;
   // x_out and y_out are to be interpreted as fixed point with 8 fractional bits
+  // implements:
+  // x_out = a * (x + h - x0) + b * (y + v - y0) + x0
+  // y_out = c * (x + h - x0) + d * (y + v - y0) + y0
   sdword x_out = ((a * clip(h - x0)) & ~63)
                 + ((b * y) & ~63)
                 + ((b * clip(v - y0)) & ~63)
@@ -614,11 +617,14 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
       continue;
     }
 
+    byte y_fine = y_coarse % 8;
+    byte x_fine = x_coarse % 8;
     auto tile_id_y = y_coarse / 8;
     auto tile_id_x = x_coarse / 8;
     auto offset = tile_id_y * 128 + tile_id_x;
     auto tile_id = vram[offset].m7_tile_id;
-    auto chr_data = vram[0x40 * tile_id + (y_coarse % 8) * 8 + (x_coarse % 8)].m7_chr;
+    // Tile data is 8*8 = 64 = 0x40 bytes in size
+    auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
 
     // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;
