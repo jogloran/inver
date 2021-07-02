@@ -272,7 +272,7 @@ const char* addr_mode_to_str[] = {
     "IndX", "Zp", "Imm", "Abs", "YInd", "ZpX", "AbsY", "AbsX", "Acc", "Implied", "Invalid", "Rel"
 };
 
-std::string get_tag_for_address(word value);
+const std::string& get_tag_for_address(word value);
 
 std::string formatted(std::string fmt, ...) {
   va_list args;
@@ -383,7 +383,7 @@ std::string instruction_at_pc(CPU5A22& cpu) {
   return meta.mnemonic + " " + addr_mode_templates[meta.addr_mode];
 }
 
-std::map<word, std::string> tags {
+static std::map<word, std::string> tags {
     {0x2100, "INIDISP"},
     {0x2101, "OBSEL"},
     {0x2102, "OAMADDL"},
@@ -581,6 +581,6 @@ std::map<word, std::string> tags {
     {0x437a, "NTLR7"}
 };
 
-std::string get_tag_for_address(word value) {
+const std::string& get_tag_for_address(word value) {
   return tags[value];
 }

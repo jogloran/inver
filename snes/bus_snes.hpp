@@ -66,6 +66,7 @@ public:
     cart = c;
   }
 
+  // WRAM (128kB)
   std::array<byte, 0x20000> ram {};
 
   std::shared_ptr<CPU5A22> cpu;
