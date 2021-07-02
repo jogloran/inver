@@ -17,7 +17,7 @@
 #include "types.h"
 
 #include "peripheral.hpp"
-#include "td_m_7.hpp"
+#include "td_m7.hpp"
 #include <SDL2/SDL.h>
 #include <gflags/gflags.h>
 #include <random>
