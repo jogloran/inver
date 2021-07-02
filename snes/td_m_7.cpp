@@ -32,9 +32,9 @@ void M7::show() {
         tile_id = tile_row * 128 + tile_col;
       } else {
         // Trying to deref tilemap
-        tile_id = ppu->vram[tile_row * 128 + tile_col].l;
+        tile_id = ppu->vram[tile_row * 128 + tile_col].m7_tile_id;
       }
-      auto pix = ppu->vram[tile_id * 0x40 + (row % 8) * 8 + (col % 8)].h;
+      auto pix = ppu->vram[tile_id * 0x40 + (row % 8) * 8 + (col % 8)].m7_chr;
 
       auto colour = ppu->lookup(pix);
       buf[row * 4 * 1024 + col * 4] = colour.b * 4;
