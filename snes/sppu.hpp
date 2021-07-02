@@ -248,20 +248,14 @@ public:
 
       case 0x2118: // VMDATAL - VRAM Data Write (lower 8bit)
         vram[vram_addr.w & 0x7fff].l = value;
-        //        printf("2118 writing to %04x lo <- %02x\n", vram_addr.w & 0x7fff, value);
-        //        printf("2118 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (!vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-          //          printf("2118 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
       case 0x2119: // VMDATAH - VRAM Data Write (upper 8bit)
         vram[vram_addr.w & 0x7fff].h = value;
-        //        printf("2119 writing to %04x hi <- %02x\n", vram_addr.w & 0x7fff, value);
-        //        printf("2119 After writing: %04x\n", vram[vram_addr.w & 0x7fff].w);
         if (vram_addr_incr.after_accessing_high) {
           vram_addr.w += vram_incr_step[vram_addr_incr.step_mode];
-          //          printf("2119 incr to %04x\n", vram_addr.w & 0x7fff);
         }
         break;
 
