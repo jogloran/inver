@@ -33,6 +33,24 @@ std::ostream& hex_addr(std::ostream& out) {
   return out << std::hex << std::setw(6) << std::setfill('0') << std::right;
 }
 
+template <typename T>
+std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w) {
+  if (!dim) {
+    out << rang::style::reset << rang::fg::reset;
+  } else {
+    out << rang::style::dim << rang::fg::gray;
+  }
+  return out << hex_word << w;
+}
+
+template <typename T, typename... Args>
+std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w, Args... args) {
+  hex_word_alternating(out, dim, w);
+  hex_word_alternating(out, !dim, args...);
+  out << rang::style::reset << rang::fg::reset;
+  return out;
+}
+
 const char* to_6502_flag_string(byte f) {
   static char buf[9] = "________";
   static const char* flags = "NVmxDIZC";
@@ -87,16 +105,19 @@ void CPU5A22::dump() {
     std::cout << " x: " << hex_word << static_cast<int>(x)
               << " y: " << hex_word << static_cast<int>(y);
   }
-//  std::cout << " APU: " << hex_byte << static_cast<int>(read(0x2140))
-//            << static_cast<int>(read(0x2141))
-//            << static_cast<int>(read(0x2142))
-//            << static_cast<int>(read(0x2143));
-  std::cout << " 0000:" << hex_byte << static_cast<int>(read(0x0000))
-            << hex_byte << static_cast<int>(read(0x0001))
-            << hex_byte << static_cast<int>(read(0x0002))
-            << hex_byte << static_cast<int>(read(0x0003))
-            << hex_byte << static_cast<int>(read(0x0004));
-  std::cout << " 4212:" << hex_byte << static_cast<int>(read(0x4212));
+  std::cout << " m7: ";
+  hex_word_alternating(std::cout, false,
+                       bus->ppu->m7.a(),
+                       bus->ppu->m7.b(),
+                       bus->ppu->m7.c(),
+                       bus->ppu->m7.d());
+  std::cout << ' ';
+  hex_word_alternating(std::cout, false,
+                       bus->ppu->m7.h.w,
+                       bus->ppu->m7.v.w,
+                       bus->ppu->m7.x0(),
+                       bus->ppu->m7.y0());
+
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
 

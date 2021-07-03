@@ -326,6 +326,7 @@ union layer_ctrl_t {
   void serialize(Ar& ar) { ar(reg); }
 };
 
+/* 211a */
 union m7sel_t {
   struct {
     /* Controls what happens to tiles exceeding the 128x128 tile boundary:

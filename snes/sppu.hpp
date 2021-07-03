@@ -261,6 +261,7 @@ public:
 
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
         m7sel.reg = value;
+        log_with_tag("m7", "m7sel over %d flip v %d h %d\n", m7sel.screen_over, m7sel.screen_vflip, m7sel.screen_hflip);
         break;
 
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
@@ -269,6 +270,7 @@ public:
       case 0x211E: // M7D     - Rotation/Scaling Parameter D         (write-twice)
       case 0x211F: // M7X     - Rotation/Scaling Center Coordinate X (write-twice)
       case 0x2120: // M7Y     - Rotation/Scaling Center Coordinate Y (write-twice)
+        log_with_tag("m7", "p %04x <- %02x\n", addr, value);
         m7.set(addr, value);
         if (addr == 0x211c) mpyx.w = m7.a() * m7.b();
         break;
@@ -444,6 +446,8 @@ public:
    */
   std::array<byte, 256> compute_mask(byte layer) const;
 
+  M7Params m7 {};
+
 private:
   std::array<byte, 512 + 32> oam {};
 
@@ -487,7 +491,6 @@ private:
 
   std::pair<std::vector<LayerSpec>, std::vector<LayerSpec>> main_sub {};
 
-  M7Params m7 {};
   s24_t mpyx {};
 
   struct RenderedSprite {

@@ -606,7 +606,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
                 + (y0 << 8);
 
   log_with_tag("m7",
-               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y %04x\n", a, b, c, d, h, v, x, y);
+               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x\n", a, b, c, d, h, v, x0, y0);
 
   auto* ptr = row.begin();
   for (sdword x_ = 0; x_ < 256; ++x_) {
@@ -614,8 +614,12 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     sdword y_coarse = y_out >> 8;
     sdword x_coarse = x_out >> 8;
     if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
-      continue;
+       continue;
     }
+//    if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
+//      y_coarse %= 1024;
+//      x_coarse %= 1024;
+//    }
 
     byte y_fine = y_coarse % 8;
     byte x_fine = x_coarse % 8;
@@ -625,6 +629,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     auto tile_id = vram[offset].m7_tile_id;
     // Tile data is 8*8 = 64 = 0x40 bytes in size
     auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
+    log_with_tag("m7", "(%d, %d) <- %02x\n", x_coarse, y_coarse, chr_data);
 
     // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;
