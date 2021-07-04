@@ -584,10 +584,17 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 
   sdword a = m7.a(), b = m7.b(),
       c = m7.c(), d = m7.d(),
-      x0 = m7.x0(), y0 = m7.y0(),
-      h = m7.h.w, v = m7.v.w;
+      x0 = (static_cast<sdword>(m7.x0()) << 19) >> 19,
+      y0 = (static_cast<sdword>(m7.y0()) << 19) >> 19,
+      h = (static_cast<sdword>(m7.h.w) << 19) >> 19,
+      v = (static_cast<sdword>(m7.v.w) << 19) >> 19;
+//  a = d = 0; b = 0xff23; c = 0xdd; x0 = 0x0470; y0 = 0x0268; h = 0x1008; v = 0x440;
 
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
+  //              1 bit sign, 12 integral bits (two's complement)
+  // a, b, c, d   need to be interpreted as 1:7:8 fixed point values
+  //              1 bit sign, 7 integral bits (two's complement),
+  //              8 fractional bits
   // arithmetic needs to be done in 32 bits because we're multiplying things which are
   // represented as 16 bit values (we need 24 bits, in particular)
 
@@ -605,31 +612,49 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
                 + ((d * clip(v - y0)) & ~63)
                 + (y0 << 8);
 
-  log_with_tag("m7",
-               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x\n", a, b, c, d, h, v, x0, y0);
+//  log_with_tag("m7",
+//               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x\n", a, b, c, d, h, v, x0, y0);
 
   auto* ptr = row.begin();
   for (sdword x_ = 0; x_ < 256; ++x_) {
     // Truncate the 8 fractional bits
     sdword y_coarse = y_out >> 8;
     sdword x_coarse = x_out >> 8;
-    if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
-       continue;
+
+    byte tile_id;
+
+    if (!m7sel.no_wrap) {
+      y_coarse &= 0x3ff;
+      x_coarse &= 0x3ff;
+
+      log_with_tag("www", "wrap %04x %04x\n", x_coarse, y_coarse);
+
+      auto tile_id_y = y_coarse / 8;
+      auto tile_id_x = x_coarse / 8;
+      auto offset = tile_id_y * 128 + tile_id_x;
+      tile_id = vram[offset].m7_tile_id;
+    } else {
+      if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
+        if (m7sel.fill_with_tile_0) {
+          tile_id = 0;
+        } else {
+//          log_with_tag("m7", "(%d, %d) outside\n", x_coarse, y_coarse);
+
+          continue;
+        }
+      } else {
+        auto tile_id_y = y_coarse / 8;
+        auto tile_id_x = x_coarse / 8;
+        auto offset = tile_id_y * 128 + tile_id_x;
+        tile_id = vram[offset].m7_tile_id;
+      }
     }
-//    if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
-//      y_coarse %= 1024;
-//      x_coarse %= 1024;
-//    }
 
     byte y_fine = y_coarse % 8;
     byte x_fine = x_coarse % 8;
-    auto tile_id_y = y_coarse / 8;
-    auto tile_id_x = x_coarse / 8;
-    auto offset = tile_id_y * 128 + tile_id_x;
-    auto tile_id = vram[offset].m7_tile_id;
     // Tile data is 8*8 = 64 = 0x40 bytes in size
     auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
-    log_with_tag("m7", "(%d, %d) <- %02x\n", x_coarse, y_coarse, chr_data);
+//    log_with_tag("m7", "(%d, %d) <- %02x\n", x_coarse, y_coarse, chr_data);
 
     // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;

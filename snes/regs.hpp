@@ -333,7 +333,8 @@ union m7sel_t {
      *   0, 1: Wrap
      *   2:    Transparent
      *   3:    Filled by tile ID 0x0 */
-    byte screen_over: 2;
+    byte no_wrap: 1;
+    byte fill_with_tile_0: 1;
     byte unused: 4;
     byte screen_vflip: 1;
     byte screen_hflip: 1;

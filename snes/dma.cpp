@@ -44,6 +44,7 @@ void DMA::hdma_tick() {
     byte bank = a1.hi;
 
     byte value;
+    log("tx type: %d\n",dma_params.tx_type);
     switch (dma_params.tx_type) {
       case 0: {
         // assume A -> B to begin with
@@ -71,6 +72,23 @@ void DMA::hdma_tick() {
           value = bus->read((bank << 16) | hdma_ptr++);
         }
         bus->write(dst + 1, value);
+        break;
+      }
+      case 2: {
+        if (indirect) {
+          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
+          value = bus->read(das.addr++);
+        } else {
+          value = bus->read((bank << 16) | hdma_ptr++);
+        }
+        bus->write(dst, value);
+        if (indirect) {
+          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
+          value = bus->read(das.addr++);
+        } else {
+          value = bus->read((bank << 16) | hdma_ptr++);
+        }
+        bus->write(dst, value);
         break;
       }
     }

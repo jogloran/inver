@@ -261,7 +261,7 @@ public:
 
       case 0x211A: // M7SEL   - Rotation/Scaling Mode Settings
         m7sel.reg = value;
-        log_with_tag("m7", "m7sel over %d flip v %d h %d\n", m7sel.screen_over, m7sel.screen_vflip, m7sel.screen_hflip);
+        log_with_tag("m7", "m7sel nowrap %d fill0 %d flip v %d h %d\n", m7sel.no_wrap, m7sel.fill_with_tile_0, m7sel.screen_vflip, m7sel.screen_hflip);
         break;
 
       case 0x211B: // M7A     - Rotation/Scaling Parameter A & Maths 16bit operand
