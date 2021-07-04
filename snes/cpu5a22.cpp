@@ -68,6 +68,22 @@ void CPU5A22::dump_pc() {
             << instruction_at_pc(*this);
 }
 
+void CPU5A22::dump_m7() {
+  std::cout << "abcd ";
+  hex_word_alternating(std::cout, false,
+                       bus->ppu->m7.a(),
+                       bus->ppu->m7.b(),
+                       bus->ppu->m7.c(),
+                       bus->ppu->m7.d());
+  std::cout << " hvxy ";
+  hex_word_alternating(std::cout, false,
+                       bus->ppu->m7.h.w,
+                       bus->ppu->m7.v.w,
+                       bus->ppu->m7.x0(),
+                       bus->ppu->m7.y0());
+  std::cout << std::endl;
+}
+
 std::ostream& CPU5A22::dump_stack(std::ostream& out) {
   out << "〖 ";
   for (word ptr = 0x1fff; ptr > sp; --ptr) {
@@ -105,18 +121,8 @@ void CPU5A22::dump() {
     std::cout << " x: " << hex_word << static_cast<int>(x)
               << " y: " << hex_word << static_cast<int>(y);
   }
-  std::cout << " m7: ";
-  hex_word_alternating(std::cout, false,
-                       bus->ppu->m7.a(),
-                       bus->ppu->m7.b(),
-                       bus->ppu->m7.c(),
-                       bus->ppu->m7.d());
   std::cout << ' ';
-  hex_word_alternating(std::cout, false,
-                       bus->ppu->m7.h.w,
-                       bus->ppu->m7.v.w,
-                       bus->ppu->m7.x0(),
-                       bus->ppu->m7.y0());
+  dump_m7();
 
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;

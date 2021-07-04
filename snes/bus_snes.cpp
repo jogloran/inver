@@ -400,3 +400,6 @@ void BusSNES::attach_screen(std::shared_ptr<Screen> s) {
 void BusSNES::set_pc(word pc) {
   cpu->pc.addr = pc;
 }
+void BusSNES::dump_m7() {
+  cpu->dump_m7();
+}

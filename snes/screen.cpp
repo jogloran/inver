@@ -101,6 +101,10 @@ void Screen::blit() {
           FLAGS_show_sub = !FLAGS_show_sub;
           break;
 
+        case SDLK_BACKSLASH:
+          ppu->bus->dump_m7();
+          break;
+
         case SDLK_v:
           ppu->bus->pickle("save.state");
           break;

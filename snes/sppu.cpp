@@ -589,6 +589,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
       h = (static_cast<sdword>(m7.h.w) << 19) >> 19,
       v = (static_cast<sdword>(m7.v.w) << 19) >> 19;
 //  a = d = 0; b = 0xff23; c = 0xdd; x0 = 0x0470; y0 = 0x0268; h = 0x1008; v = 0x440;
+//  h = 0x3f0; v = 0x1b8;
 
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
   //              1 bit sign, 12 integral bits (two's complement)

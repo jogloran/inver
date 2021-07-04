@@ -151,4 +151,5 @@ public:
   void attach_screen(std::shared_ptr<Screen> s);
 
   void set_pc(word rst_addr);
+  void dump_m7();
 };
