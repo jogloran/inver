@@ -77,7 +77,7 @@ add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         src/peripheral.hpp snes/sdl_snes_input.hpp snes/debug.hpp snes/regs.hpp snes/debug.cpp snes/mode.hpp snes/ppu_debug.hpp snes/ppu_debug.cpp
         snes/mapper/mapper.hpp snes/mapper/lorom.hpp snes/mapper/hirom.hpp snes/mode.cpp snes/colour.hpp snes/metadata.hpp snes/metadata.cpp snes/td_m7.cpp snes/td_m7.hpp)
 
-target_compile_options(snes PRIVATE -DNDEBUG)
+target_compile_options(snes PRIVATE -DNDEBUG -DDUMMY_M7_VRAM)
 
 target_link_libraries(snes gflags)
 target_link_libraries(snes ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})

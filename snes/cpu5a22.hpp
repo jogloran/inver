@@ -444,8 +444,6 @@ dword addr_##mode() body
 
   void dump();
 
-  void dump_m7();
-
   std::ostream& dump_stack(std::ostream& out);
 
   template<typename Ar>
@@ -455,4 +453,6 @@ dword addr_##mode() body
   }
 
   static constexpr const char* TAG = "cpu";
+
+  void dump_m7(bool flush = false);
 };

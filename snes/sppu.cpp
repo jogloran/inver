@@ -572,6 +572,29 @@ void SPPU::blit() {
   }
 }
 
+void SPPU::fill_dummy_vram() {
+  // 128x128 tilemap
+  // each two rows are a sequence of tiles
+  // 0, 1, 2, ..., 128
+  // 129, 130, 131, ..., 255
+
+  // 256 tiles
+  // each tile is solid colour
+
+  for (int row = 0; row < 128; ++row) {
+    for (int col = 0; col < 128; ++col) {
+      vram[row*128 + col].m7_tile_id = (row % 2) * 128 + col;
+    }
+  }
+
+  for (int tile_id = 0; tile_id < 256; ++tile_id) {
+    for (int i = 0; i < 0x40; ++i) {
+      vram[tile_id * 0x40 + i].m7_chr = tile_id;
+    }
+  }
+
+}
+
 std::array<byte, 256> SPPU::render_row_mode7(int bg) {
   /* Mode 7 is nothing more than an additional indirection between the screen-space coordinates
    * (x, y), and the coordinates into a 128x128 tile (1024x1024 pixel) texture (x', y').
@@ -580,7 +603,11 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
    */
   if (inidisp.force_blank) return {};
 
-  static auto clip = [](sdword v) -> sdword { return v & 0x2000 ? v | ~0x3ff : v & 0x3ff; };
+#ifdef DUMMY_M7_VRAM
+//  fill_dummy_vram();
+#endif
+
+  static auto clip = [](sdword v) -> sdword { return (v & 0x2000) ? (v | ~0x3ff) : (v & 0x3ff); };
 
   sdword a = m7.a(), b = m7.b(),
       c = m7.c(), d = m7.d(),
@@ -599,7 +626,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
   // arithmetic needs to be done in 32 bits because we're multiplying things which are
   // represented as 16 bit values (we need 24 bits, in particular)
 
-  const sdword y = line;
+  const dword y = line;
   // x_out and y_out are to be interpreted as fixed point with 8 fractional bits
   // implements:
   // x_out = a * (x + h - x0) + b * (y + v - y0) + x0
@@ -613,8 +640,10 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
                 + ((d * clip(v - y0)) & ~63)
                 + (y0 << 8);
 
-//  log_with_tag("m7",
-//               "a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x\n", a, b, c, d, h, v, x0, y0);
+  log_with_tag("m7",
+               "% 3d: a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x -> (%d.%d/256, %d.%d/256)\n",
+               line, a, b, c, d, h, v, x0, y0,
+               y, (x_out >> 8) & 0x7ff, x_out & 0xffff, (y_out >> 8) & 0x7ff, y_out & 0xffff);
 
   auto* ptr = row.begin();
   for (sdword x_ = 0; x_ < 256; ++x_) {
@@ -640,7 +669,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
           tile_id = 0;
         } else {
 //          log_with_tag("m7", "(%d, %d) outside\n", x_coarse, y_coarse);
-
+          *ptr++ = 3;
           continue;
         }
       } else {
@@ -655,7 +684,8 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     byte x_fine = x_coarse % 8;
     // Tile data is 8*8 = 64 = 0x40 bytes in size
     auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
-//    log_with_tag("m7", "(%d, %d) <- %02x\n", x_coarse, y_coarse, chr_data);
+//    auto chr_data = vram[(tile_id << 6) + ((y_coarse & 0x7) << 3) + (x_coarse & 7)].m7_chr;
+    log_with_tag("m7", "(%d, %d) -> (%d, %d) [%d, %d: %d, %d] -> %02x\n", x_, line, x_coarse, y_coarse, tile_id / 8, tile_id % 8, x_fine, y_fine, chr_data);
 
     // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;

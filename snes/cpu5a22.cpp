@@ -35,11 +35,11 @@ std::ostream& hex_addr(std::ostream& out) {
 
 template <typename T>
 std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w) {
-  if (!dim) {
-    out << rang::style::reset << rang::fg::reset;
-  } else {
-    out << rang::style::dim << rang::fg::gray;
-  }
+//  if (!dim) {
+//    out << rang::style::reset << rang::fg::reset;
+//  } else {
+//    out << rang::style::dim << rang::fg::gray;
+//  }
   return out << hex_word << w;
 }
 
@@ -47,7 +47,7 @@ template <typename T, typename... Args>
 std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w, Args... args) {
   hex_word_alternating(out, dim, w);
   hex_word_alternating(out, !dim, args...);
-  out << rang::style::reset << rang::fg::reset;
+//  out << rang::style::reset << rang::fg::reset;
   return out;
 }
 
@@ -68,7 +68,7 @@ void CPU5A22::dump_pc() {
             << instruction_at_pc(*this);
 }
 
-void CPU5A22::dump_m7() {
+void CPU5A22::dump_m7(bool flush) {
   std::cout << "abcd ";
   hex_word_alternating(std::cout, false,
                        bus->ppu->m7.a(),
@@ -81,7 +81,9 @@ void CPU5A22::dump_m7() {
                        bus->ppu->m7.v.w,
                        bus->ppu->m7.x0(),
                        bus->ppu->m7.y0());
-  std::cout << std::endl;
+  if (flush) {
+    std::cout << std::endl;
+  }
 }
 
 std::ostream& CPU5A22::dump_stack(std::ostream& out) {
@@ -126,6 +128,7 @@ void CPU5A22::dump() {
 
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
+  std::cout << " y: " << bus->ppu->line;
 
   if (FLAGS_dump_stack) {
     std::cout << " stk: ";

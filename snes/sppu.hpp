@@ -448,6 +448,8 @@ public:
 
   M7Params m7 {};
 
+  long line {};
+
 private:
   std::array<byte, 512 + 32> oam {};
 
@@ -481,7 +483,6 @@ private:
   byte last_mode = 0xff; // last mode set, for debugging purposes
 
   long ncycles {};
-  long line {};
   long x {};
 
   // region PPU caches
@@ -512,6 +513,10 @@ private:
   friend class TD2;
 
   friend class M7;
+
+  friend class CPU5A22;
+
+  friend class BusSNES;
 
   /**
    * Finds the first opaque pixel given the layer specs at a given
@@ -639,4 +644,5 @@ public:
    * Alternate rendering pipeline for mode 7.
    */
   std::array<byte, 256> render_row_mode7(int bg);
+  void fill_dummy_vram();
 };

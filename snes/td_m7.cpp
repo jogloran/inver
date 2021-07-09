@@ -50,7 +50,7 @@ void M7::show() {
       std::exit(0);
     } else if (event.type == SDL_KEYDOWN) {
       switch (event.key.keysym.sym) {
-        case SDLK_TAB: {
+        case SDLK_9: {
           if (mode_ == Mode::Viewport) { mode_ = Mode::Tiles; }
           else { mode_ = Mode::Viewport; }
           break;
