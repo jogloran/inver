@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "screen.hpp"
 #include "bus_snes.hpp"
 #include "ppu_debug.hpp"
@@ -13,6 +15,22 @@ DECLARE_bool(show_sub);
 void Screen::set_brightness(byte b) {
   // require: b >= 0 && b <= 15
   brightness = b;
+}
+
+void Screen::dump_ppm(const char* out_fn) {
+  std::ofstream f(out_fn, std::ofstream::out);
+
+  float scale = static_cast<float>(brightness) / 2.0;
+
+  int i = 0;
+  //  for (auto& layer: fb) {
+  auto& layer = fb[0];
+  f << "P3\n256 224\n255\n";
+
+  for (const colour_t& b : layer) {
+    buf[i++] = 255;
+    f << static_cast<int>(b.r * scale) << ' ' << static_cast<int>(b.g * scale) << ' ' << static_cast<int>(b.b * scale) << '\n';
+  }
 }
 
 void Screen::blit() {
@@ -115,6 +133,13 @@ void Screen::blit() {
         case SDLK_r:
           ppu->bus->reset();
           break;
+
+        case SDLK_8:
+          dump_ppm("out.ppm");
+          break;
+        case SDLK_9:
+          dump_vram("vram.dat");
+          break;
       }
     }
   }
@@ -122,4 +147,10 @@ void Screen::blit() {
 
 void Screen::connect(std::shared_ptr<SPPU> p) {
   ppu = p;
+}
+
+void Screen::dump_vram(const char* out_fn) {
+  std::ofstream out(out_fn, std::ofstream::out);
+
+  out.write(reinterpret_cast<char*>(ppu->vram.begin()), ppu->vram.size() * 2);
 }

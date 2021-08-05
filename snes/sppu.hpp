@@ -211,6 +211,7 @@ public:
       case 0x2114: // BG4VOFS - BG4 Vertical Scroll (Y)   (write-twice)
       {
         if (addr == 0x210d || addr == 0x210e) {
+          log_with_tag("m7", "0x%04x <- %02x\n", addr, value);
           m7.set(addr, value);
         }
 

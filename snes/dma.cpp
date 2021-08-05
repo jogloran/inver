@@ -39,141 +39,97 @@ void DMA::hdma_tick() {
   if (!hdma_enabled) return;
 
   bool indirect = dma_params.hdma_indirect_table;
+  dword dst = 0x2100 | B_addr;
 
-  // Transfer one "unit" of data according to dma_params.tx_type
-  // from A -> B or B -> A according to dma_params.b_to_a
-  // a1 <-> (0x2100 | B_addr)
-  // if indirect,
-  if (in_transfer) {
-    dword dst = 0x2100 | B_addr;
-    byte bank = a1.hi;
+  if (!in_transfer) goto proc;
 
-    // read byte at hdma_ptr as an instruction, then copy one "unit" of data (depending on the dma_params.tx_type)
+  // switch according to dma_params.tx_type, per byte to transfer:
+  //   read byte from das/hdma_ptr
+  //   increment das/hdma_ptr
+  //   write to B_addr + 0,1,2,3
+  log("HDMA %-6s 0x%-6x <- indirect? %d line count: 0x%02x\n",
+      dma_modes[dma_params.tx_type],
+      dst, indirect, hdma_line_counter);
+  switch (dma_params.tx_type) {
+    case 0:
+      hdma_write_unit(dst);
+      break;
+    case 1:
+      hdma_write_unit(dst);
+      hdma_write_unit(dst + 1);
+      break;
+    case 2:
+    case 6:
+      hdma_write_unit(dst);
+      hdma_write_unit(dst);
+      break;
+    case 3:
+    case 7:
+      hdma_write_unit(dst);
+      hdma_write_unit(dst);
+      hdma_write_unit(dst + 1);
+      hdma_write_unit(dst + 1);
+      break;
+    case 4:
+      hdma_write_unit(dst);
+      hdma_write_unit(dst + 1);
+      hdma_write_unit(dst + 2);
+      hdma_write_unit(dst + 3);
+      break;
+    case 5:
+      hdma_write_unit(dst);
+      hdma_write_unit(dst + 1);
+      hdma_write_unit(dst);
+      hdma_write_unit(dst + 1);
+      break;
+  }
 
-    if ((hdma_line_counter & 0x80) == 0) {
-      if ((hdma_line_counter & 0x7f) > 0) {
-        log("here: %d\n", hdma_line_counter);
-        --hdma_line_counter;
-        return;
-      }
-    } else {
-      --hdma_line_counter;
-    }
+  // At this stage, hdma_line_counter is already populated with a value:
+  // v = 0x81-0xff:
+  //   transfer one unit per scanline, v & 0x7f times
+  // v = 0x01-0x80:
+  //   transfer one unit, then pause for v - 1 scanlines (set hdma_wake_counter = v - 1)
+  // v = 0x00:
+  //   terminate this channel for this frame
 
-    log("HDMA %-6s 0x%-6x reading from 0x%02x%04x line count: %d\n",
-        dma_modes[dma_params.tx_type], dst, bank, hdma_ptr, hdma_line_counter);
+  // decrement hdma_line_counter
+proc:
+  --hdma_line_counter;
+  log("decremented line: %02x\n", hdma_line_counter);
 
+  in_transfer = hdma_line_counter & 0x80;
 
-    byte value;
-    log("tx type: %d indirect: %d\n",dma_params.tx_type,indirect);
-    switch (dma_params.tx_type) {
-      case 0: {
-        // assume A -> B to begin with
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-        }
-        bus->write(dst, value);
-        break;
-      }
-      case 1: {
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-        }
-        bus->write(dst, value);
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst + 1, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-        }
-        bus->write(dst + 1, value);
-        break;
-      }
-      case 2: {
-        if (indirect) {
-          log("%04x <- %06x [%02x] (line = %d)\n", dst, das.addr, bus->read(das.addr), bus->ppu->line);
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-        }
-        bus->write(dst, value);
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-        }
-        bus->write(dst, value);
-        break;
-      }
-      case 3: {
-        if (indirect) {
-          log("%04x <- %06x [%02x] (line = %d)\n", dst, das.addr, bus->read(das.addr), bus->ppu->line);
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-          log("%04x <- [%02x]\n", dst, value);
-        }
-        bus->write(dst, value);
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-          log("%04x <- [%02x]\n", dst, value);
-        }
-        bus->write(dst, value);
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst + 1, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-          log("%04x <- [%02x]\n", dst + 1, value);
-        }
-        bus->write(dst + 1, value);
-        if (indirect) {
-          log("%04x <- %06x [%02x]\n", dst + 1, das.addr, bus->read(das.addr));
-          value = bus->read(das.addr++);
-        } else {
-          value = bus->read((bank << 16) | hdma_ptr++);
-          log("%04x <- [%02x]\n", dst + 1, value);
-        }
-        bus->write(dst + 1, value);
-        break;
-      }
-    }
+  if ((hdma_line_counter & 0x7f) == 0) {
+    dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
+    byte bank = hdma_addr >> 16;
+//    hdma_ptr = hdma_addr; // truncate the bank number. hdma_ptr is the one that changes
 
-
-    // in_transfer is true while we are going through the hdma table
-
-    // this is true regardless of whether continue bit is set or not, when counter = 0
-    if ((hdma_line_counter & 0x7f) == 0) {
-      byte instr = bus->read(hdma_ptr++ | (bank << 16));
-      if (instr != 0) {
-        hdma_line_counter = instr;
-      } else {
-        hdma_enabled = false;
-        in_transfer = false;
-        return;
-      }
-
-      if (indirect) {
-        das.lo = bus->read(hdma_ptr++ | (bank << 16));
-        das.md = bus->read(hdma_ptr++ | (bank << 16));
-      }
-
+    // load in the table data into the registers
+    byte instr = bus->read(hdma_ptr++ | (bank << 16));
+    log("read from 0x%06x -> %02x\n", ((hdma_ptr - 1) | (bank << 16)), instr);
+    if (instr != 0) {
+      hdma_line_counter = instr;
       in_transfer = true;
+
+    } else {
+      hdma_enabled = false;
     }
+
+    // if indirect, then treat the two bytes after the number of lines
+    // as a pointer to the data units to transfer
+    if (indirect) {
+      das.lo = bus->read(hdma_ptr++ | (bank << 16));
+      das.md = bus->read(hdma_ptr++ | (bank << 16));
+
+      log("indirect reading from %06x\n", das.addr);
+    }
+
   }
 }
 
 void DMA::hdma_init(bool indirect) {
+  if (!hdma_enabled) return;
+
   dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
 
   byte bank = hdma_addr >> 16;
@@ -181,20 +137,24 @@ void DMA::hdma_init(bool indirect) {
 
   // load in the table data into the registers
   byte instr = bus->read(hdma_ptr++ | (bank << 16));
+  log("init: read from 0x%06x -> %02x\n", ((hdma_ptr - 1) | (bank << 16)), instr);
   if (instr != 0) {
     hdma_line_counter = instr;
+    in_transfer = true;
+
   } else {
     hdma_enabled = false;
   }
 
+  // if indirect, then treat the two bytes after the number of lines
+  // as a pointer to the data units to transfer
   if (indirect) {
     das.lo = bus->read(hdma_ptr++ | (bank << 16));
     das.md = bus->read(hdma_ptr++ | (bank << 16));
 
-    log("indirect reading from %06x\n", das.addr);
+    log("init: indirect reading from %06x\n", das.addr);
   }
 
-  in_transfer = true;
 }
 
 
@@ -306,6 +266,29 @@ void DMA::write_unit(const dword& src, dword dst, sbyte incr) {
   bus->write(dst, bus->read(src));
   a1.addr += incr;
   --das.addr;
+}
+
+byte DMA::hdma_fetch() {
+  if (dma_params.hdma_indirect_table) {
+    auto value = bus->read(das.addr++);
+    return value;
+  } else {
+    dword hdma_addr = a1.addr;
+    byte bank = hdma_addr >> 16;
+    return bus->read(hdma_ptr++ | (bank << 16));
+  }
+}
+
+void DMA::hdma_write_unit(dword dst) {
+  byte datum = hdma_fetch();
+  if (dma_params.hdma_indirect_table) {
+    log("0x%-6x <- 0x%04x [%02x]\n", dst, das.addr - 1, datum);
+  } else {
+    dword hdma_addr = a1.addr;
+    byte bank = hdma_addr >> 16;
+    log("0x%-6x <- 0x%04x [%02x]\n", dst, (hdma_ptr - 1) | (bank << 16), datum);
+  }
+  bus->write(dst, datum);
 }
 
 void DMA::log_write_unit(dword src, dword dst, byte value) {

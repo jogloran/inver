@@ -13,14 +13,14 @@ word SPPU::PAL_MASKED_IN_WINDOW = 257;
 word SPPU::PAL_SUB_SCREEN_TRANSPARENT = 256;
 
 static std::array<std::function<colour_t(colour_t, colour_t)>, 4> cm_op {
-    [](auto c1, auto c2) { return c1.add(c2, 1); },
-    [](auto c1, auto c2) { return c1.add(c2, 2); },
-    [](auto c1, auto c2) { return c1.sub(c2, 1); },
-    [](auto c1, auto c2) { return c1.sub(c2, 2); },
+  [](auto c1, auto c2) { return c1.add(c2, 1); },
+  [](auto c1, auto c2) { return c1.add(c2, 2); },
+  [](auto c1, auto c2) { return c1.sub(c2, 1); },
+  [](auto c1, auto c2) { return c1.sub(c2, 2); },
 };
 
 static std::array<std::function<Layers(SPPU&)>, 8> mode_fns {
-    mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
+  mode<0>, mode<1>, mode<2>, mode<3>, mode<4>, mode<5>, mode<6>, mode<7>};
 
 const std::array<byte, 256>& SPPU::get_pal_row(const Layers& l, byte layer, byte prio) {
   if (layer == Layers::OBJ) {
@@ -106,8 +106,8 @@ void SPPU::render_row() {
     const auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
     const auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-//    if (main_pal != 0)
-//    std::printf("%d: %d\n", i, main_pal);
+    //    if (main_pal != 0)
+    //    std::printf("%d: %d\n", i, main_pal);
 
     const bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
     const bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
@@ -119,11 +119,11 @@ void SPPU::render_row() {
 
     const bool main_clear = is_pal_clear(main[i]);
     const auto main_colour =
-        main[i] == PAL_MASKED_IN_WINDOW ? Colours::BLACK : lookup(main[i]);
+      main[i] == PAL_MASKED_IN_WINDOW ? Colours::BLACK : lookup(main[i]);
 
     const bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]);
     const auto sub_colour =
-        sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
+      sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
     // TODO: clearly not right, but the SMW dialog box needs a black bkgd
     if (main[i] == PAL_MASKED_IN_WINDOW) {
       pals[i] = lookup(0);
@@ -133,7 +133,7 @@ void SPPU::render_row() {
       pals[i] = main_colour;
     } else if (main_clear) {
       pals[i] = sub_colour;
-    } else {// !sub_clear && !main_clear
+    } else { // !sub_clear && !main_clear
       if (colour_math_applies(i, l)) {
         if (FLAGS_show_main) {
           pals[i] = main_colour;
@@ -178,7 +178,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       continue;
     }
 
-    auto tile_y = (line_ - entry->y) % 8;// the row (0..8) of the tile
+    auto tile_y = (line_ - entry->y) % 8; // the row (0..8) of the tile
     auto tile_no_y_offset = (line_ - entry->y) / 8;
     if (entry->attr.flip_y) {
       tile_y = 7 - tile_y;
@@ -193,7 +193,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
         tile_no_x_offset = sprite_width / 8 - tile - 1;
       }
       const word obj_char_data_addr = obj_addr(obj_char_data_base, tile_no, tile_no_x_offset,
-                                         tile_no_y_offset, tile_y);
+                                               tile_no_y_offset, tile_y);
       const auto pixel_array = decode_planar(&vram[obj_char_data_addr], 2, entry->attr.flip_x);
 
       std::transform(pixel_array.begin(), pixel_array.end(), std::back_inserter(pixels),
@@ -209,8 +209,8 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
   // TODO: need to look into priority for sprite pixels
   std::sort(visible.begin(), visible.end(), [](const RenderedSprite& t1, const RenderedSprite& t2) {
     return t1.oam_index == t2.oam_index
-               ? (t1.oam.attr.prio > t2.oam.attr.prio)
-               : t1.oam_index < t2.oam_index;
+             ? (t1.oam.attr.prio > t2.oam.attr.prio)
+             : t1.oam_index < t2.oam_index;
   });
 
   int nvisible = 0;
@@ -315,7 +315,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
                   // decode planar data
                   // produce 8 byte values (palette indices)
                   const std::array<byte, 8> pal_bytes = decode_planar(&vram[tile_chr_base], wpp,
-                                                                t->flip_x);
+                                                                      t->flip_x);
                   for (int i = 0; i < 8; ++i) {
                     // Need to look up OAM to get the palette, then pal_bytes[i] gives an index
                     // into the palette
@@ -345,9 +345,9 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
 colour_t SPPU::lookup(byte i) const {
   word rgb = pal[2 * i] + (pal[2 * i + 1] << 8);
   return {
-      .r = static_cast<byte>(rgb & 0x1f),
-      .g = static_cast<byte>((rgb >> 5) & 0x1f),
-      .b = static_cast<byte>((rgb >> 10) & 0x1f)};
+    .r = static_cast<byte>(rgb & 0x1f),
+    .g = static_cast<byte>((rgb >> 5) & 0x1f),
+    .b = static_cast<byte>((rgb >> 10) & 0x1f)};
 }
 
 void SPPU::tick(byte master_cycles) {
@@ -357,11 +357,19 @@ void SPPU::tick(byte master_cycles) {
     switch (state) {
       case State::VISIBLE:
         x = ncycles / 4;
+        if (x == 0) {
+          log_with_tag("scr", "scroll regs at x=0, y=%d: %04x %04x\n",
+                       line, m7.h.w, m7.v.w);
+          m7.h_shadow = m7.h;
+          m7.v_shadow = m7.v;
+        }
         if (ncycles >= 4 * 256) {
           ncycles -= 4 * 256;
           state = State::HBLANK;
 
           render_row();
+          // this triggers HDMA (in m7, this sets up the parameters for the _next_ line),
+          // so has to happen after rendering the current line.
           bus->hblank_start();
         }
         break;
@@ -369,6 +377,7 @@ void SPPU::tick(byte master_cycles) {
         if (ncycles >= 4 * 84) {
           ncycles -= 4 * 84;
           ++line;
+          log_with_tag("line", "%d\n", line);
           x = 0;
 
           if (line <= 0xe0) {
@@ -389,6 +398,7 @@ void SPPU::tick(byte master_cycles) {
         if (ncycles >= 4 * 340) {
           ncycles -= 4 * 340;
           ++line;
+          log_with_tag("line", ">> %d\n", line);
           x = 0;
           // TODO: status flags need to distinguish hblank even during
           // vblank
@@ -398,8 +408,10 @@ void SPPU::tick(byte master_cycles) {
             screen->blit();
             state = State::VISIBLE;
             line = 0;
+            log_with_tag("line", ">> 0\n");
 
             bus->frame_start();
+            bus->m7.clear_m7_pix();
           }
         }
         break;
@@ -444,12 +456,12 @@ bool in_window(int i, byte layer, const window_t& win) {
 
 Layers::Win SPPU::compute_mask(byte layer) const {
   static const std::array<std::function<bool(bool, bool)>, 4> ops {
-      std::logical_or(),
-      std::logical_and(),
-      std::bit_xor(),
-      std::not_fn(std::bit_xor()),
+    std::logical_or(),
+    std::logical_and(),
+    std::bit_xor(),
+    std::not_fn(std::bit_xor()),
   };
-  Layers::Win win;// no need to initialise
+  Layers::Win win; // no need to initialise
 
   for (int i = 0; i < 256; ++i) {
     bool w1_in = in_window(i, layer, windows[0]);
@@ -501,7 +513,7 @@ bool SPPU::colour_math_applies(int i, const Layers& layers) const {
         return colour_math.on_main_screen & (1 << layer);
       case Layers::OBJ:
         // TODO: this gives wrong results for palettes 0-3, so disabling until we can address
-        return false;//colour_math.on_obj_4_to_7;
+        return false; // colour_math.on_obj_4_to_7;
       case Layers::BACKDROP:
         return colour_math.on_backdrop;
     }
@@ -583,7 +595,7 @@ void SPPU::fill_dummy_vram() {
 
   for (int row = 0; row < 128; ++row) {
     for (int col = 0; col < 128; ++col) {
-      vram[row*128 + col].m7_tile_id = (row % 2) * 128 + col;
+      vram[row * 128 + col].m7_tile_id = (row % 2) * 128 + col;
     }
   }
 
@@ -592,7 +604,10 @@ void SPPU::fill_dummy_vram() {
       vram[tile_id * 0x40 + i].m7_chr = tile_id;
     }
   }
+}
 
+auto clip(sdword v) -> sdword {
+  return (v & 0x2000) ? (v | ~0x3ff) : (v & 0x3ff);
 }
 
 std::array<byte, 256> SPPU::render_row_mode7(int bg) {
@@ -607,16 +622,13 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 //  fill_dummy_vram();
 #endif
 
-  static auto clip = [](sdword v) -> sdword { return (v & 0x2000) ? (v | ~0x3ff) : (v & 0x3ff); };
-
-  sdword a = m7.a(), b = m7.b(),
-      c = m7.c(), d = m7.d(),
-      x0 = (static_cast<sdword>(m7.x0()) << 19) >> 19,
-      y0 = (static_cast<sdword>(m7.y0()) << 19) >> 19,
-      h = (static_cast<sdword>(m7.h.w) << 19) >> 19,
-      v = (static_cast<sdword>(m7.v.w) << 19) >> 19;
-//  a = d = 0; b = 0xff23; c = 0xdd; x0 = 0x0470; y0 = 0x0268; h = 0x1008; v = 0x440;
-//  h = 0x3f0; v = 0x1b8;
+  const sword a = m7.a(), b = m7.b(),
+        c = m7.c(), d = m7.d();
+  const sdword
+    x0 = (static_cast<sdword>(m7.x0()) << 19) >> 19,
+    y0 = (static_cast<sdword>(m7.y0()) << 19) >> 19,
+    h = (static_cast<sdword>(m7.h_shadow.w) << 19) >> 19,
+    v = (static_cast<sdword>(m7.v_shadow.w) << 19) >> 19;
 
   // h, v, x0, y0 need to be interpreted as 13 bit signed values (-4096 to 4095)
   //              1 bit sign, 12 integral bits (two's complement)
@@ -626,24 +638,20 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
   // arithmetic needs to be done in 32 bits because we're multiplying things which are
   // represented as 16 bit values (we need 24 bits, in particular)
 
-  const dword y = line;
+  const word y = line;
   // x_out and y_out are to be interpreted as fixed point with 8 fractional bits
   // implements:
   // x_out = a * (x + h - x0) + b * (y + v - y0) + x0
   // y_out = c * (x + h - x0) + d * (y + v - y0) + y0
-  sdword x_out = ((a * clip(h - x0)) & ~63)
-                + ((b * y) & ~63)
-                + ((b * clip(v - y0)) & ~63)
-                + (x0 << 8);
-  sdword y_out = ((c * clip(h - x0)) & ~63)
-                + ((d * y) & ~63)
-                + ((d * clip(v - y0)) & ~63)
-                + (y0 << 8);
+  sdword x_out = ((a * clip(h - x0)) & ~63) + ((b * y) & ~63) + ((b * clip(v - y0)) & ~63) + (x0 << 8);
+  sdword y_out = ((c * clip(h - x0)) & ~63) + ((d * y) & ~63) + ((d * clip(v - y0)) & ~63) + (y0 << 8);
+
+  const sword dx = a, dy = c;
 
   log_with_tag("m7",
-               "% 3d: a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x -> (%d.%d/256, %d.%d/256)\n",
+               "line %d: a %04x b %04x c %04x d %04x h %04x v %04x x0 %04x y0 %04x -> (%d.%d/256, %d.%d/256)\n",
                line, a, b, c, d, h, v, x0, y0,
-               y, (x_out >> 8) & 0x7ff, x_out & 0xffff, (y_out >> 8) & 0x7ff, y_out & 0xffff);
+               (x_out >> 8) & 0x7ff, x_out & 0xff, (y_out >> 8) & 0x7ff, y_out & 0xff);
 
   auto* ptr = row.begin();
   for (sdword x_ = 0; x_ < 256; ++x_) {
@@ -653,30 +661,24 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
 
     byte tile_id;
 
-    if (!m7sel.no_wrap) {
+    // Handle coordinates outside of [0,0]..[1024,1024] by setting a solid colour or by using tile 0
+    bool out_of_map_bounds = m7sel.no_wrap && (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024);
+    if (!out_of_map_bounds) {
+      // wrap to 1024x1024 (since m7sel.no_wrap is false)
       y_coarse &= 0x3ff;
       x_coarse &= 0x3ff;
 
-      log_with_tag("www", "wrap %04x %04x\n", x_coarse, y_coarse);
-
       auto tile_id_y = y_coarse / 8;
       auto tile_id_x = x_coarse / 8;
+      // Tile map is 128x128 (each tile is 8x8), so each row has 128 addresses
       auto offset = tile_id_y * 128 + tile_id_x;
       tile_id = vram[offset].m7_tile_id;
     } else {
-      if (y_coarse < 0 || y_coarse >= 1024 || x_coarse < 0 || x_coarse >= 1024) {
-        if (m7sel.fill_with_tile_0) {
-          tile_id = 0;
-        } else {
-//          log_with_tag("m7", "(%d, %d) outside\n", x_coarse, y_coarse);
-          *ptr++ = 3;
-          continue;
-        }
+      if (m7sel.fill_with_tile_0) {
+        tile_id = 0;
       } else {
-        auto tile_id_y = y_coarse / 8;
-        auto tile_id_x = x_coarse / 8;
-        auto offset = tile_id_y * 128 + tile_id_x;
-        tile_id = vram[offset].m7_tile_id;
+        *ptr++ = 3; // TODO:
+        continue;
       }
     }
 
@@ -684,17 +686,23 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
     byte x_fine = x_coarse % 8;
     // Tile data is 8*8 = 64 = 0x40 bytes in size
     auto chr_data = vram[0x40 * tile_id + y_fine * 8 + x_fine].m7_chr;
-//    auto chr_data = vram[(tile_id << 6) + ((y_coarse & 0x7) << 3) + (x_coarse & 7)].m7_chr;
-    log_with_tag("m7", "(%d, %d) -> (%d, %d) [%d, %d: %d, %d] -> %02x\n", x_, line, x_coarse, y_coarse, tile_id / 8, tile_id % 8, x_fine, y_fine, chr_data);
+//    log_with_tag("m7", "(%d, %d) -> (%d, %d) 0x%04x #%d [%d, %d: %d, %d] -> %02x\n",
+//                 x_, line,
+//                 x_coarse, y_coarse,
+//                 0x40 * tile_id + y_fine * 8 + x_fine,
+//                 tile_id,
+//                 tile_id / 8, tile_id % 8, x_fine, y_fine,
+//                 chr_data);
+    bus->m7.set_m7_pix(x_coarse, y_coarse);
 
     // TODO: we have no way of passing direct colour data based on cgwsel.direct_colour_enabled
     *ptr++ = chr_data;
 
-    x_out += a;
-    y_out += c;
+    x_out += dx;
+    y_out += dy;
   }
 
-  std::array<byte, 256> result {};
+  std::array<byte, 256> result;
   std::copy(row.begin(), row.begin() + 256, result.begin());
   return result;
 }

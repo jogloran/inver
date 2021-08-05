@@ -209,4 +209,7 @@ public:
   void log_write_unit(dword src, dword dst, byte value);
 
   void write_unit(const dword& src, dword dst, sbyte incr);
+  byte hdma_wake_counter {};
+  byte hdma_fetch();
+  void hdma_write_unit(dword dst);
 };

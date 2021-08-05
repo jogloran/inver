@@ -29,10 +29,17 @@ void M7::show() {
       auto pix = ppu->vram[tile_id * 0x40 + (row % 8) * 8 + (col % 8)].m7_chr;
 
       auto colour = ppu->lookup(pix);
-      buf[row * 4 * 1024 + col * 4] = colour.b * 4;
-      buf[row * 4 * 1024 + col * 4 + 1] = colour.g * 4;
-      buf[row * 4 * 1024 + col * 4 + 2] = colour.r * 4;
-      buf[row * 4 * 1024 + col * 4 + 3] = 255;
+      if (mask[row * 1024 + col]) {
+        buf[row * 4 * 1024 + col * 4] = 255;
+        buf[row * 4 * 1024 + col * 4 + 1] = 255;
+        buf[row * 4 * 1024 + col * 4 + 2] = 255;
+        buf[row * 4 * 1024 + col * 4 + 3] = 255;
+      } else {
+        buf[row * 4 * 1024 + col * 4] = colour.b * 4;
+        buf[row * 4 * 1024 + col * 4 + 1] = colour.g * 4;
+        buf[row * 4 * 1024 + col * 4 + 2] = colour.r * 4;
+        buf[row * 4 * 1024 + col * 4 + 3] = 255;
+      }
     }
   }
 

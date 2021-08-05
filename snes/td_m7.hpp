@@ -38,6 +38,14 @@ public:
 
   void show();
 
+  void set_m7_pix(sdword x, sdword y) {
+    mask[y * 1024 + x] = true;
+  }
+
+  void clear_m7_pix() {
+    std::fill(mask.begin(), mask.end(), false);
+  }
+
   SDL_Window* window_;
   SDL_Renderer* renderer_;
   SDL_Texture* texture_;
@@ -48,4 +56,5 @@ public:
   Mode mode_;
 
   std::array<byte, (M7_WIDTH * M7_HEIGHT) * 4> buf {};
+  std::array<bool, (M7_WIDTH * M7_HEIGHT)> mask {};
 };

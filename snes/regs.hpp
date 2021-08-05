@@ -34,8 +34,10 @@ struct BGScroll {
 struct M7Params {
   void set(word addr, byte value) {
     switch (addr) {
-      case 0x210d: h.w = (value << 8) | m7_old; break;
-      case 0x210e: v.w = (value << 8) | m7_old; break;
+      case 0x210d:
+        h.w = (value << 8) | m7_old; break;
+      case 0x210e:
+        v.w = (value << 8) | m7_old; break;
       default:
         p[addr - 0x211b].w = (value << 8) | m7_old; break;
     }
@@ -50,7 +52,9 @@ struct M7Params {
 
   std::array<dual, 6> p;
   dual h {};
+  dual h_shadow {};
   dual v {};
+  dual v_shadow {};
   byte m7_old {};
 
   template <typename Ar>

@@ -89,4 +89,6 @@ public:
   void set_brightness(byte b);
 
   byte brightness;
+  void dump_ppm(const char* out_fn);
+  void dump_vram(const char* out_fn);
 };
