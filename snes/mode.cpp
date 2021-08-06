@@ -1,5 +1,10 @@
 #include "mode.hpp"
 
+/**
+ * The layer priority table lists, for each of the eight modes,
+ * from backmost to frontmost, the layers to be rendered, and
+ * the priority with which to composite the output of that layer.
+ */
 std::array<LayerPriorityTable, 8> prios_for_mode =
     {{// Mode 0
       {
