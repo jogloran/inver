@@ -212,4 +212,5 @@ public:
   byte hdma_wake_counter {};
   byte hdma_fetch();
   void hdma_write_unit(dword dst);
+  void advance_hdma_ptr(bool indirect, byte bank);
 };

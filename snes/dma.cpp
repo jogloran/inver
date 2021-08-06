@@ -34,6 +34,27 @@ cycle_count_t DMA::hdma_init() {
   return 0;
 }
 
+void DMA::advance_hdma_ptr(bool indirect, byte bank) {
+  // load in the table data into the registers
+  byte instr = bus->read(hdma_ptr++ | (bank << 16));
+  log("read from 0x%06x -> %02x\n", ((hdma_ptr - 1) | (bank << 16)), instr);
+  if (instr != 0) {
+    hdma_line_counter = instr;
+    in_transfer = true;
+  } else {
+    hdma_enabled = false;
+  }
+
+  // if indirect, then treat the two bytes after the number of lines
+  // as a pointer to the data units to transfer
+  if (indirect) {
+    das.lo = bus->read(hdma_ptr++ | (bank << 16));
+    das.md = bus->read(hdma_ptr++ | (bank << 16));
+
+    log("indirect reading from %06x\n", das.addr);
+  }
+}
+
 void DMA::hdma_tick() {
   // Called once per scanline at start of hblank
   if (!hdma_enabled) return;
@@ -100,64 +121,17 @@ proc:
   in_transfer = hdma_line_counter & 0x80;
 
   if ((hdma_line_counter & 0x7f) == 0) {
-    dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
-    byte bank = hdma_addr >> 16;
-//    hdma_ptr = hdma_addr; // truncate the bank number. hdma_ptr is the one that changes
-
-    // load in the table data into the registers
-    byte instr = bus->read(hdma_ptr++ | (bank << 16));
-    log("read from 0x%06x -> %02x\n", ((hdma_ptr - 1) | (bank << 16)), instr);
-    if (instr != 0) {
-      hdma_line_counter = instr;
-      in_transfer = true;
-
-    } else {
-      hdma_enabled = false;
-    }
-
-    // if indirect, then treat the two bytes after the number of lines
-    // as a pointer to the data units to transfer
-    if (indirect) {
-      das.lo = bus->read(hdma_ptr++ | (bank << 16));
-      das.md = bus->read(hdma_ptr++ | (bank << 16));
-
-      log("indirect reading from %06x\n", das.addr);
-    }
-
+    advance_hdma_ptr(indirect, a1.addr >> 16);
   }
 }
 
 void DMA::hdma_init(bool indirect) {
   if (!hdma_enabled) return;
 
-  dword hdma_addr = a1.addr; // The value here is constant, unlike in DMA where it's a counter
-
-  byte bank = hdma_addr >> 16;
-  hdma_ptr = hdma_addr; // truncate the bank number. hdma_ptr is the one that changes
-
-  // load in the table data into the registers
-  byte instr = bus->read(hdma_ptr++ | (bank << 16));
-  log("init: read from 0x%06x -> %02x\n", ((hdma_ptr - 1) | (bank << 16)), instr);
-  if (instr != 0) {
-    hdma_line_counter = instr;
-    in_transfer = true;
-
-  } else {
-    hdma_enabled = false;
-  }
-
-  // if indirect, then treat the two bytes after the number of lines
-  // as a pointer to the data units to transfer
-  if (indirect) {
-    das.lo = bus->read(hdma_ptr++ | (bank << 16));
-    das.md = bus->read(hdma_ptr++ | (bank << 16));
-
-    log("init: indirect reading from %06x\n", das.addr);
-  }
-
+  // Set the starting value for hdma_ptr here:
+  hdma_ptr = a1.addr; // truncate the bank number. hdma_ptr will advance within the bank specified in a1
+  advance_hdma_ptr(indirect, a1.addr >> 16);
 }
-
-
 
 cycle_count_t DMA::run() {
   // while length counter > 0

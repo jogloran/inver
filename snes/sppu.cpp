@@ -400,8 +400,6 @@ void SPPU::tick(byte master_cycles) {
           ++line;
           log_with_tag("line", ">> %d\n", line);
           x = 0;
-          // TODO: status flags need to distinguish hblank even during
-          // vblank
 
           if (line >= 0x106) {
             vblank_end();
