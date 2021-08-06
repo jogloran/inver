@@ -220,7 +220,7 @@ std::array<byte, 256> SPPU::render_obj(byte prio) {
       break;
     }
     for (int i = 0; i < std::min(sprite.pixels.size(), 256ul - sprite.oam.x); ++i) {
-      // Only replace non-transparent pixels. Since all sprite m7_chr data is 4bpp, this means
+      // Only replace non-transparent pixels. Since all sprite chr data is 4bpp, this means
       // a palette index of 0 within each palette.
       if (!is_pal_clear(sprite.pixels[i]))
         result[sprite.oam.x + i] = sprite.pixels[i];
@@ -309,7 +309,7 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
                   if (t->flip_y)
                     row_to_access = 7 - row_to_access;
 
-                  // get tile m7_chr data
+                  // get tile chr data
                   const word tile_chr_base = tile_chr_addr(chr_base_addr, tile_id, row_to_access, wpp);
 
                   // decode planar data

@@ -6,9 +6,9 @@
 #include "types.h"
 
 /**
- * Decodes 1, 2 or 4 words of m7_chr data representing one row of 8 tile pixels
+ * Decodes 1, 2 or 4 words of chr data representing one row of 8 tile pixels
  * into an array of 8 palette indices.
- * @param ptr The initial offset of the m7_chr data
+ * @param ptr The initial offset of the chr data
  * @param wpp Words per pixel (1, 2 or 4)
  * @param flip_x Whether the tile is horizontally flipped
  * @return An array of 8 palette indices
