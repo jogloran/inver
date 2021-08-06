@@ -31,6 +31,11 @@ struct BGScroll {
   void serialize(Ar& ar) { ar(x_reg, y_reg, bg_write_upper); }
 };
 
+/**
+ * Represents the eight Mode 7 parameters, as well as the shared latch byte that buffers
+ * double-writes, and the cache of the h and v scroll positions used during the rendering
+ * of each row.
+ */
 struct M7Params {
   void set(word addr, byte value) {
     switch (addr) {
