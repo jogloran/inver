@@ -58,7 +58,7 @@ struct M7Params {
   byte m7_old {};
 
   template <typename Ar>
-  void serialize(Ar& ar) { ar(p, h, v, m7_old); }
+  void serialize(Ar& ar) { ar(p, h, h_shadow, v, v_shadow, m7_old); }
 };
 
 union window_mask_op_t {
