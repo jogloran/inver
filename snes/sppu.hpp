@@ -637,5 +637,9 @@ public:
    * Alternate rendering pipeline for mode 7.
    */
   std::array<byte, 256> render_row_mode7(int bg);
-  void fill_dummy_vram();
+
+  /**
+   * Fills VRAM with a fixed dummy grid pattern (bitmap makes sense in mode 7 only).
+   */
+  void fill_dummy_vram_m7();
 };

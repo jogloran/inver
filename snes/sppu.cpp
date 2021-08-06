@@ -582,7 +582,7 @@ void SPPU::blit() {
   }
 }
 
-void SPPU::fill_dummy_vram() {
+void SPPU::fill_dummy_vram_m7() {
   // 128x128 tilemap
   // each two rows are a sequence of tiles
   // 0, 1, 2, ..., 128
@@ -617,7 +617,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
   if (inidisp.force_blank) return {};
 
 #ifdef DUMMY_M7_VRAM
-//  fill_dummy_vram();
+//  fill_dummy_vram_m7();
 #endif
 
   const sword a = m7.a(), b = m7.b(),
