@@ -321,7 +321,6 @@ void BusSNES::vblank_nmi() {
   in_nmi = true;
   if (nmi.vblank_nmi)
     cpu->irq<NMI>();
-  //  std::printf("show\n");
 }
 
 void BusSNES::vblank_end() {
