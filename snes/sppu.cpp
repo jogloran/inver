@@ -675,7 +675,7 @@ std::array<byte, 256> SPPU::render_row_mode7(int bg) {
       if (m7sel.fill_with_tile_0) {
         tile_id = 0;
       } else {
-        *ptr++ = 3; // TODO:
+        *ptr++ = 0; // otherwise, fill with transparent colour
         continue;
       }
     }

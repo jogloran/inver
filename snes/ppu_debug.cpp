@@ -84,7 +84,7 @@ void PPUDebug::dump_colour_math(const SPPU& sppu) {
   auto main_screen_black =
       tb << "Main black (2130)" << fmt_cgwsel(sppu.cgwsel.force_main_screen_black_flags) << endr;
   auto cm_op = tb << "CM op (2131)" << fmt_cgadsub(sppu.colour_math.reg) << endr;
-  auto backdrop = tb << separator << "Backdrop"
+  auto backdrop = tb << separator << "Backdrop (RGB)"
                      << std::hex << std::setfill('0') << std::setw(2) << int(sppu.backdrop_colour.r)
                      << std::hex << std::setfill('0') << std::setw(2) << int(sppu.backdrop_colour.g)
                      << std::hex << std::setfill('0') << std::setw(2) << int(sppu.backdrop_colour.b)

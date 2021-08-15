@@ -352,9 +352,11 @@ public:
       case 0x2132: // COLDATA - Color Math Sub Screen Backdrop Color
         if (value & (1 << 7)) {
           backdrop_colour.b = value & 0x1f;
-        } else if (value & (1 << 6)) {
+        }
+        if (value & (1 << 6)) {
           backdrop_colour.g = value & 0x1f;
-        } else if (value & (1 << 5)) {
+        }
+        if (value & (1 << 5)) {
           backdrop_colour.r = value & 0x1f;
         }
         break;

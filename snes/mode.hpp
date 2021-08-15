@@ -79,6 +79,7 @@ template<> constexpr Layers mode<7>(SPPU& ppu) {
     result.obj.pal[i] = ppu.render_obj(i);
     result.obj.mask = ppu.compute_mask(Layers::OBJ);
   }
+  result.math = ppu.compute_mask(Layers::MATH);
   return result;
 }
 
