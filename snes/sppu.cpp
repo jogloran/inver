@@ -78,7 +78,9 @@ auto& SPPU::route_main_sub(const std::vector<LayerSpec>& prios) {
       case 1:
       case 2:
       case 3:
-        if (true) main_sub.first.push_back(l);
+        // TODO: Showing main unconditionally causes the HUD to show up on the f-zero opening screen.
+        // However there was some other title that it messes up unless it's unconditional.
+        if (main_scr(l.layer)) main_sub.first.push_back(l);
         if (sub_scr(l.layer)) main_sub.second.push_back(l);
         break;
 
