@@ -54,7 +54,26 @@ add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22
         snes/ops_5a22.hpp snes/ops_5a22.cpp snes/op_macros_5a22.hpp
         cpu5a22_test/catch_main.cpp snes/bus_snes.cpp snes/bus_snes.hpp cpu5a22_test/tests.cpp
         cpu5a22_test/utils.hpp
-        snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
+        snes/op_names_5a22.hpp snes/op_names_5a22.cpp
+        snes/td_m7.hpp snes/td_m7.cpp snes/dma.hpp snes/dma.cpp
+        snes/td.hpp snes/td.cpp snes/ppu_utils.hpp snes/ppu_utils.cpp
+        snes/sppu.hpp snes/sppu.cpp
+        snes/mode.hpp snes/mode.cpp
+        snes/screen.hpp snes/screen.cpp
+        snes/ppu_debug.hpp snes/ppu_debug.cpp
+        rhomb/fort.hpp rhomb/fort.c
+        snes/snes_spc/dsp.h snes/snes_spc/dsp.cpp
+        snes/snes_spc/blargg_source.h snes/snes_spc/blargg_common.h
+        snes/snes_spc/blargg_config.h snes/snes_spc/blargg_endian.h
+        snes/snes_spc/SNES_SPC.h snes/snes_spc/SNES_SPC.cpp
+        snes/snes_spc/SNES_SPC_misc.cpp snes/snes_spc/SNES_SPC_state.cpp
+        snes/snes_spc/spc.h snes/snes_spc/spc.cpp rhomb/fort.hpp rhomb/fort.c
+        snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
+        snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp
+        snes/debug.hpp snes/debug.cpp
+        snes/flags.h)
+target_link_libraries(cpu5a22_test gflags)
+target_link_libraries(cpu5a22_test -lzip ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 
 include_directories(${ZIP_INCLUDE_DIRS} rhomb)
 link_directories(${ZIP_LIBRARY_DIRS})
@@ -75,7 +94,8 @@ add_executable(snes snes/main.cpp snes/bus_snes.hpp snes/bus_snes.cpp
         snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp snes/sppu.cpp snes/sppu.hpp snes/dma.cpp snes/dma.hpp snes/logger.hpp
         snes/td.hpp snes/td.cpp snes/screen.cpp snes/screen.hpp snes/ppu_utils.hpp snes/ppu_utils.cpp
         src/peripheral.hpp snes/sdl_snes_input.hpp snes/debug.hpp snes/regs.hpp snes/debug.cpp snes/mode.hpp snes/ppu_debug.hpp snes/ppu_debug.cpp
-        snes/mapper/mapper.hpp snes/mapper/lorom.hpp snes/mapper/hirom.hpp snes/mode.cpp snes/colour.hpp snes/metadata.hpp snes/metadata.cpp snes/td_m7.cpp snes/td_m7.hpp)
+        snes/mapper/mapper.hpp snes/mapper/lorom.hpp snes/mapper/hirom.hpp snes/mode.cpp snes/colour.hpp snes/metadata.hpp snes/metadata.cpp snes/td_m7.cpp snes/td_m7.hpp
+        snes/flags.h)
 
 target_compile_options(snes PRIVATE -DNDEBUG -DDUMMY_M7_VRAM)
 

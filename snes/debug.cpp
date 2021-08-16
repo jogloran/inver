@@ -1,5 +1,7 @@
 #include "debug.hpp"
 
+std::set<std::string> active_tags;
+
 std::vector<ChangeWatchSpec> parse_change_watches(std::string change_watches_str) {
   auto tags = parse_tags(change_watches_str);
   std::vector<ChangeWatchSpec> result;
