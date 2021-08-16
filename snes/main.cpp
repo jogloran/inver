@@ -21,7 +21,6 @@ DEFINE_bool(dis, false, "Dump disassembly");
 DEFINE_bool(xx, false, "Debug");
 DEFINE_bool(dump_stack, false, "Dump stack");
 DEFINE_bool(audio, false, "Enable audio");
-DEFINE_bool(test_rom_output, false, "Test ROM output hack");
 DEFINE_string(tags, "", "Log tags to print, separated by commas");
 DEFINE_bool(td, false, "Show tile debugger (nametable)");
 DEFINE_bool(show_raster, false, "Show raster");
