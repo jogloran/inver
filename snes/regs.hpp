@@ -199,7 +199,7 @@ union oamadd_t {
 union obsel_t {
   struct {
     byte obj_base_addr: 3;
-    byte obj_gap_size: 2;
+    byte obj_gap_size: 2; // TODO: not implemented
     byte obj_size: 3;
   };
   byte reg;

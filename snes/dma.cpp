@@ -238,7 +238,10 @@ void DMA::write_unit(const dword& src, dword dst, sbyte incr) {
   byte value = bus->read(src);
   log_write_unit(src, dst, value);
   bus->write(dst, bus->read(src));
-  a1.addr += incr;
+  // Only increment the 16-bit address (not the bank) -- for example, if
+  // a1 is 0xdffff, then after incrementing by 1, it should be 0xd0000 and
+  // not 0xe0000.
+  a1.offset += incr;
   --das.addr;
 }
 

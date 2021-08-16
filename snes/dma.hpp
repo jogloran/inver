@@ -162,6 +162,13 @@ public:
       byte hi: 8; // Program Bank (aka K register)
       byte padding: 8;
     };
+    /* This representation is useful when we want incrementing the offset to wrap
+     * without incrementing the bank part of the address. */
+    struct {
+      word offset: 16;
+      byte bank: 8;
+      byte padding2: 8;
+    };
     dword addr;
 
     template <typename Ar>
