@@ -3,17 +3,19 @@
 //
 #include <iomanip>
 
-#include "cpu5a22.hpp"
-#include "ops_5a22.hpp"
 #include "bus_snes.hpp"
-#include "op_names_5a22.hpp"
-#include "rang.hpp"
+#include "cpu5a22.hpp"
 #include "debug.hpp"
+#include "op_names_5a22.hpp"
+#include "ops_5a22.hpp"
+#include "rang.hpp"
 
 #include <gflags/gflags.h>
 #include <map>
 
 DECLARE_bool(dis);
+DECLARE_bool(dis_dump_m7);
+DECLARE_bool(dis_raw);
 DECLARE_bool(xx);
 DECLARE_bool(dump_stack);
 
@@ -35,11 +37,11 @@ std::ostream& hex_addr(std::ostream& out) {
 
 template <typename T>
 std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w) {
-//  if (!dim) {
-//    out << rang::style::reset << rang::fg::reset;
-//  } else {
-//    out << rang::style::dim << rang::fg::gray;
-//  }
+  //  if (!dim) {
+  //    out << rang::style::reset << rang::fg::reset;
+  //  } else {
+  //    out << rang::style::dim << rang::fg::gray;
+  //  }
   return out << hex_word << w;
 }
 
@@ -47,7 +49,7 @@ template <typename T, typename... Args>
 std::ostream& hex_word_alternating(std::ostream& out, bool dim, T w, Args... args) {
   hex_word_alternating(out, dim, w);
   hex_word_alternating(out, !dim, args...);
-//  out << rang::style::reset << rang::fg::reset;
+  //  out << rang::style::reset << rang::fg::reset;
   return out;
 }
 
@@ -95,36 +97,57 @@ std::ostream& CPU5A22::dump_stack(std::ostream& out) {
 }
 
 void CPU5A22::dump() {
-  using std::hex;
   using std::dec;
-  using std::setw;
-  using std::setfill;
+  using std::hex;
   using std::left;
+  using std::setfill;
+  using std::setw;
 
   std::cout << " sp: " << hex_word << static_cast<int>(sp) << (!native() ? "•" : " ");
   std::cout << to_6502_flag_string(p.reg) << " ("
             << hex_byte << int(p.reg) << ')';
   std::cout << " a: ";
   if (p.m) {
-    std::cout << rang::style::dim << rang::fg::gray << hex_byte << static_cast<int>(a >> 8)
-              << rang::style::reset << rang::fg::reset
-              << hex_byte << static_cast<int>(a & 0xff);
+    if (!FLAGS_dis_raw) {
+      std::cout << rang::style::dim << rang::fg::gray << hex_byte << static_cast<int>(a >> 8)
+                << rang::style::reset << rang::fg::reset;
+    }
+    std::cout << hex_byte << static_cast<int>(a & 0xff);
   } else {
     std::cout << hex_word << static_cast<int>(a);
   }
   if (p.x) {
-    std::cout << " x: " << rang::style::dim << rang::fg::gray << hex_byte
-              << static_cast<int>(x >> 8) << rang::style::reset << rang::fg::reset << hex_byte
-              << static_cast<int>(x & 0xff)
-              << " y: " << rang::style::dim << rang::fg::gray << hex_byte
-              << static_cast<int>(y >> 8) << rang::style::reset << rang::fg::reset << hex_byte
+    std::cout << " x: ";
+    if (!FLAGS_dis_raw) {
+      std::cout << rang::style::dim << rang::fg::gray;
+    }
+    std::cout << hex_byte
+              << static_cast<int>(x >> 8);
+    if (!FLAGS_dis_raw) {
+      std::cout << rang::style::reset << rang::fg::reset;
+    }
+    std::cout << hex_byte
+              << static_cast<int>(x & 0xff);
+    std::cout << " y: ";
+    if (!FLAGS_dis_raw) {
+      std::cout << rang::style::dim << rang::fg::gray;
+    }
+    std::cout << hex_byte
+              << static_cast<int>(y >> 8);
+    if (!FLAGS_dis_raw) {
+      std::cout << rang::style::reset << rang::fg::reset;
+    }
+    std::cout << hex_byte
               << static_cast<int>(y & 0xff);
   } else {
     std::cout << " x: " << hex_word << static_cast<int>(x)
               << " y: " << hex_word << static_cast<int>(y);
   }
-  std::cout << ' ';
-  dump_m7();
+
+  if (FLAGS_dis_dump_m7) {
+    std::cout << ' ';
+    dump_m7();
+  }
 
   std::cout << " nmi:" << hex_byte << static_cast<int>(bus->nmi.reg);
   std::cout << " cyc: " << std::dec << ncycles;
@@ -208,7 +231,7 @@ word CPU5A22::pop_word() {
     result = (bus->ram[sp + 1] | (bus->ram[sp + 2] << 8));
   } else {
     result = (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 1) & 0xff)] |
-                   (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 2) & 0xff)] << 8));
+              (bus->ram[(sp & 0xff00) + (((sp & 0xff) + 2) & 0xff)] << 8));
   }
   ++sp;
   ++sp;

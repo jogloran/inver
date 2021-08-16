@@ -417,7 +417,7 @@ dword addr_##mode() body
       byte C: 1;
       byte Z: 1;
       byte I: 1;
-      byte D: 1;
+      byte D: 1; // TODO: decimal mode not implemented (affects ADC, SBC, CMP; C and N flags, but not V)
       byte x: 1; // B in 6502, index register width flag (0=16 bits, 1=8 bits)
       byte m: 1; // Unused in 6502, A,memory width flag  (0=16 bits, 1=8 bits)
       byte V: 1;
