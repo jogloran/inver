@@ -54,8 +54,8 @@ std::shared_ptr<BusSNES> run(std::string text) {
   auto eop = bytes.size();
 
   while (true) {
-    bus->cpu.tick();
-    if (bus->cpu.pc.addr >= eop) {
+    bus->cpu->tick();
+    if (bus->cpu->pc.addr >= eop) {
       break;
     }
   }

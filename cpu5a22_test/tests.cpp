@@ -1,6 +1,32 @@
 #include "catch.hpp"
 #include "utils.hpp"
 
+TEST_CASE("Decimal mode", "[dec]") {
+  auto bus = run(R"(
+!al
+    clc
+    xce
+    sed
+    clc
+    lda #$33
+    adc #$66
+    tax
+    lda #$33
+    adc #$67
+    tay
+    lda #$3333
+    adc #$6667
+  )");
+
+  SECTION("results correct") {
+    REQUIRE(bus->cpu->p.D == 1);
+    REQUIRE(bus->cpu->x.w == 0x99);
+    REQUIRE(bus->cpu->y.w == 0x100);
+    REQUIRE(bus->cpu->a.w == 0x0);
+    REQUIRE(bus->cpu->p.C == 1);
+  }
+}
+
 TEST_CASE("LDA", "[lda]") {
   auto bus = run(R"(
     lda #$39
@@ -11,9 +37,9 @@ TEST_CASE("LDA", "[lda]") {
   )");
 
   SECTION("state correct") {
-    REQUIRE(bus->cpu.a.w == 0x39);
-    REQUIRE(bus->cpu.y.w == 0xdd);
-    REQUIRE(bus->cpu.x.w == 0xef);
+    REQUIRE(bus->cpu->a.w == 0x39);
+    REQUIRE(bus->cpu->y.w == 0xdd);
+    REQUIRE(bus->cpu->x.w == 0xef);
   }
 }
 
@@ -27,7 +53,7 @@ DONE nop
   )");
 
   SECTION("cmp") {
-    REQUIRE(bus->cpu.x.w == 0xff);
+    REQUIRE(bus->cpu->x.w == 0xff);
   }
 }
 
@@ -38,7 +64,7 @@ TEST_CASE("65816 switch", "[65816]") {
   )");
 
   SECTION("native mode transition") {
-    REQUIRE(bus->cpu.e == 0);
+    REQUIRE(bus->cpu->e == 0);
   }
 }
 
@@ -55,8 +81,8 @@ TEST_CASE("XBA", "[xba]") {
   )");
 
   SECTION("XBA") {
-    REQUIRE(bus->cpu.x.w == 0xdcfe);
-    REQUIRE(bus->cpu.y.w == 0xfedc);
+    REQUIRE(bus->cpu->x.w == 0xdcfe);
+    REQUIRE(bus->cpu->y.w == 0xfedc);
   }
 }
 
@@ -68,8 +94,8 @@ TEST_CASE("width", "[width]") {
   )");
 
   SECTION("REP") {
-    REQUIRE(!bus->cpu.p.x);
-    REQUIRE(!bus->cpu.p.m);
+    REQUIRE(!bus->cpu->p.x);
+    REQUIRE(!bus->cpu->p.m);
   }
 
   auto bus2 = run(R"(
@@ -79,8 +105,8 @@ TEST_CASE("width", "[width]") {
   )");
 
   SECTION("REP") {
-    REQUIRE(bus2->cpu.p.x);
-    REQUIRE(bus2->cpu.p.m);
+    REQUIRE(bus2->cpu->p.x);
+    REQUIRE(bus2->cpu->p.m);
   }
 }
 
@@ -89,7 +115,8 @@ TEST_CASE("LSR", "[lsr]") {
     auto bus = run(R"(
       clc
       xce
-      sep #$30
+!al
+      rep #$30
       lda #$abcd
       lsr
       tax
@@ -98,9 +125,9 @@ TEST_CASE("LSR", "[lsr]") {
       lsr
     )");
 
-    REQUIRE(bus->cpu.x.w == 0x55e6);
-    REQUIRE(bus->cpu.y.w == 0x2af3);
-    REQUIRE(bus->cpu.a.w == 0x1579);
+    REQUIRE(bus->cpu->x.w == 0x55e6);
+    REQUIRE(bus->cpu->y.w == 0x2af3);
+    REQUIRE(bus->cpu->a.w == 0x1579);
   }
 }
 
@@ -122,7 +149,7 @@ ok    ldx #$ee
 done  nop
     )");
 
-    REQUIRE(bus->cpu.x.w == 0xee);
+    REQUIRE(bus->cpu->x.w == 0xee);
   }
 
   SECTION("ABSOLUTE,X AND ABSOLUTE,Y") {

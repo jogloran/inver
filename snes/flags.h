@@ -1,6 +1,3 @@
-//
-// Created by Daniel Tse on 10/7/20.
-//
 #include <gflags/gflags.h>
 
 DEFINE_bool(dis, false, "Dump disassembly");
@@ -21,6 +18,3 @@ DEFINE_bool(show_main, false, "");
 DEFINE_bool(show_sub, false, "");
 DEFINE_bool(m7, false, "Show mode 7 visualisation");
 DEFINE_bool(dis_dump_m7, false, "Show m7 params when dumping disassembly");
-
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
