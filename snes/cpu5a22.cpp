@@ -266,3 +266,34 @@ void CPU5A22::pop_flags() {
     p.reg = (pop() & 0b11001111) | (p.reg & 0b00110000);
   }
 }
+
+int CPU5A22::bcd_add(int x, int addend) {
+  // assume x, addend < 0x9999
+  int out = 0;
+  int carry = 0;
+  int bits = 0;
+
+  int out_digit = 0;
+  while (x != 0 || addend != 0) {
+    auto x_digit = x & 0xf;
+    auto addend_digit = addend & 0xf;
+
+    // assume x_digit, addend_digit < 0x9
+    out_digit = x_digit + addend_digit + carry;
+    carry = 0;
+    if (out_digit > 0x9) {
+      carry = 1;
+      out_digit -= 10;
+    }
+
+    out |= (out_digit << bits);
+
+    x >>= 4;
+    addend >>= 4;
+    bits += 4;
+  }
+
+  out |= (carry << bits);
+
+  return out;
+}

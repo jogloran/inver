@@ -32,10 +32,17 @@
 // in an 8-bit value, we need to mask after bitwise negating the entire thing.
 #define ADC_GEN(mode, unary_op) [](CPU5A22& cpu) {\
   word operand = (unary_op cpu.deref_##mode(!cpu.p.m)) & (cpu.p.m ? 0xff : 0xffff); \
-  word acc = cpu.a; \
-  int addend = static_cast<int>(operand) + cpu.p.C; \
-  int result = (cpu.a & (cpu.p.m ? 0xff : 0xffff)) + addend; \
-  cpu.p.C = result > (cpu.p.m ? 0xff : 0xffff); \
+  word acc = cpu.a;                               \
+  int result;                                     \
+  if (!cpu.p.D) {                                                                      \
+    int addend = static_cast<int>(operand) + cpu.p.C;                                 \
+    result = (cpu.a & (cpu.p.m ? 0xff : 0xffff)) + addend;                         \
+    cpu.p.C = result > (cpu.p.m ? 0xff : 0xffff);                                      \
+  } else {                                        \
+    int addend = cpu.bcd_add(static_cast<int>(operand), cpu.p.C);                       \
+    result = cpu.bcd_add(cpu.a & (cpu.p.m ? 0xff : 0xffff), addend);                \
+    cpu.p.C = result > (cpu.p.m ? 0x99 : 0x9999); \
+  }                                                                                    \
   cpu.store(cpu.a, cpu.check_zn_flags(static_cast<word>(result), !cpu.p.m), !cpu.p.m); \
   cpu.p.V = ((acc ^ cpu.a) & (operand ^ cpu.a) & (cpu.p.m ? 0x80 : 0x8000)) != 0; \
   return cpu.observe_crossed_page(); \

@@ -455,4 +455,6 @@ dword addr_##mode() body
   static constexpr const char* TAG = "cpu";
 
   void dump_m7(bool flush = false);
+  int bcd_add(int x, int addend);
+  word bcd_add(int x, word addend);
 };
