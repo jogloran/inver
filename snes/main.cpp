@@ -20,9 +20,9 @@
 #include "flags.h"
 
 extern std::set<std::string> active_tags;
-std::map<dword, PCWatchSpec> dis_pcs;
-std::set<dword> ignored_pcs;
-std::vector<ChangeWatchSpec> change_watches;
+extern std::map<dword, PCWatchSpec> dis_pcs;
+extern std::set<dword> ignored_pcs;
+extern std::vector<ChangeWatchSpec> change_watches;
 
 std::vector<byte> read_bytes(std::ifstream& f) {
   return {std::istreambuf_iterator<char>(f),

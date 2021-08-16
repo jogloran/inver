@@ -50,7 +50,7 @@ target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -W
 add_executable(micro bench/micro.cpp src/ppu_utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
 
-add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
+add_executable(cpu5a22_test snes/flags.h cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
         snes/ops_5a22.hpp snes/ops_5a22.cpp snes/op_macros_5a22.hpp
         cpu5a22_test/catch_main.cpp snes/bus_snes.cpp snes/bus_snes.hpp cpu5a22_test/tests.cpp
         cpu5a22_test/utils.hpp
@@ -70,8 +70,7 @@ add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22
         snes/snes_spc/spc.h snes/snes_spc/spc.cpp rhomb/fort.hpp rhomb/fort.c
         snes/snes_spc/SPC_CPU.h snes/snes_spc/SPC_DSP.h snes/snes_spc/SPC_DSP.cpp
         snes/snes_spc/SPC_Filter.h snes/snes_spc/SPC_Filter.cpp
-        snes/debug.hpp snes/debug.cpp
-        snes/flags.h)
+        snes/debug.hpp snes/debug.cpp)
 target_link_libraries(cpu5a22_test gflags)
 target_link_libraries(cpu5a22_test -lzip ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} ${SDL2TTF_LIBRARIES})
 

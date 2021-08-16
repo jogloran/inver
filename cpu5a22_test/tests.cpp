@@ -89,7 +89,8 @@ TEST_CASE("LSR", "[lsr]") {
     auto bus = run(R"(
       clc
       xce
-      sep #$30
+!al
+      rep #$30
       lda #$abcd
       lsr
       tax
