@@ -108,9 +108,6 @@ void SPPU::render_row() {
     const auto [main_layer, main_pal, main_masked] = prio_sort(main_layers, l, i);
     const auto [sub_layer, sub_pal, sub_masked] = prio_sort(sub_layers, l, i);
 
-    //    if (main_pal != 0)
-    //    std::printf("%d: %d\n", i, main_pal);
-
     const bool main_window_masked = main_layer == Layers::OBJ ? window_main_disable_mask.obj_disabled : (window_main_disable_mask.bg_disabled & (1 << main_layer));
     const bool sub_window_masked = sub_layer == Layers::OBJ ? window_sub_disable_mask.obj_disabled : (window_sub_disable_mask.bg_disabled & (1 << sub_layer));
 

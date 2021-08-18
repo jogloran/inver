@@ -1,5 +1,10 @@
 #include "debug.hpp"
 
+std::set<std::string> active_tags;
+std::map<dword, PCWatchSpec> dis_pcs;
+std::set<dword> ignored_pcs;
+std::vector<ChangeWatchSpec> change_watches;
+
 std::vector<ChangeWatchSpec> parse_change_watches(std::string change_watches_str) {
   auto tags = parse_tags(change_watches_str);
   std::vector<ChangeWatchSpec> result;
