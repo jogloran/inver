@@ -114,9 +114,7 @@ public:
 
   void hblank_start() {
     std::for_each(dma.begin(), dma.end(), [](DMA& ch) {
-//      if (ch.hdma_enabled) {
-        ch.hdma_tick();
-//      }
+      ch.hdma_tick();
     });
   }
 
