@@ -206,14 +206,6 @@ void CPU5A22::connect(BusSNES* b) {
   bus = b;
 }
 
-void CPU5A22::write(dword address, byte value) const {
-  bus->write(address, value);
-}
-
-byte CPU5A22::read(dword address) const {
-  return bus->read(address);
-}
-
 byte CPU5A22::pop() {
   byte result;
   if (native()) {

@@ -177,9 +177,13 @@ public:
     if ((addr1 & 0xff00) != (addr2 & 0xff00)) crossed_page = true;
   }
 
-  void write(dword address, byte value) const;
+  void write(dword address, byte value) const {
+    bus->write(address, value);
+  }
 
-  byte read(dword address) const;
+  byte read(dword address) const {
+    return bus->read(address);
+  }
 
   inline byte read_byte() {
     return read(pc.addr++);
