@@ -129,6 +129,10 @@ public:
     return read(table[rupt]) | (read(table[rupt] + 1) << 8);
   }
 
+  /**
+   * Called to signal that when the H/V raster has reached the state controlled by NMITIMEN,
+   * and an IRQ should be raised if the interrupt flag is set.
+   */
   void raise_timeup();
 
   void auto_joypad_read_start();

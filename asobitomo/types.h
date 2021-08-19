@@ -10,6 +10,9 @@ using dword = uint32_t;
 
 using cycle_count_t = int;
 
+/**
+ * Represents the result of the hardware multiplication operation.
+ */
 union s24_t {
   struct {
     sbyte l : 8;
