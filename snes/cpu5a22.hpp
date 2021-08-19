@@ -159,6 +159,9 @@ public:
    */
   void pop_flags();
 
+  /**
+   * Adds an offset to the PC given by a byte interpreted as a signed value -127..128.
+   */
   cycle_count_t branch_with_offset() {
     auto offset = static_cast<sbyte>(read_byte());
     pc.addr += offset;
@@ -167,6 +170,9 @@ public:
            : 0;
   }
 
+  /**
+   * Adds an offset to the PC given by a word interpreted as a signed value -32767..32768.
+   */
   cycle_count_t branch_with_far_offset() {
     auto offset = static_cast<sword>(read_word());
     pc.addr += offset;
@@ -418,14 +424,14 @@ dword addr_##mode() body
   // Flags register
   union flags_t {
     struct {
-      byte C: 1;
-      byte Z: 1;
-      byte I: 1;
+      byte C: 1; // carry
+      byte Z: 1; // zero
+      byte I: 1; // interrupt
       byte D: 1; // TODO: decimal mode not implemented (affects ADC, SBC, CMP; C and N flags, but not V)
       byte x: 1; // B in 6502, index register width flag (0=16 bits, 1=8 bits)
       byte m: 1; // Unused in 6502, A,memory width flag  (0=16 bits, 1=8 bits)
-      byte V: 1;
-      byte N: 1;
+      byte V: 1; // overflow
+      byte N: 1; // negative
     };
     byte reg;
 
