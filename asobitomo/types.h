@@ -15,10 +15,10 @@ using cycle_count_t = int;
  */
 union s24_t {
   struct {
-    sbyte l : 8;
-    sbyte m : 8;
-    sbyte h : 8;
-    sbyte unused : 8;
+    byte l : 8;
+    byte m : 8;
+    byte h : 8;
+    byte unused : 8;
   };
   sdword w;
 };
