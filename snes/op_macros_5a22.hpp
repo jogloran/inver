@@ -37,14 +37,18 @@
   if (!cpu.p.D) {                                                                      \
     int addend = static_cast<int>(operand) + cpu.p.C;                                 \
     result = (cpu.a & (cpu.p.m ? 0xff : 0xffff)) + addend;                         \
-    cpu.p.C = result > (cpu.p.m ? 0xff : 0xffff);                                      \
+    cpu.p.C = result > (cpu.p.m ? 0xff : 0xffff); \
   } else {                                        \
     int addend = cpu.bcd_add(static_cast<int>(operand), cpu.p.C);                       \
     result = cpu.bcd_add(cpu.a & (cpu.p.m ? 0xff : 0xffff), addend);                \
     cpu.p.C = result > (cpu.p.m ? 0x99 : 0x9999); \
-  }                                                                                    \
+  }                                               \
   cpu.store(cpu.a, cpu.check_zn_flags(static_cast<word>(result), !cpu.p.m), !cpu.p.m); \
-  cpu.p.V = ((acc ^ cpu.a) & (operand ^ cpu.a) & (cpu.p.m ? 0x80 : 0x8000)) != 0; \
+  if (!cpu.p.D) {                                 \
+    cpu.p.V = ((acc ^ cpu.a) & (operand ^ cpu.a) & (cpu.p.m ? 0x80 : 0x8000)) != 0;    \
+  } else {                                                                             \
+    cpu.p.V = result < -128 || result > 127;                                         \
+  }                                               \
   return cpu.observe_crossed_page(); \
 }
 
