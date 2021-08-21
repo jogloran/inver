@@ -120,7 +120,9 @@ void SPPU::render_row() {
     const auto main_colour =
       main[i] == PAL_MASKED_IN_WINDOW ? Colours::BLACK : lookup(main[i]);
 
-    const bool sub_clear = sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]);
+    // TODO: The hack sub_layers.empty() lets palette colour 0 show through when both
+    // main and sub are clear. What should really happen here?
+    const bool sub_clear = sub_layers.empty() || (sub_source_layer[i] != Layers::BACKDROP && is_pal_clear(sub[i]));
     const auto sub_colour =
       sub_source_layer[i] == Layers::BACKDROP ? backdrop_colour : lookup(sub[i]);
     // TODO: clearly not right, but the SMW dialog box needs a black bkgd
@@ -326,7 +328,6 @@ std::array<byte, 256> SPPU::render_row(byte bg, byte prio) const {
 
                   ++col;
                 });
-
   std::array<byte, 256> result {};
   std::copy(row.begin() + tile_col, row.begin() + tile_col + 256, result.begin());
 
