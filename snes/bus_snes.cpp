@@ -92,7 +92,9 @@ byte BusSNES::read(dword address) {
       // unused
     } else if (offs <= 0x44ff) {
       if (offs == 0x4210) {
-        auto value = 0x2 | (in_nmi ? 0x80 : 0x0);
+        // While it's not documented anywhere I can find, the (unused) 6th bit needs to be set
+        // for this to pass a certain set of test ROMs.
+        auto value = 0x42 | (in_nmi ? 0x80 : 0x0);
         in_nmi = false;
         return value;
       }
