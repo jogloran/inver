@@ -167,7 +167,11 @@ public:
       case 0x2109: // BG3SC   - BG3 Screen Base and Screen Size
       case 0x210A: // BG4SC   - BG4 Screen Base and Screen Size
       {
-        bg_base_size[addr - 0x2107].reg = value;
+        // Despite all docs on the Internet saying that the 6 MSBs indicate the
+        // base address for each tilemap, a certain set of test ROMs don't work
+        // unless you ignore the high order bit.
+        bg_base_size[addr - 0x2107].reg = value & 0x7f;
+
         // How many bytes/words is the tilemap? 32*32=0x400=1024 words=2048 bytes
         // VRAM has 0x8000=32768 words=65536 bytes
         // each word has structure bg_map_tile_t:
