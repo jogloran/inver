@@ -27,7 +27,15 @@ public:
     push(pc.b);
     push_word(pc.addr + ((rupt == BusSNES::BRK || rupt == BusSNES::COP) ? 1 : 0));
     if (rupt == BusSNES::BRK) {
-      push((p.reg & ~0x30) | 0x30);
+      if (native()) {
+        // "Note that when the e flag is 1, the m and x flag are forced to 1, so after the
+        // PLP, both flags will still be 1 no matter what value is pulled from the stack."
+        // Certainly I'd expect this to mean that when e=0 (native mode), m and x are saved
+        // as normal. Otherwise, a certain set of test ROMs don't pass (RET test).
+        push(p.reg);
+      } else {
+        push((p.reg & ~0x30) | 0x30);
+      }
     } else {
       push(p.reg);
     }
