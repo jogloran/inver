@@ -260,6 +260,7 @@ union bg_char_data_addr_t {
 union bg_base_size_t {
   struct {
     byte sc_size: 2;
+    // Base VRAM (word-based) address of each layer's tilemap, shifted right 10 bits
     byte base_addr: 6;
   };
   byte reg;
