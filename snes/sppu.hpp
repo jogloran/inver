@@ -524,7 +524,7 @@ private:
    */
   void vblank_end();
 
-  /*
+ /**
  * Get VRAM addresses for a whole row of BG tiles. This returns 33 tiles, since if there's
  * a fine scroll offset, it may return part of tile 0 and part of tile 32.
  * @param base The base BG tile address
