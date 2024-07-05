@@ -604,12 +604,12 @@ private:
    */
   void blit();
 
+public:
   /**
    * Alternate rendering pipeline for mode 7.
    */
   std::array<byte, 256> render_row_mode7(int bg);
-
-public:
+  
   template<typename Ar>
   void serialize(Ar& ar) {
     ar(main_scr, sub_scr,

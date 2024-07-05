@@ -48,7 +48,7 @@ std::array<byte, 8> decode_planar(const dual* ptr, byte wpp, bool flip_x) {
       return decode((*ptr).w, (*(ptr + 8)).w,
                     (*(ptr + 16)).w, (*(ptr + 24)).w, flip_x);
   }
-  assert("invalid bpp");
+  //assert("invalid bpp");
   return {};
 }
 

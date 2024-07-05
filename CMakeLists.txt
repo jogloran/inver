@@ -3,12 +3,12 @@ project(asobitomo)
 
 include(FindPkgConfig)
 
-set(gflags_DIR /usr/local/Cellar/gflags/2.2.2/lib/cmake/gflags)
+set(gflags_DIR /Users/dt0/homebrew/Cellar/gflags/2.2.2/lib/cmake/gflags)
 find_package(gflags REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(benchmark REQUIRED)
 pkg_search_module(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
-#pkg_search_module(zip REQUIRED zip>=1.7.1)
+#pkg_search_module(zip REQUIRED zip>=1.10.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -16,10 +16,12 @@ add_subdirectory(src/nes_apu)
 link_directories(src/nes_apu)
 link_directories(${SDL2TTF_LIBRARY_DIRS})
 
+link_directories(/Users/dt0/homebrew/Cellar/libzip/1.10.1/lib)
+
 add_subdirectory(ntsc)
 link_directories(ntsc)
 
-include_directories(src ntsc cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /usr/local/Cellar/gflags/2.2.2/include /usr/local/Cellar/sdl2/2.0.14_1/include /usr/local/Cellar/libzip/1.7.1/include)
+include_directories(src ntsc cereal audio_test asobitomo ${gflags_INCLUDE_DIR} /Users/dt0/homebrew/Cellar/gflags/2.2.2/include /Users/dt0/homebrew/Cellar/sdl2/2.0.14_1/include /Users/dt0/homebrew/Cellar/libzip/1.10.1/include)
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2TTF_INCLUDE_DIRS})
 add_executable(inver src/main.cpp asobitomo/util.cc
@@ -50,11 +52,11 @@ target_compile_options(inver PRIVATE -Wshadow -Wnon-virtual-dtor -Wcast-align -W
 add_executable(micro bench/micro.cpp src/ppu_utils.cpp)
 target_link_libraries(micro benchmark::benchmark)
 
-add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
-        snes/ops_5a22.hpp snes/ops_5a22.cpp snes/op_macros_5a22.hpp
-        cpu5a22_test/catch_main.cpp snes/bus_snes.cpp snes/bus_snes.hpp cpu5a22_test/tests.cpp
-        cpu5a22_test/utils.hpp
-        snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
+#add_executable(cpu5a22_test cpu5a22_test/catch.hpp snes/cpu5a22.hpp snes/cpu5a22.cpp
+#        snes/ops_5a22.hpp snes/ops_5a22.cpp snes/op_macros_5a22.hpp
+#        cpu5a22_test/catch_main.cpp snes/bus_snes.cpp snes/bus_snes.hpp cpu5a22_test/tests.cpp
+#        cpu5a22_test/utils.hpp
+#        snes/op_names_5a22.hpp snes/op_names_5a22.cpp)
 
 include_directories(${ZIP_INCLUDE_DIRS} rhomb)
 link_directories(${ZIP_LIBRARY_DIRS})
