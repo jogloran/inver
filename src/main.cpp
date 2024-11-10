@@ -120,12 +120,12 @@ int main(int argc, char** argv) {
     } else {
       screen = std::make_shared<SDLOutput>(std::make_unique<PaletteRenderer>());
     }
-
+/*
     if (FLAGS_kb) {
       bus.connect2(std::make_shared<FamilyBasicKeyboard>());
     } else {
       bus.connect1(std::make_shared<SDLSNESController>());
-    }
+    }*/
   }
 
   bus.attach_screen(screen);

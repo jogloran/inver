@@ -11,9 +11,9 @@ TEST_CASE("LDA", "[lda]") {
   )");
 
   SECTION("state correct") {
-    REQUIRE(bus->cpu.a.w == 0x39);
-    REQUIRE(bus->cpu.y.w == 0xdd);
-    REQUIRE(bus->cpu.x.w == 0xef);
+    REQUIRE(bus->cpu->a.w == 0x39);
+    REQUIRE(bus->cpu->y.w == 0xdd);
+    REQUIRE(bus->cpu->x.w == 0xef);
   }
 }
 
@@ -27,7 +27,7 @@ DONE nop
   )");
 
   SECTION("cmp") {
-    REQUIRE(bus->cpu.x.w == 0xff);
+    REQUIRE(bus->cpu->x.w == 0xff);
   }
 }
 
@@ -38,7 +38,7 @@ TEST_CASE("65816 switch", "[65816]") {
   )");
 
   SECTION("native mode transition") {
-    REQUIRE(bus->cpu.e == 0);
+    REQUIRE(bus->cpu->e == 0);
   }
 }
 
@@ -55,8 +55,8 @@ TEST_CASE("XBA", "[xba]") {
   )");
 
   SECTION("XBA") {
-    REQUIRE(bus->cpu.x.w == 0xdcfe);
-    REQUIRE(bus->cpu.y.w == 0xfedc);
+    REQUIRE(bus->cpu->x.w == 0xdcfe);
+    REQUIRE(bus->cpu->y.w == 0xfedc);
   }
 }
 
@@ -68,8 +68,8 @@ TEST_CASE("width", "[width]") {
   )");
 
   SECTION("REP") {
-    REQUIRE(!bus->cpu.p.x);
-    REQUIRE(!bus->cpu.p.m);
+    REQUIRE(!bus->cpu->p.x);
+    REQUIRE(!bus->cpu->p.m);
   }
 
   auto bus2 = run(R"(
@@ -79,8 +79,8 @@ TEST_CASE("width", "[width]") {
   )");
 
   SECTION("REP") {
-    REQUIRE(bus2->cpu.p.x);
-    REQUIRE(bus2->cpu.p.m);
+    REQUIRE(bus2->cpu->p.x);
+    REQUIRE(bus2->cpu->p.m);
   }
 }
 
@@ -98,9 +98,9 @@ TEST_CASE("LSR", "[lsr]") {
       lsr
     )");
 
-    REQUIRE(bus->cpu.x.w == 0x55e6);
-    REQUIRE(bus->cpu.y.w == 0x2af3);
-    REQUIRE(bus->cpu.a.w == 0x1579);
+    REQUIRE(bus->cpu->x.w == 0x55e6);
+    REQUIRE(bus->cpu->y.w == 0x2af3);
+    REQUIRE(bus->cpu->a.w == 0x1579);
   }
 }
 
@@ -122,7 +122,7 @@ ok    ldx #$ee
 done  nop
     )");
 
-    REQUIRE(bus->cpu.x.w == 0xee);
+    REQUIRE(bus->cpu->x.w == 0xee);
   }
 
   SECTION("ABSOLUTE,X AND ABSOLUTE,Y") {

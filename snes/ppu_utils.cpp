@@ -3,6 +3,7 @@
 #include "types.h"
 #include "sppu.hpp"
 #include "ppu_utils.hpp"
+#include <cassert>
 
 // Decode planar data
 // Takes 2bpp, 4bpp or 8bpp data (1 word, 2 words or 4 words)

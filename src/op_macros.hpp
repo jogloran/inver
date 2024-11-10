@@ -76,6 +76,7 @@
   return 0; \
 }
 
+#define STA(mode) ST(a, mode)
 #define ST(reg, mode) [](CPU6502& cpu) {\
   word addr = cpu.addr_##mode(); \
   cpu.write(addr, cpu.reg); \
