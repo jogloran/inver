@@ -17,6 +17,7 @@
 #include "renderer_palette.hpp"
 
 #include <gflags/gflags.h>
+#include "../snes/sdl_snes_input.hpp"
 
 std::shared_ptr<Mapper> mapper_for(byte no);
 
@@ -120,13 +121,14 @@ int main(int argc, char** argv) {
     } else {
       screen = std::make_shared<SDLOutput>(std::make_unique<PaletteRenderer>());
     }
-/*
+
     if (FLAGS_kb) {
       bus.connect2(std::make_shared<FamilyBasicKeyboard>());
     } else {
       bus.connect1(std::make_shared<SDLSNESController>());
-    }*/
+    }
   }
+  
 
   bus.attach_screen(screen);
   bus.attach_cart(mapper);
